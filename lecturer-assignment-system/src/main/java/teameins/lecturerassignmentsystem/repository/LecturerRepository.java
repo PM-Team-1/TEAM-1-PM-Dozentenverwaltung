@@ -1,7 +1,7 @@
 package teameins.lecturerassignmentsystem.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import teameins.lecturerassignmentsystem.model.Dozent;
+import teameins.lecturerassignmentsystem.model.Lecturer;
 
-public interface LecturerRepository extends JpaRepository<Dozent, Integer> {
+public interface LecturerRepository extends JpaRepository<Lecturer, Integer> {
 }
