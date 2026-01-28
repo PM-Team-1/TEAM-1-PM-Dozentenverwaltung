@@ -34,3 +34,6 @@ build/
 
 ### Vaadin Generated ###
 src/main/frontend/generated/
+
+### DrawIo ###
+*.bkp
