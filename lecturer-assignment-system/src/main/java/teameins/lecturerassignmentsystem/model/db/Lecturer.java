@@ -1,7 +1,12 @@
 package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.persistence.*;
+import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.repository.CourseRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,6 +29,29 @@ public class Lecturer {
     private List<LecturerCanHoldCourse> canHoldCourses;
 
     public Lecturer() {
+    }
+
+    public Lecturer(LecturerDto lecturerDto, CourseRepository courseRepository){
+        if(lecturerDto.getId() != null){
+            this.id = lecturerDto.getId();
+        }
+        this.title = lecturerDto.getTitle();
+        this.firstName = lecturerDto.getFirstName();
+        this.lastName = lecturerDto.getLastName();
+        this.secondName = lecturerDto.getSecondName();
+        this.email = lecturerDto.getEmail();
+        this.phone = lecturerDto.getPhone();
+        this.isExtern = lecturerDto.isExtern();
+        this.preference = lecturerDto.getPreference();
+        this.canHoldCourses = new ArrayList<>();
+
+        for(LecturerCanHoldCourseDto canHoldCoursesDto : lecturerDto.getCanHoldCourses()){
+            try{
+                this.canHoldCourses.add(new LecturerCanHoldCourse(canHoldCoursesDto, this, courseRepository));
+            } catch (EntityNotFoundException e){
+                // Course not found, skip this entry
+            }
+        }
     }
 
     public Lecturer(String title, String firstName, String lastName, String email, String phone) {

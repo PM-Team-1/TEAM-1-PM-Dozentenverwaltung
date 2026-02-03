@@ -1,14 +1,15 @@
 package teameins.lecturerassignmentsystem.model.db;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
+import teameins.lecturerassignmentsystem.model.enums.Qualification;
+import teameins.lecturerassignmentsystem.repository.CourseRepository;
 
 @Entity
 public class LecturerCanHoldCourse {
+    @Transient
+    CourseRepository courseRepository;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +28,24 @@ public class LecturerCanHoldCourse {
     private boolean priority;
 
     public LecturerCanHoldCourse() {
+    }
+
+    public LecturerCanHoldCourse(LecturerCanHoldCourseDto dto, Lecturer lecturer, CourseRepository courseRepository) throws EntityNotFoundException{
+        this.lecturer = lecturer;
+        this.course = courseRepository
+                .findById(dto.getCourse().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Course with ID " + dto.getCourse().getId() + " not found!"));
+        this.alreadyHeld = dto.getAlreadyHeld();
+        this.qualification = dto.getQualification();
+        this.priority = dto.isPriority();
+    }
+
+    public LecturerCanHoldCourse(LecturerCanHoldCourseDto dto, Lecturer lecturer, Course course) {
+        this.lecturer = lecturer;
+        this.course = course;
+        this.alreadyHeld = dto.getAlreadyHeld();
+        this.qualification = dto.getQualification();
+        this.priority = dto.isPriority();
     }
 
     public LecturerCanHoldCourse(Lecturer lecturer, Course course, AlreadyHeld alreadyHeld, Qualification qualification, boolean priority) {
