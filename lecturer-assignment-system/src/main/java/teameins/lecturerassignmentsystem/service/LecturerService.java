@@ -12,11 +12,11 @@ import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 @Service
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
-    private final CourseRepository courseRepository;
+    private final CourseService courseService;
 
-    public LecturerService(LecturerRepository lecturerRepository, CourseRepository courseRepository) {
+    public LecturerService(LecturerRepository lecturerRepository, CourseService courseService) {
         this.lecturerRepository = lecturerRepository;
-        this.courseRepository = courseRepository;
+        this.courseService = courseService;
     }
 
     public Page<Lecturer> getLecturers(int page, int size) {
@@ -25,7 +25,7 @@ public class LecturerService {
     }
 
     public void saveLecturer(LecturerDto lecturerDto) {
-        Lecturer newLecturer = new Lecturer(lecturerDto, courseRepository);
+        Lecturer newLecturer = new Lecturer(lecturerDto, courseService);
         lecturerRepository.save(newLecturer);
     }
 }

@@ -5,6 +5,7 @@ import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
+import teameins.lecturerassignmentsystem.service.CourseService;
 
 @Entity
 public class LecturerCanHoldCourse {
@@ -30,11 +31,9 @@ public class LecturerCanHoldCourse {
     public LecturerCanHoldCourse() {
     }
 
-    public LecturerCanHoldCourse(LecturerCanHoldCourseDto dto, Lecturer lecturer, CourseRepository courseRepository) throws EntityNotFoundException{
+    public LecturerCanHoldCourse(LecturerCanHoldCourseDto dto, Lecturer lecturer, CourseService courseService) throws EntityNotFoundException{
         this.lecturer = lecturer;
-        this.course = courseRepository
-                .findById(dto.getCourse().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Course with ID " + dto.getCourse().getId() + " not found!"));
+        this.course = courseService.getCourseById(dto.getCourse().getId());
         this.alreadyHeld = dto.getAlreadyHeld();
         this.qualification = dto.getQualification();
         this.priority = dto.isPriority();

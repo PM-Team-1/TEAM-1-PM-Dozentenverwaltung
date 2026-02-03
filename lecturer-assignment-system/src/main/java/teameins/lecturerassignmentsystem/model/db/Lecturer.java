@@ -5,6 +5,7 @@ import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
+import teameins.lecturerassignmentsystem.service.CourseService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class Lecturer {
     public Lecturer() {
     }
 
-    public Lecturer(LecturerDto lecturerDto, CourseRepository courseRepository){
+    public Lecturer(LecturerDto lecturerDto, CourseService courseService){
         if(lecturerDto.getId() != null){
             this.id = lecturerDto.getId();
         }
@@ -47,7 +48,7 @@ public class Lecturer {
 
         for(LecturerCanHoldCourseDto canHoldCoursesDto : lecturerDto.getCanHoldCourses()){
             try{
-                this.canHoldCourses.add(new LecturerCanHoldCourse(canHoldCoursesDto, this, courseRepository));
+                this.canHoldCourses.add(new LecturerCanHoldCourse(canHoldCoursesDto, this, courseService));
             } catch (EntityNotFoundException e){
                 // Course not found, skip this entry
             }
