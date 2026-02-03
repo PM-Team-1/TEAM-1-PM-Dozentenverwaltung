@@ -1,9 +1,8 @@
-package teameins.lecturerassignmentsystem.model;
+package teameins.lecturerassignmentsystem.model.db;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Course {
@@ -17,14 +16,26 @@ public class Course {
     private boolean isMaster;
     private String semester;
 
+    @OneToMany(mappedBy = "course")
+    private List<LecturerCanHoldCourse> canBeHeldBy;
+
     public Course() {
     }
 
-    public Course( String name, boolean isMaster, String semester) {
+    public Course(String name, boolean isMaster, String semester) {
         this.name = name;
         this.isClosed = false;
         this.isMaster = isMaster;
         this.semester = semester;
+    }
+
+    public Course(int id, String name, boolean isClosed, boolean isMaster, String semester, List<LecturerCanHoldCourse> canBeHeldBy) {
+        this.id = id;
+        this.name = name;
+        this.isClosed = isClosed;
+        this.isMaster = isMaster;
+        this.semester = semester;
+        this.canBeHeldBy = canBeHeldBy;
     }
 
     public int getId() {
@@ -65,5 +76,13 @@ public class Course {
 
     public void setSemester(String semester) {
         this.semester = semester;
+    }
+
+    public List<LecturerCanHoldCourse> getCanBeHeldBy() {
+        return canBeHeldBy;
+    }
+
+    public void setCanBeHeldBy(List<LecturerCanHoldCourse> canBeHeldBy) {
+        this.canBeHeldBy = canBeHeldBy;
     }
 }

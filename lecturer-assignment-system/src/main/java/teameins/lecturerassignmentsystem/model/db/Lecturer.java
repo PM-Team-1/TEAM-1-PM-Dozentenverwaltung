@@ -1,6 +1,8 @@
-package teameins.lecturerassignmentsystem.model;
+package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Lecturer {
@@ -18,6 +20,9 @@ public class Lecturer {
     private boolean isExtern;
     private Preference preference;
 
+    @OneToMany(mappedBy = "lecturer")
+    private List<LecturerCanHoldCourse> canHoldCourses;
+
     public Lecturer() {
     }
 
@@ -30,6 +35,19 @@ public class Lecturer {
         this.phone = phone;
         this.isExtern = false;
         this.preference = Preference.ALLES;
+    }
+
+    public Lecturer(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, Preference preference, List<LecturerCanHoldCourse> canHoldCourses) {
+        this.id = id;
+        this.title = title;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.secondName = secondName;
+        this.email = email;
+        this.phone = phone;
+        this.isExtern = isExtern;
+        this.preference = preference;
+        this.canHoldCourses = canHoldCourses;
     }
 
     public int getId() {
@@ -102,5 +120,13 @@ public class Lecturer {
 
     public void setPreference(Preference preference) {
         this.preference = preference;
+    }
+
+    public List<LecturerCanHoldCourse> getCanHoldCourses() {
+        return canHoldCourses;
+    }
+
+    public void setCanHoldCourses(List<LecturerCanHoldCourse> canHoldCourses) {
+        this.canHoldCourses = canHoldCourses;
     }
 }

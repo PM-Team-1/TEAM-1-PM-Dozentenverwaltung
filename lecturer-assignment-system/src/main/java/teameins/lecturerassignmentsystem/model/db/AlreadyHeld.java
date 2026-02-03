@@ -1,4 +1,4 @@
-package teameins.lecturerassignmentsystem.model;
+package teameins.lecturerassignmentsystem.model.db;
 
 public enum AlreadyHeld {
     PROVADIS("P"),

@@ -1,4 +1,4 @@
-package teameins.lecturerassignmentsystem.model;
+package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,11 +15,11 @@ public class LecturerCanHoldCourse {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "lecturer_id", nullable = false)
+    @JoinColumn(name = "lecturer_fk", nullable = false)
     private Lecturer lecturer;
 
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_fk", nullable = false)
     private Course course;
 
     private AlreadyHeld alreadyHeld;
