@@ -70,4 +70,8 @@ public class LecturerService {
         }
         return lecturerCanHoldCourseDtoList;
     }
+
+    public void deleteLecturer(int lecturerId) {
+        lecturerRepository.deleteById(lecturerId);
+    }
 }
