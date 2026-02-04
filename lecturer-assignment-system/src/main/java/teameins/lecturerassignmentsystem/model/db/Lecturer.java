@@ -1,161 +1,35 @@
 package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.persistence.*;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
-import teameins.lecturerassignmentsystem.repository.CourseRepository;
-import teameins.lecturerassignmentsystem.service.CourseService;
+import teameins.lecturerassignmentsystem.model.enums.Title;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Lecturer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String title;
+    @Enumerated(EnumType.STRING)
+    private Title title;
+
     private String firstName;
     private String lastName;
     private String secondName;
     private String email;
     private String phone;
     private boolean isExtern;
+
+    @Enumerated(EnumType.STRING)
     private Preference preference;
-
-    @OneToMany(mappedBy = "lecturer")
-    private List<LecturerCanHoldCourse> canHoldCourses;
-
-    public Lecturer() {
-    }
-
-    public Lecturer(LecturerDto lecturerDto, CourseService courseService){
-        if(lecturerDto.getId() != null){
-            this.id = lecturerDto.getId();
-        }
-        this.title = lecturerDto.getTitle();
-        this.firstName = lecturerDto.getFirstName();
-        this.lastName = lecturerDto.getLastName();
-        this.secondName = lecturerDto.getSecondName();
-        this.email = lecturerDto.getEmail();
-        this.phone = lecturerDto.getPhone();
-        this.isExtern = lecturerDto.isExtern();
-        this.preference = lecturerDto.getPreference();
-        this.canHoldCourses = new ArrayList<>();
-
-        for(LecturerCanHoldCourseDto canHoldCoursesDto : lecturerDto.getCanHoldCourses()){
-            try{
-                this.canHoldCourses.add(new LecturerCanHoldCourse(canHoldCoursesDto, this, courseService));
-            } catch (EntityNotFoundException e){
-                // Course not found, skip this entry
-            }
-        }
-    }
-
-    public Lecturer(String title, String firstName, String lastName, String email, String phone) {
-        this.title = title;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.secondName = null;
-        this.email = email;
-        this.phone = phone;
-        this.isExtern = false;
-        this.preference = Preference.ALLES;
-    }
-
-    public Lecturer(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, Preference preference, List<LecturerCanHoldCourse> canHoldCourses) {
-        this.id = id;
-        this.title = title;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.secondName = secondName;
-        this.email = email;
-        this.phone = phone;
-        this.isExtern = isExtern;
-        this.preference = preference;
-        this.canHoldCourses = canHoldCourses;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getSecondName() {
-        return secondName;
-    }
-
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public boolean isExtern() {
-        return isExtern;
-    }
-
-    public void setExtern(boolean isExtern) {
-        this.isExtern = isExtern;
-    }
-
-    public Preference getPreference() {
-        return preference;
-    }
-
-    public void setPreference(Preference preference) {
-        this.preference = preference;
-    }
-
-    public List<LecturerCanHoldCourse> getCanHoldCourses() {
-        return canHoldCourses;
-    }
-
-    public void setCanHoldCourses(List<LecturerCanHoldCourse> canHoldCourses) {
-        this.canHoldCourses = canHoldCourses;
-    }
 }
