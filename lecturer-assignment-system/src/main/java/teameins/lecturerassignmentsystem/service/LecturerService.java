@@ -55,9 +55,6 @@ public class LecturerService {
         lecturer.setExtern(isExtern);
         lecturer.setPreference(parsedPreference);
 
-        //TODO: Validierung der Eingabedaten
-        //TODO: Anlegen der Beziehung zu Kursen in LecturerCanHoldCourse
-
         lecturerRepository.save(lecturer);
     }
 
