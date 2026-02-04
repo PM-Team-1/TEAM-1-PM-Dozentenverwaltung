@@ -1,5 +1,6 @@
 package teameins.lecturerassignmentsystem.model.db;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,8 @@ public class Lecturer {
 
     private String firstName;
     private String lastName;
+
+    @Nullable
     private String secondName;
     private String email;
     private String phone;
