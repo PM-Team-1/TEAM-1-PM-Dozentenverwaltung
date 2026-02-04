@@ -19,18 +19,19 @@ import java.util.Arrays;
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
     private final MappingService mappingService;
-    private final CourseService courseService;
 
     public LecturerDto getLecturerById(int lecturerId) {
         Lecturer lecturer = lecturerRepository.findById(lecturerId).orElseThrow(RuntimeException::new);
-        return mappingService.map(lecturer);
+        List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHold(lecturerId);
+        return mappingService.map(lecturer, canHoldCourses);
     }
 
     public List<LecturerDto> listLecturers() {
         List<Lecturer> lecturers = lecturerRepository.findAll();
         List<LecturerDto> lecturerDtos = new ArrayList<>();
         for (Lecturer lecturer : lecturers) {
-            lecturerDtos.add(mappingService.map(lecturer));
+            List<LecturerCanHoldCourseDto> canHold = getCoursesLecturerCanHold(lecturer.getId());
+            lecturerDtos.add(mappingService.map(lecturer, canHold));
         }
         return lecturerDtos;
     }
@@ -62,8 +63,7 @@ public class LecturerService {
         List<LecturerCanHoldCourse> coursesLecturerCanHold = lecturerRepository.findCoursesLecturerCanHold(lecturerId);
         List<LecturerCanHoldCourseDto> lecturerCanHoldCourseDtoList = new ArrayList<>();
         for (LecturerCanHoldCourse lchc : coursesLecturerCanHold) {
-            LecturerCanHoldCourseDto dto = mappingService.map(lchc, courseService.getCourseById(lchc.getCourseId()), getLecturerById(lecturerId));
-            lecturerCanHoldCourseDtoList.add(dto);
+            lecturerCanHoldCourseDtoList.add(mappingService.map(lchc));
         }
         return lecturerCanHoldCourseDtoList;
     }

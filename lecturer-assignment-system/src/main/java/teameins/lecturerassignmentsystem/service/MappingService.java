@@ -15,12 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MappingService {
 
-    private final CourseService courseService;
-    private final LecturerService lecturerService;
-
-    public LecturerDto map(Lecturer lecturer) {
-        List<LecturerCanHoldCourseDto> canHoldCourses = lecturerService.getCoursesLecturerCanHold(lecturer.getId());
-
+    public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
         return new LecturerDto(
                 lecturer.getId(),
                 lecturer.getTitle().getValue(),
@@ -35,9 +30,7 @@ public class MappingService {
         );
     }
 
-    public CourseDto map(Course course) {
-        List<LecturerCanHoldCourseDto> canBeHeldBy = courseService.getLecturersWhoCanHoldCourse(course.getId());
-
+    public CourseDto map(Course course, List<LecturerCanHoldCourseDto> canBeHeldBy) {
         return new CourseDto(
                 course.getId(),
                 course.getName(),
@@ -48,10 +41,10 @@ public class MappingService {
         );
     }
 
-    public LecturerCanHoldCourseDto map(LecturerCanHoldCourse lecturerCanHoldCourse, CourseDto course, LecturerDto lecturer) {
+    public LecturerCanHoldCourseDto map(LecturerCanHoldCourse lecturerCanHoldCourse) {
         return new LecturerCanHoldCourseDto(
-                lecturer,
-                course,
+                lecturerCanHoldCourse.getLecturer().getId(),
+                lecturerCanHoldCourse.getCourse().getId(),
                 lecturerCanHoldCourse.getAlreadyHeld(),
                 lecturerCanHoldCourse.getQualification(),
                 lecturerCanHoldCourse.isPriority()

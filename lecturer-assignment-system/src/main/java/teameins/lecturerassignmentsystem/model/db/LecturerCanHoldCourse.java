@@ -25,8 +25,13 @@ public class LecturerCanHoldCourse {
     @Enumerated(EnumType.STRING)
     private Qualification qualification;
 
-    private int courseId;
-    private int lecturerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecturer_id", nullable = false)
+    private Lecturer lecturer;
 
     private boolean priority;
 }

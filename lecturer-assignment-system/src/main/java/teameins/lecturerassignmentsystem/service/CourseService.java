@@ -16,19 +16,18 @@ import java.util.List;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final MappingService mappingService;
-    private final LecturerService lecturerService;
 
     public CourseDto getCourseById(int courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(RuntimeException::new);
-        return mappingService.map(course);
+        List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(courseId);
+        return mappingService.map(course, canBeHeldBy);
     }
 
     public List<LecturerCanHoldCourseDto> getLecturersWhoCanHoldCourse(int courseId) {
         List<LecturerCanHoldCourse> lecturersWhoCanHoldCourse = courseRepository.findLecturersWhoCanHoldCourse(courseId);
         List<LecturerCanHoldCourseDto> courseCanBeHeldyByLecturerDtoList = new ArrayList<>();
         for (LecturerCanHoldCourse lchc : lecturersWhoCanHoldCourse) {
-            LecturerCanHoldCourseDto dto = mappingService.map(lchc, getCourseById(courseId), lecturerService.getLecturerById(lchc.getLecturerId()));
-            courseCanBeHeldyByLecturerDtoList.add(dto);
+            courseCanBeHeldyByLecturerDtoList.add(mappingService.map(lchc));
         }
         return courseCanBeHeldyByLecturerDtoList;
     }

@@ -12,8 +12,8 @@ import teameins.lecturerassignmentsystem.model.enums.Qualification;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LecturerCanHoldCourseDto {
-    private LecturerDto lecturer;
-    private CourseDto course;
+    private Integer lecturerId;
+    private Integer courseId;
     private AlreadyHeld alreadyHeld;
     private Qualification qualification;
     private boolean priority;
