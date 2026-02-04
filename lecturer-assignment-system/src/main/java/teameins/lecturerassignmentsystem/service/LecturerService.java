@@ -28,4 +28,8 @@ public class LecturerService {
         Lecturer newLecturer = new Lecturer(lecturerDto, courseService);
         lecturerRepository.save(newLecturer);
     }
+
+    public void deleteLecturer(int lecturerId) {
+        lecturerRepository.deleteById(lecturerId);
+    }
 }
