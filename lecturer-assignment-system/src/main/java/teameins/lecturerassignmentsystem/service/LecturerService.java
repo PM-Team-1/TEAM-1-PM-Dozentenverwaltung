@@ -59,16 +59,16 @@ public class LecturerService {
         lecturerRepository.save(lecturer);
     }
 
-    public List<LecturerCanHoldCourseDto> getCoursesLecturerCanHold(int lecturerId) {
+    public void deleteLecturer(int lecturerId) {
+        lecturerRepository.deleteById(lecturerId);
+    }
+
+    private List<LecturerCanHoldCourseDto> getCoursesLecturerCanHold(int lecturerId) {
         List<LecturerCanHoldCourse> coursesLecturerCanHold = lecturerRepository.findCoursesLecturerCanHold(lecturerId);
         List<LecturerCanHoldCourseDto> lecturerCanHoldCourseDtoList = new ArrayList<>();
         for (LecturerCanHoldCourse lchc : coursesLecturerCanHold) {
             lecturerCanHoldCourseDtoList.add(mappingService.map(lchc));
         }
         return lecturerCanHoldCourseDtoList;
-    }
-
-    public void deleteLecturer(int lecturerId) {
-        lecturerRepository.deleteById(lecturerId);
     }
 }

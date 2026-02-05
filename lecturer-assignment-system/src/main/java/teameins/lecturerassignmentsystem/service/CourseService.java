@@ -23,7 +23,7 @@ public class CourseService {
         return mappingService.map(course, canBeHeldBy);
     }
 
-    public List<LecturerCanHoldCourseDto> getLecturersWhoCanHoldCourse(int courseId) {
+    private List<LecturerCanHoldCourseDto> getLecturersWhoCanHoldCourse(int courseId) {
         List<LecturerCanHoldCourse> lecturersWhoCanHoldCourse = courseRepository.findLecturersWhoCanHoldCourse(courseId);
         List<LecturerCanHoldCourseDto> courseCanBeHeldyByLecturerDtoList = new ArrayList<>();
         for (LecturerCanHoldCourse lchc : lecturersWhoCanHoldCourse) {

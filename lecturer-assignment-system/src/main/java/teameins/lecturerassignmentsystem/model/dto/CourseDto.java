@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CourseDto {
 
-    private Integer id;
+    private int id;
     private String name;
     private boolean isClosed;
     private boolean isMaster;

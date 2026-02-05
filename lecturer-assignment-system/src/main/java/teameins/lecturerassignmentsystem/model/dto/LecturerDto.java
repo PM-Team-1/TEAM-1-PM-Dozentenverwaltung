@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class LecturerDto {
 
-    private Integer id;
+    private int id;
     private String title;
     private String firstName;
     private String lastName;
