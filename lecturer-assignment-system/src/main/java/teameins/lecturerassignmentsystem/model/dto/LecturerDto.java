@@ -23,4 +23,10 @@ public class LecturerDto {
     private boolean isExtern;
     private String preference;
     private List<LecturerCanHoldCourseDto> canHoldCourses;
+
+    public String getFullName() {
+        String titlePart = this.getTitle() == null ? "" : this.getTitle() + " ";
+        String secondNamePart = this.getSecondName() == null ? "" : this.getSecondName() + " ";
+        return titlePart + this.getFirstName() + " " + secondNamePart + this.getLastName();
+    }
 }
