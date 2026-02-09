@@ -8,6 +8,7 @@ import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
+    private final LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
     private final MappingService mappingService;
 
     public LecturerDto getLecturerById(int lecturerId) {
@@ -59,8 +61,12 @@ public class LecturerService {
         lecturerRepository.save(lecturer);
     }
 
-    public void deleteLecturer(int lecturerId) {
-        lecturerRepository.deleteById(lecturerId);
+    public void deleteLecturer(LecturerDto lecturer) {
+        List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
+        for (LecturerCanHoldCourseDto lchc: canHoldCourses) {
+            lecturerCanHoldCourseRepository.deleteById(lchc.getId());
+        }
+        lecturerRepository.deleteById(lecturer.getId());
     }
 
     private List<LecturerCanHoldCourseDto> getCoursesLecturerCanHold(int lecturerId) {

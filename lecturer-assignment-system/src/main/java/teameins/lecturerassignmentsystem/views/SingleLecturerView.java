@@ -4,6 +4,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
@@ -28,6 +29,7 @@ import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
+import java.awt.*;
 import java.util.List;
 
 @Route("dozenten")
@@ -37,6 +39,8 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private final transient LecturerService lecturerService;
     private final transient CourseService courseService;
     private transient LecturerDto lecturer;
+
+    private static final String ALL_LECTURERS_VIEW_ROUTE = "dozenten";
 
     private boolean isInEditMode = false;
 
@@ -95,7 +99,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Div toolbar = new Div();
         toolbar.addClassName("toolbar");
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate("dozenten"));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
         toolbar.add(back);
         Button delete = new Button("Löschen", e -> deleteLecturer());
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
@@ -171,11 +175,11 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
         H3 heading = new H3("Vorlesungen, die " + lecturer.getFullName() +  " halten kann:");
 
-        canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name");
-        canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad");
-        canHoldgrid.addColumn(row -> row.getCourse().getSemester()).setHeader("Semester");
-        canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit");
-        canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getQualification()).setHeader("Qualifikation");
+        canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name").setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad").setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().getSemester()).setHeader("Semester").setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit").setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit").setAutoWidth(true).setFlexGrow(1);
 
         canHoldgrid.setItems(rows);
         coursesDiv.add(heading, canHoldgrid);
@@ -190,10 +194,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         alredyHeldGrid.addClassName("grid-custom");
         alredyHeldGrid.setAllRowsVisible(true);
 
-        alredyHeldGrid.addColumn(row -> row.getCourse().getName()).setHeader("Name");
-        alredyHeldGrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad");
+        alredyHeldGrid.addColumn(row -> row.getCourse().getName()).setHeader("Name").setAutoWidth(true).setFlexGrow(1);
+        alredyHeldGrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad").setAutoWidth(true).setFlexGrow(1);
         alredyHeldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld()))
-            .setHeader("Gehalten an");
+            .setHeader("Gehalten an").setAutoWidth(true).setFlexGrow(1);
 
         alredyHeldGrid.setItems(rows);
         GridListDataView<CourseToLecturerRelation> dataView = alredyHeldGrid.getListDataView();
@@ -216,7 +220,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
         Paragraph desc = new Paragraph(details);
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate("dozenten"));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
 
         add(header, desc, back);
     }
@@ -230,6 +234,16 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         };
     }
 
+    private String mapQualification(String code) {
+        if (code == null || code.isEmpty()) return "-";
+        return switch (code.trim().toUpperCase()) {
+            case "M" -> "Über vier Wochen";
+            case "S" -> "Keine";
+            case "4" -> "vier Wochen";
+            default -> code;
+        };
+    }
+
     private void toggleEditMode() {
         isInEditMode = !isInEditMode;
         removeAll();
@@ -237,7 +251,26 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     }
 
     private void deleteLecturer() {
-        // Implement delete functionality here
+        Dialog confirmDelete = new Dialog();
+        confirmDelete.add(new H3("Möchten Sie " + lecturer.getFullName() +  " tatsächlich aus dem Verwaltungssystem löschen?"));
+        confirmDelete.addClassName("dialog");
+
+        Div deleteOrCancel = new Div();
+        deleteOrCancel.setClassName("toolbar");
+        deleteOrCancel.getStyle().setMarginTop("var(--lumo-space-l)");
+
+        Button confirmButton = new Button("Löschen", e -> {
+            lecturerService.deleteLecturer(lecturer);
+            confirmDelete.close();
+            UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE);
+        });
+        confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+
+        Button cancelButton = new Button("Abbrechen", e -> confirmDelete.close());
+
+        deleteOrCancel.add(confirmButton, cancelButton);
+        confirmDelete.add(deleteOrCancel);
+        confirmDelete.open();
     }
 
     private void saveEdits() {

@@ -67,10 +67,10 @@ public class AllLecturersView extends VerticalLayout {
         grid.addClassName("grid-custom");
         grid.setAllRowsVisible(true);
 
-        grid.addColumn(LecturerDto::getFullName).setHeader("Name");
-        grid.addColumn(lecturer -> lecturer.isExtern() ? "Extern" : "Intern").setHeader("Status");
-        grid.addColumn(LecturerDto::getEmail).setHeader("E-Mail");
-        grid.addColumn(LecturerDto::getPhone).setHeader("Telefon");
+        grid.addColumn(LecturerDto::getFullName).setHeader("Name").setAutoWidth(true).setFlexGrow(1);
+        grid.addColumn(lecturer -> lecturer.isExtern() ? "Extern" : "Intern").setHeader("Status").setAutoWidth(true).setFlexGrow(1);
+        grid.addColumn(LecturerDto::getEmail).setHeader("E-Mail").setAutoWidth(true).setFlexGrow(1);
+        grid.addColumn(LecturerDto::getPhone).setHeader("Telefon").setAutoWidth(true).setFlexGrow(1);
         grid.addComponentColumn(lecturer -> {
             Button lecturerButton = new Button("Details");
             lecturerButton.addClickListener(e -> {
