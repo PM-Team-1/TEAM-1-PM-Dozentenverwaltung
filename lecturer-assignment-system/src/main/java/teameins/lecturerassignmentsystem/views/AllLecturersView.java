@@ -80,6 +80,13 @@ public class AllLecturersView extends VerticalLayout {
             return lecturerButton;
         }).setWidth("150px").setFlexGrow(0);
 
+        grid.addItemDoubleClickListener(event -> {
+            LecturerDto item = event.getItem();
+            if (item != null && item.getId() != 0) {
+                UI.getCurrent().navigate("dozenten/" + item.getId());
+            }
+        });
+
         grid.setItems(lecturerService.listLecturers());
         return grid;
     }

@@ -3,6 +3,7 @@ package teameins.lecturerassignmentsystem.views;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
@@ -35,6 +36,9 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private final transient LecturerService lecturerService;
     private final transient CourseService courseService;
+    private transient LecturerDto lecturer;
+
+    private boolean isInEditMode = false;
 
     @Autowired
     public SingleLecturerView(LecturerService lecturerService, CourseService courseService) {
@@ -46,7 +50,8 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     public void setParameter(BeforeEvent event, String parameter) {
         try {
             int id = Integer.parseInt(parameter);
-            renderSingleLecturer(id);
+            lecturer = lecturerService.getLecturerById(id);
+            renderSingleLecturer(isInEditMode);
         } catch (NumberFormatException ex) {
             renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
         } catch (RuntimeException ex) {
@@ -54,71 +59,110 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         }
     }
 
-    private void renderSingleLecturer(int id) {
-        LecturerDto lecturer = lecturerService.getLecturerById(id);
-
+    private void renderSingleLecturer(boolean isInEditMode) {
         H2 heading = new H2(lecturer.getFullName());
 
         VerticalLayout lecturerInfo = new VerticalLayout();
-        lecturerInfo.setPadding(false);
-        Div toolbar = getToolbar(lecturer);
-        VerticalLayout info = getLecturerInfo(lecturer);
+        lecturerInfo.getStyle().set("flex", "0 0 auto");
+        lecturerInfo.getStyle().set("width", "auto");
+
+        Div toolbar = getToolbar();
+        VerticalLayout info = getLecturerInfo(isInEditMode);
         lecturerInfo.add(toolbar, info);
 
         VerticalLayout courses = new VerticalLayout();
-        courses.setPadding(false);
+        courses.getStyle().set("flex", "1 1 auto");
+        courses.setWidthFull();
+
         List<CourseToLecturerRelation> ctlr = lecturer.getCanHoldCourses().stream()
                 .map(lchc -> new CourseToLecturerRelation(lchc, courseService))
                 .toList();
-        Div coursesLecturerCanHold = renderCoursesLecturerCanHold(lecturer, ctlr);
+        Div coursesLecturerCanHold = renderCoursesLecturerCanHold(ctlr);
         Div coursesLecturerHasHeld = renderCoursesLecturerHasHeld(ctlr);
         coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-l)");
         courses.add(coursesLecturerCanHold, coursesLecturerHasHeld);
 
         HorizontalLayout singleLecturer = new HorizontalLayout(lecturerInfo, courses);
         singleLecturer.setWidthFull();
+        singleLecturer.setSpacing(true);
+        singleLecturer.setFlexGrow(0, lecturerInfo);
+        singleLecturer.setFlexGrow(1, courses);
 
         add(heading, singleLecturer);
     }
 
-    private Div getToolbar(LecturerDto lecturer) {
+    private Div getToolbar() {
         Div toolbar = new Div();
         toolbar.addClassName("toolbar");
 
         Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate("dozenten"));
-        Button edit = new Button("Bearbeiten", e -> {
-            // Implement edit functionality here
-        });
-        edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
-        Button delete = new Button("Löschen", e -> {
-            // Implement delete functionality here
-        });
+        toolbar.add(back);
+        Button delete = new Button("Löschen", e -> deleteLecturer());
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
-        toolbar.add(back, edit, delete);
+        if (!isInEditMode) {
+            Button edit = new Button("Bearbeiten", e -> toggleEditMode());
+            edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+
+            toolbar.add(edit, delete);
+        } else {
+            Button save = new Button("Speichern", e -> {
+                saveEdits();
+                toggleEditMode();
+            });
+            save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+
+            Button cancel = new Button("Abbrechen", e -> toggleEditMode());
+            cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+            toolbar.add(save, cancel);
+        }
 
         return toolbar;
     }
 
-    private VerticalLayout getLecturerInfo(LecturerDto lecturer) {
+    private VerticalLayout getLecturerInfo(boolean edit) {
         VerticalLayout info = new VerticalLayout();
-        info.setWidthFull();
         info.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        TextField title = new TextField("Titel", lecturer.getTitle());
-        TextField firstName = new TextField("Vorname", lecturer.getFirstName());
-        TextField lastName = new TextField("Nachname", lecturer.getLastName());
-        TextField secondName = new TextField("2. Vorname", lecturer.getSecondName());
-        TextField status = new TextField("Status", lecturer.isExtern() ? "Extern" : "Intern");
-        TextField email = new TextField("E-Mail", lecturer.getEmail());
-        TextField phone = new TextField("Telefonnummer", lecturer.getPhone());
+        ComboBox<String> title = new ComboBox<>("Titel");
+        title.setItems("Dr.", "Prof.", "Keine Angabe");
+        title.setValue(lecturer.getTitle().isEmpty() ? "Keine Angabe" : lecturer.getTitle());
+        title.setReadOnly(!edit);
+        title.setWidthFull();
 
-        info.add(title, firstName, lastName, secondName, status, email, phone);
+        TextField lastName = new TextField("Nachname", lecturer.getLastName(), "Nachname");
+        lastName.setReadOnly(!edit);
+        lastName.setWidthFull();
+
+        TextField firstName = new TextField("Vorname", lecturer.getFirstName(), "Vorname");
+        firstName.setReadOnly(!edit);
+        firstName.setWidthFull();
+
+        TextField secondName = new TextField("2. Vorname", lecturer.getSecondName() != null ? lecturer.getSecondName() : "", "2. Vorname");
+        secondName.setReadOnly(!edit);
+        secondName.setWidthFull();
+
+        ComboBox<String> status = new ComboBox<>("Status");
+        status.setItems("Intern", "Extern");
+        status.setValue(lecturer.isExtern() ? "Extern" : "Intern");
+        status.setReadOnly(!edit);
+        status.setWidthFull();
+
+        TextField email = new TextField("E-Mail", lecturer.getEmail(), "E-Mail");
+        email.setReadOnly(!edit);
+        email.setWidthFull();
+
+        TextField phone = new TextField("Telefonnummer", lecturer.getPhone(), "Telefonnummer");
+        phone.setReadOnly(!edit);
+        phone.setWidthFull();
+
+        info.add(title, lastName, firstName, secondName, status, email, phone);
 
         return info;
     }
 
-    private Div renderCoursesLecturerCanHold(LecturerDto lecturer, List<CourseToLecturerRelation> rows) {
+    private Div renderCoursesLecturerCanHold(List<CourseToLecturerRelation> rows) {
         Div coursesDiv = new Div();
         coursesDiv.setWidthFull();
         Grid<CourseToLecturerRelation> canHoldgrid = new Grid<>();
@@ -184,6 +228,20 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             case "A" -> "Andere Hochschule";
             default -> code;
         };
+    }
+
+    private void toggleEditMode() {
+        isInEditMode = !isInEditMode;
+        removeAll();
+        renderSingleLecturer(isInEditMode);
+    }
+
+    private void deleteLecturer() {
+        // Implement delete functionality here
+    }
+
+    private void saveEdits() {
+        // Implement save functionality here
     }
 
     @Getter
