@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LecturerCanHoldCourseDto {
+    private int id;
     private int lecturerId;
     private int courseId;
     private String alreadyHeld;

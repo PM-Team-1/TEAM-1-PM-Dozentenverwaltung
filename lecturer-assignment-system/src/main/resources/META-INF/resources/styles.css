@@ -16,6 +16,7 @@
     display: block;
     max-width: 100%;
     overflow-x: auto;
+    gap: var(--lumo-space-m);
 }
 
 .sidebar-custom {

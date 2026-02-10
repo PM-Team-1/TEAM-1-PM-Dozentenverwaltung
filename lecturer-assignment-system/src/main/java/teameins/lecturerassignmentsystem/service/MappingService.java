@@ -47,6 +47,7 @@ public class MappingService {
 
     public LecturerCanHoldCourseDto map(LecturerCanHoldCourse lecturerCanHoldCourse) {
         return new LecturerCanHoldCourseDto(
+                lecturerCanHoldCourse.getId(),
                 lecturerCanHoldCourse.getLecturer().getId(),
                 lecturerCanHoldCourse.getCourse().getId(),
                 lecturerCanHoldCourse.getAlreadyHeld().getValue(),
@@ -57,6 +58,7 @@ public class MappingService {
 
     public Lecturer map(LecturerDto dto) {
         Lecturer entity = new Lecturer();
+        entity.setId(dto.getId());
         if (dto.getId() > 0) {
             entity.setId(dto.getId());
         }
