@@ -174,12 +174,23 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.setAllRowsVisible(true);
 
         H3 heading = new H3("Vorlesungen, die " + lecturer.getFullName() +  " halten kann:");
+        heading.getStyle().setMarginBottom("var(--lumo-space-m)");
 
-        canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name").setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad").setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> row.getCourse().getSemester()).setHeader("Semester").setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit").setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit").setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().getSemester()).setHeader("Semester")
+                .setSortable(true).setComparator(CourseToLecturerRelation::getSemesterSortable)
+                .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
 
         canHoldgrid.setItems(rows);
         coursesDiv.add(heading, canHoldgrid);
@@ -190,14 +201,21 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Div coursesDiv = new Div();
         coursesDiv.setWidthFull();
         H3 heading = new H3("Bereits Gehaltene Vorlesungen:");
+        heading.getStyle().setMarginBottom("var(--lumo-space-m)");
+
         Grid<CourseToLecturerRelation> alredyHeldGrid = new Grid<>();
         alredyHeldGrid.addClassName("grid-custom");
         alredyHeldGrid.setAllRowsVisible(true);
 
-        alredyHeldGrid.addColumn(row -> row.getCourse().getName()).setHeader("Name").setAutoWidth(true).setFlexGrow(1);
-        alredyHeldGrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad").setAutoWidth(true).setFlexGrow(1);
-        alredyHeldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld()))
-            .setHeader("Gehalten an").setAutoWidth(true).setFlexGrow(1);
+        alredyHeldGrid.addColumn(row -> row.getCourse().getName()).setHeader("Name")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        alredyHeldGrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        alredyHeldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld())).setHeader("Gehalten an")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
 
         alredyHeldGrid.setItems(rows);
         GridListDataView<CourseToLecturerRelation> dataView = alredyHeldGrid.getListDataView();
@@ -288,6 +306,16 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             this.courseService = courseService;
             this.lecturerCanHoldCourse = lecturerCanHoldCourse;
             this.course = courseService.getCourseById(lecturerCanHoldCourse.getCourseId());
+        }
+
+        public String getSemesterSortable() {
+            String semester = this.getCourse().getSemester();
+            String yearPart = semester.replaceAll("\\D", "");
+            if (yearPart.contains("/")) {
+                yearPart = yearPart.split("/")[0];
+            }
+            String termPart = semester.toLowerCase().contains("winter") ? "1" : "2";
+            return yearPart + termPart;
         }
     }
 }
