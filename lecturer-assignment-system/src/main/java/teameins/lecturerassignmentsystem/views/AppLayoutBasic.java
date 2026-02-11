@@ -13,6 +13,9 @@ public class AppLayoutBasic extends AppLayout {
 
     public AppLayoutBasic() {
 
+        Image provadis_logo = new Image("images/provadis.svg", "Provadis");
+        provadis_logo.setHeight("40px");
+
         H1 title = new H1("Dozentenverwaltungssystem");
         title.addClassName("h1-custom");
 
@@ -21,6 +24,7 @@ public class AppLayoutBasic extends AppLayout {
         Scroller scroller = new Scroller(nav);
 
         addToDrawer(scroller);
+        addToNavbar(logo);
         addToNavbar(title);
     }
 
