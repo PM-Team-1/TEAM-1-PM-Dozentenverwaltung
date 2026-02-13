@@ -26,6 +26,7 @@ import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
+import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
@@ -58,8 +59,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             renderSingleLecturer(isInEditMode);
         } catch (NumberFormatException ex) {
             renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
-        } catch (RuntimeException ex) {
-            renderLecturerNotFoundError("Dozent nicht gefunden", "Es konnte kein Dozent mit der ID " + parameter + " gefunden werden.");
+        } catch (LecturerNotFoundException ex) {
+            renderLecturerNotFoundError("Dozent nicht gefunden", ex.getMessage());
+        } catch (Exception ex) {
+            renderLecturerNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
         }
     }
 
