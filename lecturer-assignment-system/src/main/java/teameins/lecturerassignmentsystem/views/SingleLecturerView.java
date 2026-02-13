@@ -16,10 +16,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
@@ -30,10 +27,9 @@ import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundExcepti
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
-import java.awt.*;
 import java.util.List;
 
-@Route("dozenten")
+@Route("dozenteninfo")
 @PageTitle("Dozent")
 public class SingleLecturerView extends VerticalLayout implements HasUrlParameter<String> {
 
@@ -52,17 +48,22 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     }
 
     @Override
-    public void setParameter(BeforeEvent event, String parameter) {
-        try {
-            int id = Integer.parseInt(parameter);
-            lecturer = lecturerService.getLecturerById(id);
-            renderSingleLecturer(isInEditMode);
-        } catch (NumberFormatException ex) {
-            renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
-        } catch (LecturerNotFoundException ex) {
-            renderLecturerNotFoundError("Dozent nicht gefunden", ex.getMessage());
-        } catch (Exception ex) {
-            renderLecturerNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+
+        if (parameter == null || parameter.isBlank()) {
+            lecturer = new LecturerDto();
+        } else {
+            try {
+                int id = Integer.parseInt(parameter);
+                lecturer = lecturerService.getLecturerById(id);
+                renderSingleLecturer(isInEditMode);
+            } catch (NumberFormatException ex) {
+                renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
+            } catch (LecturerNotFoundException ex) {
+                renderLecturerNotFoundError("Dozent nicht gefunden", ex.getMessage());
+            } catch (Exception ex) {
+                renderLecturerNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
+            }
         }
     }
 
@@ -176,7 +177,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addClassName("grid-custom");
         canHoldgrid.setAllRowsVisible(true);
 
-        H3 heading = new H3("Vorlesungen, die " + lecturer.getFullName() +  " halten kann:");
+        H3 heading = new H3("Vorlesungen, die " + lecturer.getFullName() + " halten kann:");
         heading.getStyle().setMarginBottom("var(--lumo-space-m)");
 
         canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name")
@@ -273,7 +274,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void deleteLecturer() {
         Dialog confirmDelete = new Dialog();
-        confirmDelete.add(new H3("Möchten Sie " + lecturer.getFullName() +  " tatsächlich aus dem Verwaltungssystem löschen?"));
+        confirmDelete.add(new H3("Möchten Sie " + lecturer.getFullName() + " tatsächlich aus dem Verwaltungssystem löschen?"));
         confirmDelete.addClassName("dialog");
 
         Div deleteOrCancel = new Div();

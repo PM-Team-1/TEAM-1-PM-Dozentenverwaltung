@@ -46,9 +46,7 @@ public class AllLecturersView extends VerticalLayout {
         toolbar.addClassName("toolbar");
 
         Button addLecturerButton = new Button("Dozenten hinzufügen");
-        addLecturerButton.addClickListener(e -> {
-            // Implement create lecturer functionality here
-        });
+        addLecturerButton.addClickListener(e -> UI.getCurrent().navigate("dozenteninfo"));
 
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suche");
@@ -82,7 +80,7 @@ public class AllLecturersView extends VerticalLayout {
             Button lecturerButton = new Button("Details");
             lecturerButton.addClickListener(e -> {
                 int id = lecturer.getId();
-                UI.getCurrent().navigate("dozenten/" + id);
+                UI.getCurrent().navigate("dozenteninfo/" + id);
             });
             return lecturerButton;
         }).setWidth("150px").setFlexGrow(0);
