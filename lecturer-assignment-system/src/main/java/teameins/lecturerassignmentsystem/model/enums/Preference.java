@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
+import java.util.Arrays;
+
 public enum Preference {
     ALLES("A"),
     ONLY_MASTER("XM"),
@@ -17,4 +19,9 @@ public enum Preference {
         return value;
     }
 
+    public static boolean validate(String name) {
+        return Arrays.stream(Preference.values())
+                .map(Preference::getValue)
+                .anyMatch(value -> value.equals(name));
+    }
 }

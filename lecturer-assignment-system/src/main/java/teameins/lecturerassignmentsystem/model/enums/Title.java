@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
+import java.util.Arrays;
+
 public enum Title {
     DOCTOR("Dr."),
     PROFESSOR("Prof."),
@@ -13,5 +15,11 @@ public enum Title {
 
     public String getValue() {
         return value;
+    }
+
+    public static boolean validate(String name) {
+        return Arrays.stream(Preference.values())
+                .map(Preference::getValue)
+                .anyMatch(value -> value.equals(name));
     }
 }
