@@ -8,6 +8,8 @@ import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 
+import java.util.Arrays;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +21,7 @@ public class LecturerCanHoldCourseDto {
     private String qualification;
     private boolean priority;
 
-    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, boolean priority) {
+    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, boolean priority) throws IllegalArgumentException {
         setId(id);
         setLecturerId(lecturerId);
         setCourseId(courseId);
@@ -41,11 +43,11 @@ public class LecturerCanHoldCourseDto {
         return Qualification.validate(qualification);
     }
 
-    public void setQualification(String qualification) {
+    public void setQualification(String qualification) throws IllegalArgumentException{
         if (validateQualification(qualification)) {
             this.qualification = qualification;
         } else {
-            throw new IllegalArgumentException("Invalid qualification: " + qualification);
+            throw new IllegalArgumentException("Die Qualifikation ist ungültig: " + qualification + ". Gültige Werte sind: " + Arrays.toString(Qualification.getValidValues()));
         }
     }
 
@@ -53,11 +55,11 @@ public class LecturerCanHoldCourseDto {
         return AlreadyHeld.validate(alreadyHeld);
     }
 
-    public void setAlreadyHeld(String alreadyHeld) {
+    public void setAlreadyHeld(String alreadyHeld) throws IllegalArgumentException {
         if (validateAlreadyHeld(alreadyHeld)) {
             this.alreadyHeld = alreadyHeld;
         } else {
-            throw new IllegalArgumentException("Invalid already held value: " + alreadyHeld);
+            throw new IllegalArgumentException("Die Angabe, ob der Kurs bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
         }
     }
 }

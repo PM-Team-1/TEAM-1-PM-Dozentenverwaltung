@@ -22,4 +22,10 @@ public enum Qualification {
                 .map(Preference::getValue)
                 .anyMatch(value -> value.equals(name));
     }
+
+    public static String[] getValidValues() {
+        return Arrays.stream(AlreadyHeld.values())
+                .map(AlreadyHeld::getValue)
+                .toArray(String[]::new);
+    }
 }

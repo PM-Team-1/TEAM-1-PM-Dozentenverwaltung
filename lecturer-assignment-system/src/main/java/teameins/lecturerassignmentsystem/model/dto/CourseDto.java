@@ -19,7 +19,7 @@ public class CourseDto {
     private String semester;
     private List<LecturerCanHoldCourseDto> canBeHeldBy;
 
-    public CourseDto(int id, String name, boolean isClosed, boolean isMaster, String semester, List<LecturerCanHoldCourseDto> canBeHeldBy) {
+    public CourseDto(int id, String name, boolean isClosed, boolean isMaster, String semester, List<LecturerCanHoldCourseDto> canBeHeldBy) throws IllegalArgumentException {
         setId(id);
         setName(name);
         setClosed(isClosed);
@@ -41,11 +41,11 @@ public class CourseDto {
         return name != null && !name.isEmpty();
     }
 
-    public void setName(String name) {
+    public void setName(String name) throws IllegalArgumentException {
         if (validateName(name)) {
             this.name = name;
         } else {
-            throw new IllegalArgumentException("Invalid course name: " + name);
+            throw new IllegalArgumentException("Der Name des Kurses darf nicht leer sein.");
         }
     }
 
@@ -53,11 +53,11 @@ public class CourseDto {
         return semester != null && !semester.isEmpty();
     }
 
-    public void setSemester(String semester) {
+    public void setSemester(String semester) throws IllegalArgumentException {
         if (validateSemester(semester)) {
             this.semester = semester;
         } else {
-            throw new IllegalArgumentException("Invalid semester: " + semester);
+            throw new IllegalArgumentException("Das Semester des Kurses darf nicht leer sein.");
         }
     }
 }

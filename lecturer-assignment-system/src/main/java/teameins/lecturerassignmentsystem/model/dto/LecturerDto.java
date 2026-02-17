@@ -26,7 +26,7 @@ public class LecturerDto {
     private String preference;
     private List<LecturerCanHoldCourseDto> canHoldCourses;
 
-    public LecturerDto(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String preference, List<LecturerCanHoldCourseDto> canHoldCourses) {
+    public LecturerDto(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String preference, List<LecturerCanHoldCourseDto> canHoldCourses) throws IllegalArgumentException {
         setId(id);
         setTitle(title);
         setFirstName(firstName);
@@ -43,7 +43,6 @@ public class LecturerDto {
         return validateTitle(lecturer.getTitle()) &&
                validateFirstName(lecturer.getFirstName()) &&
                validateLastName(lecturer.getLastName()) &&
-               validateSecondName(lecturer.getSecondName()) &&
                validateEmail(lecturer.getEmail()) &&
                validatePhone(lecturer.getPhone()) &&
                validatePreference(lecturer.getPreference());
@@ -63,11 +62,11 @@ public class LecturerDto {
         return Title.validate(title);
     }
 
-    public void setTitle(String title) {
+    public void setTitle(String title) throws IllegalArgumentException {
         if (validateTitle(title)) {
             this.title = title;
         } else {
-            throw new IllegalArgumentException("Invalid title: " + title);
+            throw new IllegalArgumentException("Der Titel ist ungültig: " + title + ". Gültige Werte sind: " + Arrays.toString(Title.getValidValues()));
         }
     }
 
@@ -75,11 +74,11 @@ public class LecturerDto {
         return firstName != null && !firstName.isEmpty();
     }
 
-    public void setFirstName(String firstName) {
+    public void setFirstName(String firstName) throws IllegalArgumentException {
         if (validateFirstName(firstName)) {
             this.firstName = firstName;
         } else {
-            throw new IllegalArgumentException("Invalid first name: " + firstName);
+            throw new IllegalArgumentException("Der Vorname darf nicht leer sein.");
         }
     }
 
@@ -87,23 +86,11 @@ public class LecturerDto {
         return lastName != null && !lastName.isEmpty();
     }
 
-    public void setLastName(String lastName) {
+    public void setLastName(String lastName) throws IllegalArgumentException {
         if (validateLastName(lastName)) {
             this.lastName = lastName;
         } else {
-            throw new IllegalArgumentException("Invalid last name: " + lastName);
-        }
-    }
-
-    public static boolean validateSecondName(String secondName) {
-        return secondName == null || !secondName.isEmpty();
-    }
-
-    public void setSecondName(String secondName) {
-        if (validateSecondName(secondName)) {
-            this.secondName = secondName;
-        } else {
-            throw new IllegalArgumentException("Invalid second name: " + secondName);
+            throw new IllegalArgumentException("Der Nachname darf nicht leer sein.");
         }
     }
 
@@ -111,11 +98,11 @@ public class LecturerDto {
         return email != null && email.contains("@");
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email) throws IllegalArgumentException {
         if (validateEmail(email)) {
             this.email = email;
         } else {
-            throw new IllegalArgumentException("Invalid email: " + email);
+            throw new IllegalArgumentException("Die E-Mail Adresse muss ein @ enthalten.");
         }
     }
 
@@ -123,11 +110,11 @@ public class LecturerDto {
         return phone != null && phone.matches("\\+?[0-9]+");
     }
 
-    public void setPhone(String phone) {
+    public void setPhone(String phone) throws IllegalArgumentException {
         if (validatePhone(phone)) {
             this.phone = phone;
         } else {
-            throw new IllegalArgumentException("Invalid phone number: " + phone);
+            throw new IllegalArgumentException("Die Telefonnummer darf nur Ziffern und optional ein führendes + enthalten.");
         }
     }
 
@@ -135,11 +122,11 @@ public class LecturerDto {
         return Preference.validate(preference);
     }
 
-    public void setPreference(String preference) {
+    public void setPreference(String preference) throws IllegalArgumentException {
         if (validatePreference(preference)) {
             this.preference = preference;
         } else {
-            throw new IllegalArgumentException("Invalid preference: " + preference);
+            throw new IllegalArgumentException("Die Präferenz ist ungültig: " + preference + ". Gültige Werte sind: " + Arrays.toString(Preference.getValidValues()));
         }
     }
 }
