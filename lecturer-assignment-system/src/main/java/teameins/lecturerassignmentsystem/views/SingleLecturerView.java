@@ -48,7 +48,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     }
 
     @Override
-    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event, String parameter) {
         try {
             int id = Integer.parseInt(parameter);
             lecturer = lecturerService.getLecturerById(id);

@@ -107,7 +107,7 @@ public class LecturerDto {
     }
 
     public static boolean validatePhone(String phone) {
-        return phone != null && phone.matches("\\+?[0-9]+");
+        return phone != null && phone.matches("\\+?[0-9\\-]+");
     }
 
     public void setPhone(String phone) throws IllegalArgumentException {
