@@ -18,8 +18,8 @@ public enum AlreadyHeld {
     }
 
     public static boolean validate(String name) {
-        return Arrays.stream(Preference.values())
-                .map(Preference::getValue)
+        return Arrays.stream(AlreadyHeld.values())
+                .map(AlreadyHeld::getValue)
                 .anyMatch(value -> value.equals(name));
     }
 

@@ -18,14 +18,14 @@ public enum Title {
     }
 
     public static boolean validate(String name) {
-        return Arrays.stream(Preference.values())
-                .map(Preference::getValue)
+        return Arrays.stream(Title.values())
+                .map(Title::getValue)
                 .anyMatch(value -> value.equals(name));
     }
 
     public static String[] getValidValues() {
-        return Arrays.stream(AlreadyHeld.values())
-                .map(AlreadyHeld::getValue)
+        return Arrays.stream(Title.values())
+                .map(Title::getValue)
                 .toArray(String[]::new);
     }
 }

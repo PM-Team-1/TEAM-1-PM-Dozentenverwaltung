@@ -26,8 +26,8 @@ public enum Preference {
     }
 
     public static String[] getValidValues() {
-        return Arrays.stream(AlreadyHeld.values())
-                .map(AlreadyHeld::getValue)
+        return Arrays.stream(Preference.values())
+                .map(Preference::getValue)
                 .toArray(String[]::new);
     }
 }

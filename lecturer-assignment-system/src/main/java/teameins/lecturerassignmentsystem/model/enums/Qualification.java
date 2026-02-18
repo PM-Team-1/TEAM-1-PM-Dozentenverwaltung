@@ -18,14 +18,14 @@ public enum Qualification {
     }
 
     public static boolean validate(String name) {
-        return Arrays.stream(Preference.values())
-                .map(Preference::getValue)
+        return Arrays.stream(Qualification.values())
+                .map(Qualification::getValue)
                 .anyMatch(value -> value.equals(name));
     }
 
     public static String[] getValidValues() {
-        return Arrays.stream(AlreadyHeld.values())
-                .map(AlreadyHeld::getValue)
+        return Arrays.stream(Qualification.values())
+                .map(Qualification::getValue)
                 .toArray(String[]::new);
     }
 }
