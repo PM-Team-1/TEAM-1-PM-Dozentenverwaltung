@@ -80,7 +80,7 @@ public class AllLecturersView extends VerticalLayout {
             Button lecturerButton = new Button("Details");
             lecturerButton.addClickListener(e -> {
                 int id = lecturer.getId();
-                UI.getCurrent().navigate("dozenteninfo/" + id);
+                UI.getCurrent().navigate("dozenten/" + id);
             });
             return lecturerButton;
         }).setWidth("150px").setFlexGrow(0);
