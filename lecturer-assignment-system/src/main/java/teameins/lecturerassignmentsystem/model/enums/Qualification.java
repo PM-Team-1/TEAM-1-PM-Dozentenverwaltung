@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
+import java.util.Arrays;
+
 public enum Qualification {
     IMMEDIATELY("S"),
     FOUR_WEEKS("4"),
@@ -13,5 +15,17 @@ public enum Qualification {
 
     public String getValue() {
         return value;
+    }
+
+    public static boolean validate(String name) {
+        return Arrays.stream(Qualification.values())
+                .map(Qualification::getValue)
+                .anyMatch(value -> value.equals(name));
+    }
+
+    public static String[] getValidValues() {
+        return Arrays.stream(Qualification.values())
+                .map(Qualification::getValue)
+                .toArray(String[]::new);
     }
 }

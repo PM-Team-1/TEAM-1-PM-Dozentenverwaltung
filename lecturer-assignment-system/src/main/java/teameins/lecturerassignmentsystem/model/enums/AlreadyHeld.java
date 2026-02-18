@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
+import java.util.Arrays;
+
 public enum AlreadyHeld {
     PROVADIS("P"),
     OTHER_SCHOOL("A"),
@@ -13,5 +15,17 @@ public enum AlreadyHeld {
 
     public String getValue() {
         return value;
+    }
+
+    public static boolean validate(String name) {
+        return Arrays.stream(AlreadyHeld.values())
+                .map(AlreadyHeld::getValue)
+                .anyMatch(value -> value.equals(name));
+    }
+
+    public static String[] getValidValues() {
+        return Arrays.stream(AlreadyHeld.values())
+                .map(AlreadyHeld::getValue)
+                .toArray(String[]::new);
     }
 }
