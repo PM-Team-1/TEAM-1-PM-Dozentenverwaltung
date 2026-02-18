@@ -29,7 +29,7 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 
 import java.util.List;
 
-@Route("dozenteninfo")
+@Route("dozenten")
 @PageTitle("Dozent")
 public class SingleLecturerView extends VerticalLayout implements HasUrlParameter<String> {
 
@@ -49,21 +49,16 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
-
-        if (parameter == null || parameter.isBlank()) {
-            lecturer = new LecturerDto();
-        } else {
-            try {
-                int id = Integer.parseInt(parameter);
-                lecturer = lecturerService.getLecturerById(id);
-                renderSingleLecturer(isInEditMode);
-            } catch (NumberFormatException ex) {
-                renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
-            } catch (LecturerNotFoundException ex) {
-                renderLecturerNotFoundError("Dozent nicht gefunden", ex.getMessage());
-            } catch (Exception ex) {
-                renderLecturerNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
-            }
+        try {
+            int id = Integer.parseInt(parameter);
+            lecturer = lecturerService.getLecturerById(id);
+            renderSingleLecturer(isInEditMode);
+        } catch (NumberFormatException ex) {
+            renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
+        } catch (LecturerNotFoundException ex) {
+            renderLecturerNotFoundError("Dozent nicht gefunden", ex.getMessage());
+        } catch (Exception ex) {
+            renderLecturerNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
         }
     }
 
