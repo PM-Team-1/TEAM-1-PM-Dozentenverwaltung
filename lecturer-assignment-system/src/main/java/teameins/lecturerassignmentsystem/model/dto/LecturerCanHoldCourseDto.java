@@ -1,11 +1,9 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 
 import java.util.Arrays;
