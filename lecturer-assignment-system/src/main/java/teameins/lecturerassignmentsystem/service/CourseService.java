@@ -6,7 +6,6 @@ import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
-import teameins.lecturerassignmentsystem.model.exception.InvalidCourseException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 
@@ -37,19 +36,11 @@ public class CourseService {
     }
 
     public CourseDto createCourse(CourseDto courseDto) {
-        String validationResult = validateCourse(courseDto);
-        if (validationResult != null) {
-            throw new InvalidCourseException(validationResult);
-        }
         int id = courseRepository.save(mappingService.map(courseDto)).getId();
         return getCourseById(id);
     }
 
     public CourseDto updateCourse(CourseDto courseDto) {
-        String validationResult = validateCourse(courseDto);
-        if (validationResult != null) {
-            throw new InvalidCourseException(validationResult);
-        }
         courseRepository.save(mappingService.map(courseDto));
         return getCourseById(courseDto.getId());
     }
@@ -69,10 +60,5 @@ public class CourseService {
             courseCanBeHeldyByLecturerDtoList.add(mappingService.map(lchc));
         }
         return courseCanBeHeldyByLecturerDtoList;
-    }
-
-    private String validateCourse(CourseDto courseDto) {
-        //TODO: Validation eines Kurses implementieren, wenn der Kurs invalide ist, soll der Grund zurückgegeben werden, sonst null
-        return null;
     }
 }

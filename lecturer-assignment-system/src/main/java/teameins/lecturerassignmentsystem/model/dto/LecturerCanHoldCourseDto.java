@@ -59,7 +59,7 @@ public class LecturerCanHoldCourseDto {
         if (validateAlreadyHeld(alreadyHeld)) {
             this.alreadyHeld = alreadyHeld;
         } else {
-            throw new IllegalArgumentException("Die Angabe, ob der Kurs bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
+            throw new IllegalArgumentException("Die Angabe, ob die Vorlesung bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
         }
     }
 }

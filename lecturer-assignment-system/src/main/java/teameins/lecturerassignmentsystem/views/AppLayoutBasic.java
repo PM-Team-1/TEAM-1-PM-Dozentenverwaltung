@@ -28,6 +28,7 @@ public class AppLayoutBasic extends AppLayout {
         SideNav nav = new SideNav();
         nav.addClassName("sidebar-custom");
         nav.addItem(new SideNavItem("Dozenten", "/dozenten", VaadinIcon.USERS.create()));
+        nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.BOOK.create()));
         return nav;
     }
 }
