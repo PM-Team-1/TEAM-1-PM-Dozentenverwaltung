@@ -29,6 +29,9 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 
 import java.util.List;
 
+import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
+import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
+
 @Route("dozenten")
 @PageTitle("Dozent")
 public class SingleLecturerView extends VerticalLayout implements HasUrlParameter<String> {
@@ -104,18 +107,18 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
         if (!isInEditMode) {
-            Button edit = new Button("Bearbeiten", e -> toggleEditMode());
+            Button edit = new Button("Bearbeiten", e -> toggleEditLecturerMode());
             edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
             toolbar.add(edit, delete);
         } else {
             Button save = new Button("Speichern", e -> {
                 saveEdits();
-                toggleEditMode();
+                toggleEditLecturerMode();
             });
             save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-            Button cancel = new Button("Abbrechen", e -> toggleEditMode());
+            Button cancel = new Button("Abbrechen", e -> toggleEditLecturerMode());
             cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
             toolbar.add(save, cancel);
@@ -242,26 +245,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         add(header, desc, back);
     }
 
-    private String mapAlreadyHeld(String code) {
-        if (code == null || code.isEmpty()) return "-";
-        return switch (code.trim().toUpperCase()) {
-            case "P" -> "Provadis";
-            case "A" -> "Andere Hochschule";
-            default -> code;
-        };
-    }
-
-    private String mapQualification(String code) {
-        if (code == null || code.isEmpty()) return "-";
-        return switch (code.trim().toUpperCase()) {
-            case "M" -> "Über vier Wochen";
-            case "S" -> "Keine";
-            case "4" -> "vier Wochen";
-            default -> code;
-        };
-    }
-
-    private void toggleEditMode() {
+    private void toggleEditLecturerMode() {
         isInEditMode = !isInEditMode;
         removeAll();
         renderSingleLecturer(isInEditMode);

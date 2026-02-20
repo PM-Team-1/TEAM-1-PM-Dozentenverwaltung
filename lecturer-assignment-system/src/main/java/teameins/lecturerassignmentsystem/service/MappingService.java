@@ -52,7 +52,7 @@ public class MappingService {
                 lecturerCanHoldCourse.getCourse().getId(),
                 lecturerCanHoldCourse.getAlreadyHeld().getValue(),
                 lecturerCanHoldCourse.getQualification().getValue(),
-                lecturerCanHoldCourse.isPriority()
+                lecturerCanHoldCourse.getPriority()
         );
     }
 
@@ -91,7 +91,7 @@ public class MappingService {
         entity.setCourse(course);
         entity.setAlreadyHeld(parseAlreadyHeld(dto.getAlreadyHeld()));
         entity.setQualification(parseQualification(dto.getQualification()));
-        entity.setPriority(dto.isPriority());
+        entity.setPriority(dto.getPriority());
         return entity;
     }
 

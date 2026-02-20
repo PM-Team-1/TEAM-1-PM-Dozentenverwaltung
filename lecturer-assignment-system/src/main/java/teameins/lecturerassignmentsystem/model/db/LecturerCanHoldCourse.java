@@ -1,5 +1,6 @@
 package teameins.lecturerassignmentsystem.model.db;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,5 +34,6 @@ public class LecturerCanHoldCourse {
     @JoinColumn(name = "lecturer_id", nullable = false)
     private Lecturer lecturer;
 
-    private boolean priority;
+    @Nullable
+    private Boolean priority;
 }

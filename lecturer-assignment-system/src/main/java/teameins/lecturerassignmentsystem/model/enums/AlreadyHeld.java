@@ -28,4 +28,14 @@ public enum AlreadyHeld {
                 .map(AlreadyHeld::getValue)
                 .toArray(String[]::new);
     }
+
+    public static String mapAlreadyHeld(String code) {
+        if (code == null || code.isEmpty()) return "-";
+        return switch (code.trim().toUpperCase()) {
+            case "P" -> "Provadis";
+            case "A" -> "Andere Hochschule";
+            case "N" -> "Noch nicht gehalten";
+            default -> code;
+        };
+    }
 }

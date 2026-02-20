@@ -28,4 +28,14 @@ public enum Qualification {
                 .map(Qualification::getValue)
                 .toArray(String[]::new);
     }
+
+    public static String mapQualification(String code) {
+        if (code == null || code.isEmpty()) return "-";
+        return switch (code.trim().toUpperCase()) {
+            case "M" -> "Über vier Wochen";
+            case "S" -> "Keine";
+            case "4" -> "vier Wochen";
+            default -> code;
+        };
+    }
 }

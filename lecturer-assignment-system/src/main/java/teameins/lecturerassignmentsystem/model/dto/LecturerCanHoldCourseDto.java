@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Null;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,9 +19,9 @@ public class LecturerCanHoldCourseDto {
     private int courseId;
     private String alreadyHeld;
     private String qualification;
-    private boolean priority;
+    private Boolean priority;
 
-    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, boolean priority) throws IllegalArgumentException {
+    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, Boolean priority) throws IllegalArgumentException {
         setId(id);
         setLecturerId(lecturerId);
         setCourseId(courseId);

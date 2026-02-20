@@ -27,8 +27,8 @@ public class AppLayoutBasic extends AppLayout {
     private SideNav getSideNav() {
         SideNav nav = new SideNav();
         nav.addClassName("sidebar-custom");
+        nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.CALENDAR.create()));
         nav.addItem(new SideNavItem("Dozenten", "/dozenten", VaadinIcon.USERS.create()));
-        nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.BOOK.create()));
         return nav;
     }
 }
