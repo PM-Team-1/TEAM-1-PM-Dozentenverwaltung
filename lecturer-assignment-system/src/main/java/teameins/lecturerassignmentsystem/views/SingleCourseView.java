@@ -1,5 +1,6 @@
 package teameins.lecturerassignmentsystem.views;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -17,7 +18,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.router.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,31 +95,21 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         H3 lecturersWhoCanHoldCourseHeading = new H3("Mögliche Dozenten für diese Vorlesung:");
         lecturersWhoCanHoldCourseHeading.getStyle().setMarginBottom("var(--lumo-space-m)");
 
-        Div filterBar = new Div();
-        filterBar.addClassName(TOOLBAR_CLASS_NAME);
-
-        ComboBox<String> qualificationFilter = new ComboBox<>("Soll halten");
-        qualificationFilter.setItems(FILTER_SOFORT, FILTER_IN_VIER_WOCHEN, FILTER_EGAL);
-        qualificationFilter.setValue(FILTER_SOFORT);
-        qualificationFilter.setWidth("240px");
-
-        ComboBox<String> alreadyHeldFilter = new ComboBox<>("Soll bereits gehalten haben an");
-        alreadyHeldFilter.setItems(FILTER_PROVADIS, FILTER_ANDERE_HOCHSCHULE, FILTER_EGAL);
-        alreadyHeldFilter.setValue(FILTER_PROVADIS);
-        alreadyHeldFilter.setWidthFull();
-
-        filterBar.add(qualificationFilter, alreadyHeldFilter);
-
         List<LecturerToCourseRelation> ltcr = course.getCanBeHeldBy().stream()
                 .map(lchc -> new LecturerToCourseRelation(lchc, lecturerService))
                 .toList();
-        Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse = renderLecturersWhoCanHoldCourse(ltcr);
 
-        lecturers.add(lecturersWhoCanHoldCourseHeading, filterBar, lecturersWhoCanHoldCourse);
+        Div noLecturersMessage = getNoLecturersMessage();
+        noLecturersMessage.setVisible(false);
 
-        DataView<LecturerToCourseRelation> dataView = addFilterFunctionality(lecturersWhoCanHoldCourse, qualificationFilter, alreadyHeldFilter);
-        qualificationFilter.addValueChangeListener(e -> dataView.refreshAll());
-        alreadyHeldFilter.addValueChangeListener(e -> dataView.refreshAll());
+        if (ltcr.isEmpty()) {
+            noLecturersMessage.setVisible(true);
+            lecturers.add(lecturersWhoCanHoldCourseHeading, noLecturersMessage);
+        } else {
+            Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse = renderLecturersWhoCanHoldCourse(ltcr);
+            Div filterBar = getFilterBar(lecturersWhoCanHoldCourse, noLecturersMessage);
+            lecturers.add(lecturersWhoCanHoldCourseHeading, filterBar, lecturersWhoCanHoldCourse, noLecturersMessage);
+        }
 
         HorizontalLayout singleCourse = new HorizontalLayout(courseInfo, lecturers);
         singleCourse.setSpacing(true);
@@ -284,7 +274,68 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         return priority ? 0 : 2;
     }
 
-    private DataView<LecturerToCourseRelation> addFilterFunctionality(Grid<LecturerToCourseRelation> ltcrGrid, ComboBox<String> qualification, ComboBox<String> alreadyHeld) {
+    private Div getFilterBar(Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse, Component noLecturersMessage) {
+        Div filterBar = new Div();
+        filterBar.addClassName(TOOLBAR_CLASS_NAME);
+
+        ComboBox<String> qualificationFilter = new ComboBox<>("Soll halten");
+        qualificationFilter.setItems(FILTER_SOFORT, FILTER_IN_VIER_WOCHEN, FILTER_EGAL);
+        qualificationFilter.setValue(FILTER_SOFORT);
+        qualificationFilter.setWidth("240px");
+
+        ComboBox<String> alreadyHeldFilter = new ComboBox<>("Soll bereits gehalten haben an");
+        alreadyHeldFilter.setItems(FILTER_PROVADIS, FILTER_ANDERE_HOCHSCHULE, FILTER_EGAL);
+        alreadyHeldFilter.setValue(FILTER_PROVADIS);
+        alreadyHeldFilter.setWidthFull();
+
+        filterBar.add(qualificationFilter, alreadyHeldFilter);
+
+        GridListDataView<LecturerToCourseRelation> dataView = addFilterFunctionality(lecturersWhoCanHoldCourse, qualificationFilter, alreadyHeldFilter);
+
+        dataView.refreshAll();
+
+        Runnable updateEmptyState = () -> {
+            boolean isEmpty = dataView.getItemCount() == 0;
+            lecturersWhoCanHoldCourse.setVisible(!isEmpty);
+            noLecturersMessage.setVisible(isEmpty);
+        };
+        updateEmptyState.run();
+
+        qualificationFilter.addValueChangeListener(e -> {
+            dataView.refreshAll();
+            updateEmptyState.run();
+        });
+        alreadyHeldFilter.addValueChangeListener(e -> {
+            dataView.refreshAll();
+            updateEmptyState.run();
+        });
+        dataView.addItemCountChangeListener(e -> updateEmptyState.run());
+        return filterBar;
+    }
+
+    private Div getNoLecturersMessage() {
+        Div noLecturersMessage = new Div();
+
+        noLecturersMessage.addClassName("empty-state");
+
+        Icon infoIcon = new Icon(VaadinIcon.EXCLAMATION_CIRCLE);
+        infoIcon.addClassName("empty-state__icon");
+
+        Paragraph headline = new Paragraph("Keine Dozenten für die Vorlesung gefunden");
+        headline.addClassName("empty-state__headline");
+
+        Paragraph subtitle = new Paragraph("Filter anpassen oder Dozenten zuweisen.");
+        subtitle.addClassName("empty-state__subtitle");
+
+        Div textWrapper = new Div();
+        textWrapper.addClassName("empty-state__content");
+        textWrapper.add(headline, subtitle);
+
+        noLecturersMessage.add(infoIcon, textWrapper);
+        return  noLecturersMessage;
+    }
+
+    private GridListDataView<LecturerToCourseRelation> addFilterFunctionality(Grid<LecturerToCourseRelation> ltcrGrid, ComboBox<String> qualification, ComboBox<String> alreadyHeld) {
         GridListDataView<LecturerToCourseRelation> dataView = ltcrGrid.getListDataView();
         dataView.addFilter(ltcr -> {
             boolean matchesQualification = false;
