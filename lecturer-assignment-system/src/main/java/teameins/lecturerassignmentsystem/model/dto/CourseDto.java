@@ -1,6 +1,5 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,7 +44,7 @@ public class CourseDto {
         if (validateName(name)) {
             this.name = name;
         } else {
-            throw new IllegalArgumentException("Der Name des Kurses darf nicht leer sein.");
+            throw new IllegalArgumentException("Der Name der Vorlesung darf nicht leer sein.");
         }
     }
 
@@ -57,7 +56,7 @@ public class CourseDto {
         if (validateSemester(semester)) {
             this.semester = semester;
         } else {
-            throw new IllegalArgumentException("Das Semester des Kurses darf nicht leer sein.");
+            throw new IllegalArgumentException("Das Semester der Vorlesung darf nicht leer sein.");
         }
     }
 }

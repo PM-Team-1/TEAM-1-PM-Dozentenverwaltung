@@ -46,7 +46,7 @@ public class AllLecturersView extends VerticalLayout {
         toolbar.addClassName("toolbar");
 
         Button addLecturerButton = new Button("Dozenten hinzufügen");
-        addLecturerButton.addClickListener(e -> UI.getCurrent().navigate("dozenten"));
+        addLecturerButton.addClickListener(e -> UI.getCurrent().navigate("dozenten/neu"));
 
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suche");

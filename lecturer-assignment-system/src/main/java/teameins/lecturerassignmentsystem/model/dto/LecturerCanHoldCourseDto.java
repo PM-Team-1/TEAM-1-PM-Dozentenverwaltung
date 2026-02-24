@@ -1,11 +1,11 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import lombok.AllArgsConstructor;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Null;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 
 import java.util.Arrays;
@@ -19,9 +19,9 @@ public class LecturerCanHoldCourseDto {
     private int courseId;
     private String alreadyHeld;
     private String qualification;
-    private boolean priority;
+    private Boolean priority;
 
-    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, boolean priority) throws IllegalArgumentException {
+    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, Boolean priority) throws IllegalArgumentException {
         setId(id);
         setLecturerId(lecturerId);
         setCourseId(courseId);
@@ -59,7 +59,7 @@ public class LecturerCanHoldCourseDto {
         if (validateAlreadyHeld(alreadyHeld)) {
             this.alreadyHeld = alreadyHeld;
         } else {
-            throw new IllegalArgumentException("Die Angabe, ob der Kurs bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
+            throw new IllegalArgumentException("Die Angabe, ob die Vorlesung bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
         }
     }
 }

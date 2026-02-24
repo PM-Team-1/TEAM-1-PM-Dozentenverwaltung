@@ -1,7 +1,10 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 
+@Getter
 public enum Preference {
     ALLES("A"),
     ONLY_MASTER("XM"),
@@ -13,10 +16,6 @@ public enum Preference {
 
     Preference(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     public static boolean validate(String name) {
