@@ -32,7 +32,7 @@ public class AppLayoutBasic extends AppLayout {
         SideNav nav = new SideNav();
         nav.addClassName("sidebar-custom");
         nav.addItem(new SideNavItem("Dashboard", "/dashboard", VaadinIcon.USERS.create()));
-        nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.USERS.create()));
+        nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.CALENDAR.create()));
         nav.addItem(new SideNavItem("Dozenten", "/dozenten", VaadinIcon.USERS.create()));
         nav.addItem(new SideNavItem("Admin", "/admin", VaadinIcon.USERS.create()));
         return nav;

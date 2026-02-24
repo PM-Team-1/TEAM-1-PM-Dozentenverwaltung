@@ -16,21 +16,21 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
+import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
-import java.awt.*;
 import java.util.List;
+
+import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
+import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
 
 @Route("dozenten")
 @PageTitle("Dozent")
@@ -58,8 +58,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             renderSingleLecturer(isInEditMode);
         } catch (NumberFormatException ex) {
             renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
-        } catch (RuntimeException ex) {
-            renderLecturerNotFoundError("Dozent nicht gefunden", "Es konnte kein Dozent mit der ID " + parameter + " gefunden werden.");
+        } catch (LecturerNotFoundException ex) {
+            renderLecturerNotFoundError("Dozent nicht gefunden", ex.getMessage());
+        } catch (Exception ex) {
+            renderLecturerNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
         }
     }
 
@@ -105,18 +107,18 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
         if (!isInEditMode) {
-            Button edit = new Button("Bearbeiten", e -> toggleEditMode());
+            Button edit = new Button("Bearbeiten", e -> toggleEditLecturerMode());
             edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
             toolbar.add(edit, delete);
         } else {
             Button save = new Button("Speichern", e -> {
                 saveEdits();
-                toggleEditMode();
+                toggleEditLecturerMode();
             });
             save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-            Button cancel = new Button("Abbrechen", e -> toggleEditMode());
+            Button cancel = new Button("Abbrechen", e -> toggleEditLecturerMode());
             cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
             toolbar.add(save, cancel);
@@ -173,7 +175,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addClassName("grid-custom");
         canHoldgrid.setAllRowsVisible(true);
 
-        H3 heading = new H3("Vorlesungen, die " + lecturer.getFullName() +  " halten kann:");
+        H3 heading = new H3("Vorlesungen, die " + lecturer.getFullName() + " halten kann:");
         heading.getStyle().setMarginBottom("var(--lumo-space-m)");
 
         canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name")
@@ -243,26 +245,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         add(header, desc, back);
     }
 
-    private String mapAlreadyHeld(String code) {
-        if (code == null || code.isEmpty()) return "-";
-        return switch (code.trim().toUpperCase()) {
-            case "P" -> "Provadis";
-            case "A" -> "Andere Hochschule";
-            default -> code;
-        };
-    }
-
-    private String mapQualification(String code) {
-        if (code == null || code.isEmpty()) return "-";
-        return switch (code.trim().toUpperCase()) {
-            case "M" -> "Über vier Wochen";
-            case "S" -> "Keine";
-            case "4" -> "vier Wochen";
-            default -> code;
-        };
-    }
-
-    private void toggleEditMode() {
+    private void toggleEditLecturerMode() {
         isInEditMode = !isInEditMode;
         removeAll();
         renderSingleLecturer(isInEditMode);
@@ -270,7 +253,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void deleteLecturer() {
         Dialog confirmDelete = new Dialog();
-        confirmDelete.add(new H3("Möchten Sie " + lecturer.getFullName() +  " tatsächlich aus dem Verwaltungssystem löschen?"));
+        confirmDelete.add(new H3("Möchten Sie " + lecturer.getFullName() + " tatsächlich aus dem Verwaltungssystem löschen?"));
         confirmDelete.addClassName("dialog");
 
         Div deleteOrCancel = new Div();

@@ -6,14 +6,12 @@ import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.enums.Title;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +21,8 @@ public class LecturerService {
     private final MappingService mappingService;
 
     public LecturerDto getLecturerById(int lecturerId) {
-        Lecturer lecturer = lecturerRepository.findById(lecturerId).orElseThrow(RuntimeException::new);
+        Lecturer lecturer = lecturerRepository.findById(lecturerId)
+                .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHold(lecturerId);
         return mappingService.map(lecturer, canHoldCourses);
     }
@@ -38,27 +37,9 @@ public class LecturerService {
         return lecturerDtos;
     }
 
-    public void createLecturer(String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String preference) {
-        Title parsedTitle = Arrays.stream(Title.values())
-                .filter(t -> t.name().equalsIgnoreCase(title))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Ungültiger Titel: " + title + ". Erlaubte Werte: " + Arrays.toString(Title.values())));
-        Preference parsedPreference = Arrays.stream(Preference.values())
-                .filter(p -> p.name().equalsIgnoreCase(preference))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Ungültige Präferenz: " + preference + ". Erlaubte Werte: " + Arrays.toString(Preference.values())));
-
-        Lecturer lecturer = new Lecturer();
-        lecturer.setTitle(parsedTitle);
-        lecturer.setFirstName(firstName);
-        lecturer.setLastName(lastName);
-        lecturer.setSecondName(secondName);
-        lecturer.setEmail(email);
-        lecturer.setPhone(phone);
-        lecturer.setExtern(isExtern);
-        lecturer.setPreference(parsedPreference);
-
-        lecturerRepository.save(lecturer);
+    public LecturerDto createLecturer(LecturerDto lecturerDto) {
+        int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
+        return getLecturerById(id);
     }
 
     public void deleteLecturer(LecturerDto lecturer) {

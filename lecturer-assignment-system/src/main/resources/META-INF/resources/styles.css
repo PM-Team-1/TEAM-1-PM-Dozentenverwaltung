@@ -32,3 +32,35 @@
 .warn {
     color: var(--lumo-error-color);
 }
+
+.empty-state {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start; /* linksbündig */
+    text-align: left;
+    gap: var(--lumo-space-s);
+    padding: calc(var(--lumo-space-m) * 0.6);
+    border-radius: 6px;
+    background: transparent; /* kein grauer Hintergrund */
+    width: 100%;
+    box-sizing: border-box;
+    border-left: 4px solid var(--lumo-warning-color); /* dezenter farbiger Akzent */
+}
+
+.empty-state__icon {
+    color: var(--lumo-warning-color);
+    font-size: 1.25rem;
+    margin-top: 2px; /* optisch mit Headline ausrichten */
+}
+
+.empty-state__headline {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.empty-state__subtitle {
+    margin: 0;
+    color: var(--lumo-secondary-text-color);
+    font-size: 0.95rem;
+}

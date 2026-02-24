@@ -1,5 +1,10 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
+import lombok.Getter;
+
+import java.util.Arrays;
+
+@Getter
 public enum Preference {
     ALLES("A"),
     ONLY_MASTER("XM"),
@@ -13,8 +18,15 @@ public enum Preference {
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
+    public static boolean validate(String name) {
+        return Arrays.stream(Preference.values())
+                .map(Preference::getValue)
+                .anyMatch(value -> value.equals(name));
     }
 
+    public static String[] getValidValues() {
+        return Arrays.stream(Preference.values())
+                .map(Preference::getValue)
+                .toArray(String[]::new);
+    }
 }
