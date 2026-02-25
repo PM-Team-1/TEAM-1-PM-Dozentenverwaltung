@@ -15,18 +15,28 @@ public class AppLayoutBasic extends AppLayout {
     public AppLayoutBasic() {
 
         Image provadisLogo = new Image("images/provadis.svg", "Provadis");
-        provadisLogo.setHeight("40px");
+        provadisLogo.setHeight("60px");
 
         H1 title = new H1("Dozentenverwaltungssystem");
         title.addClassName("h1-custom");
+
+        HorizontalLayout topBar = new HorizontalLayout();
+        topBar.setWidthFull();
+        topBar.setAlignItems(FlexComponent.Alignment.CENTER);
+        topBar.setPadding(true);
+        topBar.setSpacing(true);
+        HorizontalLayout center = new HorizontalLayout(title);
+        center.setWidthFull();
+        center.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        topBar.add(provadisLogo, center);
+        topBar.expand(center);
 
         SideNav nav = getSideNav();
 
         Scroller scroller = new Scroller(nav);
 
         addToDrawer(scroller);
-        addToNavbar(provadisLogo);
-        addToNavbar(title);
+        addToNavbar(topBar);
     }
 
     private SideNav getSideNav() {
