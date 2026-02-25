@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 public class DashboardView extends VerticalLayout {
 
     @Autowired
-    public AllLecturersView() {
+    public DashboardView() {
         H2 heading = new H2("Dashboard");
         heading.addClassName("h2-custom");
 
