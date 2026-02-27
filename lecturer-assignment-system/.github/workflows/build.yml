@@ -19,11 +19,6 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Debug repo
-        run: |
-          pwd
-          ls -R    
-
       - name: Build
         run: mvn -B clean package -DskipTests
         working-directory: lecturer-assignment-system
