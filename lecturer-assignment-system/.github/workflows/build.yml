@@ -12,12 +12,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
       - name: Build
-        run: |
-          cd lecturer-assignment-system
-          mvn -B clean package -DskipTests
+        run: mvn -B clean package -DskipTests
+        working-directory: lecturer-assignment-system
