@@ -40,7 +40,7 @@ public class LecturerService {
     public LecturerDto createLecturer(LecturerDto lecturerDto) {
         int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
         return getLecturerById(id);
-    }
+    }abcder
 
     public void deleteLecturer(LecturerDto lecturer) {
         List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
