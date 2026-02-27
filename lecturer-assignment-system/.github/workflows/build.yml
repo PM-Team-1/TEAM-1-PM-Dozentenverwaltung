@@ -19,4 +19,4 @@ jobs:
 
       - name: Build
         run: mvn -B clean package -DskipTests
-        working-directory: lecturer-assignment-system
+        working-directory: /home/runner/work/TEAM-1-PM-Dozentenverwaltung/TEAM-1-PM-Dozentenverwaltung/lecturer-assignment-system
