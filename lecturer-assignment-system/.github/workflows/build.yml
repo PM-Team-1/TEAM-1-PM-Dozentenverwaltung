@@ -19,3 +19,4 @@ jobs:
 
       - name: Build
         run: mvn -B clean package -DskipTests
+        working-directory: lecturer-assignment-system
