@@ -18,5 +18,6 @@ jobs:
           java-version: 21
 
       - name: Build
-        run: mvn -B clean package -DskipTests
-        working-directory: lecturer-assignment-system
+        run: |
+          cd lecturer-assignment-system
+          mvn -B clean package -DskipTests
