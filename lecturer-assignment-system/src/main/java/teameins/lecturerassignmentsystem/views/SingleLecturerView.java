@@ -16,6 +16,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,16 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private static final String ALL_LECTURERS_VIEW_ROUTE = "dozenten";
 
     private boolean isInEditMode = false;
+
+    private final Binder<LecturerDto> binder = new Binder<>(LecturerDto.class);
+
+    private ComboBox<String> title;
+    private TextField lastName;
+    private TextField firstName;
+    private TextField secondName;
+    private ComboBox<String> status;
+    private TextField email;
+    private TextField phone;
 
     @Autowired
     public SingleLecturerView(LecturerService lecturerService, CourseService courseService) {
@@ -131,35 +142,39 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         VerticalLayout info = new VerticalLayout();
         info.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        ComboBox<String> title = new ComboBox<>("Titel");
+        title = new ComboBox<>("Titel");
         title.setItems("Dr.", "Prof.", "Keine Angabe");
         title.setValue(lecturer.getTitle().isEmpty() ? "Keine Angabe" : lecturer.getTitle());
         title.setReadOnly(!edit);
         title.setWidthFull();
+        binder.forField(title)
+                .withValidator(LecturerDto::validateTitle, "Gültigen Titel angeben")
+                .bind(title -> );
 
-        TextField lastName = new TextField("Nachname", lecturer.getLastName(), "Nachname");
+
+        lastName = new TextField("Nachname", lecturer.getLastName(), "Nachname");
         lastName.setReadOnly(!edit);
         lastName.setWidthFull();
 
-        TextField firstName = new TextField("Vorname", lecturer.getFirstName(), "Vorname");
+        firstName = new TextField("Vorname", lecturer.getFirstName(), "Vorname");
         firstName.setReadOnly(!edit);
         firstName.setWidthFull();
 
-        TextField secondName = new TextField("2. Vorname", lecturer.getSecondName() != null ? lecturer.getSecondName() : "", "2. Vorname");
+        secondName = new TextField("2. Vorname", lecturer.getSecondName() != null ? lecturer.getSecondName() : "", "2. Vorname");
         secondName.setReadOnly(!edit);
         secondName.setWidthFull();
 
-        ComboBox<String> status = new ComboBox<>("Status");
+        status = new ComboBox<>("Status");
         status.setItems("Intern", "Extern");
         status.setValue(lecturer.isExtern() ? "Extern" : "Intern");
         status.setReadOnly(!edit);
         status.setWidthFull();
 
-        TextField email = new TextField("E-Mail", lecturer.getEmail(), "E-Mail");
+        email = new TextField("E-Mail", lecturer.getEmail(), "E-Mail");
         email.setReadOnly(!edit);
         email.setWidthFull();
 
-        TextField phone = new TextField("Telefonnummer", lecturer.getPhone(), "Telefonnummer");
+        phone = new TextField("Telefonnummer", lecturer.getPhone(), "Telefonnummer");
         phone.setReadOnly(!edit);
         phone.setWidthFull();
 
