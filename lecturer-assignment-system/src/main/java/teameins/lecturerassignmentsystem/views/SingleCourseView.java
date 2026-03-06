@@ -18,12 +18,12 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.*;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
@@ -31,6 +31,8 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 import java.util.List;
 
 import com.vaadin.flow.data.provider.SortDirection;
+import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
+import teameins.lecturerassignmentsystem.views.model.LecturerToCourseRelation;
 
 import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
 import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
@@ -43,10 +45,13 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     private final transient LecturerService lecturerService;
     private final transient CourseService courseService;
     private transient CourseDto course;
+    private final transient Binder<CourseDto> binder;
 
     private static final String ALL_COURSES_VIEW_ROUTE = "vorlesungen";
     private static final String BACHELOR = "Bachelor";
     private static final String MASTER = "Master";
+    private static final String ACCESSIBILITY_GESCHLOSSEN = "Geschlossen";
+    private static final String ACCESSIBILITY_OFFEN = "Offen";
     private static final String TOOLBAR_CLASS_NAME = "toolbar";
     private static final String FILTER_SOFORT = "Sofort";
     private static final String FILTER_IN_VIER_WOCHEN = "in vier Wochen";
@@ -60,6 +65,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     public SingleCourseView(LecturerService lecturerService, CourseService courseService) {
         this.lecturerService = lecturerService;
         this.courseService = courseService;
+        this.binder = new Binder<>(CourseDto.class);
     }
 
     @Override
@@ -100,7 +106,6 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
                 .toList();
 
         Div noLecturersMessage = getNoLecturersMessage();
-        noLecturersMessage.setVisible(false);
 
         if (ltcr.isEmpty()) {
             noLecturersMessage.setVisible(true);
@@ -134,10 +139,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
             edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
             toolbar.add(edit, delete);
         } else {
-            Button save = new Button("Speichern", e -> {
-                saveEdits();
-                toggleEditMode();
-            });
+            Button save = new Button("Speichern", e -> saveEdits());
             save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
             Button cancel = new Button("Abbrechen", e -> toggleEditMode());
@@ -153,25 +155,43 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         VerticalLayout info = new VerticalLayout();
         info.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        TextField name = new TextField("Name", course.getName(), "Name");
+        TextField name = new TextField("Name", "Name");
         name.setReadOnly(!edit);
         name.setWidthFull();
+        binder.forField(name)
+                .withValidator((value, context) -> {
+                    String msg = CourseDto.validateNameMessage(value);
+                    return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
+                })
+                .bind(CourseDto::getName, CourseDto::setName);
 
         ComboBox<String> grad = new ComboBox<>("Grad");
         grad.setItems(BACHELOR, MASTER);
-        grad.setValue(course.isMaster() ? MASTER : BACHELOR);
         grad.setReadOnly(!edit);
         grad.setWidthFull();
+        binder.bind(grad,
+                courseDto -> courseDto.isMaster() ? MASTER : BACHELOR,
+                (courseDto, value) -> courseDto.setMaster(value.equals(MASTER)));
 
         ComboBox<String> accessibility = new ComboBox<>("Zugänglichkeit");
-        accessibility.setItems("Geschlossen", "Offen");
-        accessibility.setValue(course.isClosed() ? "Geschlossen" : "Offen");
+        accessibility.setItems(ACCESSIBILITY_GESCHLOSSEN, ACCESSIBILITY_OFFEN);
         accessibility.setReadOnly(!edit);
         accessibility.setWidthFull();
+        binder.bind(accessibility,
+                courseDto -> courseDto.isClosed() ? ACCESSIBILITY_GESCHLOSSEN : ACCESSIBILITY_OFFEN,
+                (courseDto, value) -> courseDto.setClosed(value.equals(ACCESSIBILITY_GESCHLOSSEN)));
 
-        TextField semester = new TextField("Semester", course.getSemester(), "Semester");
+        TextField semester = new TextField("Semester", "Semester");
         semester.setReadOnly(!edit);
         semester.setWidthFull();
+        binder.forField(semester)
+                .withValidator((value, context) -> {
+                    String msg = CourseDto.validateSemesterMessage(value);
+                    return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
+                })
+                .bind(CourseDto::getSemester, CourseDto::setSemester);
+
+        binder.readBean(course);
 
         info.add(name, grad, accessibility, semester);
 
@@ -240,7 +260,14 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     }
 
     private void saveEdits() {
-        // Implement save functionality here
+        try {
+            binder.writeBean(course);
+            course = courseService.updateCourse(course);
+            toggleEditMode();
+        } catch (ValidationException e) {
+            Dialog errorDialog = new ValidationErrorDialog(e);
+            errorDialog.open();
+        }
     }
 
     private void renderCourseNotFoundError(String heading, String details) {
@@ -259,10 +286,11 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     }
 
     private String mapPreference(LecturerToCourseRelation ltcr){
-        if (ltcr.getLecturerCanHoldCourse().getPriority() == null) {
+        Boolean priority = ltcr.getLecturerCanHoldCourse().getPriority();
+        if (priority == null) {
             return "-";
         }
-        if (ltcr.getLecturerCanHoldCourse().getPriority()) {
+        if (priority) {
             return "Hält gerne im " + (course.isMaster() ? MASTER : BACHELOR);
         } else {
             return "Hält lieber im " + (course.isMaster() ? BACHELOR : MASTER);
@@ -324,14 +352,14 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         Paragraph headline = new Paragraph("Keine Dozenten für die Vorlesung gefunden");
         headline.addClassName("empty-state__headline");
 
-        Paragraph subtitle = new Paragraph("Filter anpassen oder Dozenten zuweisen.");
+        Paragraph subtitle = new Paragraph("Weisen Sie Dozenten diese Vorlesung zu, damit sie hier angezeigt werden.");
         subtitle.addClassName("empty-state__subtitle");
 
         Div textWrapper = new Div();
-        textWrapper.addClassName("empty-state__content");
         textWrapper.add(headline, subtitle);
 
         noLecturersMessage.add(infoIcon, textWrapper);
+        noLecturersMessage.setVisible(false);
         return  noLecturersMessage;
     }
 
@@ -365,17 +393,4 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         return dataView;
     }
 
-    @Getter
-    private static class LecturerToCourseRelation {
-
-        private final LecturerService lecturerService;
-        private final LecturerCanHoldCourseDto lecturerCanHoldCourse;
-        private final LecturerDto lecturer;
-
-        public LecturerToCourseRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, LecturerService lecturerService) {
-            this.lecturerService = lecturerService;
-            this.lecturerCanHoldCourse = lecturerCanHoldCourse;
-            this.lecturer = lecturerService.getLecturerById(lecturerCanHoldCourse.getLecturerId());
-        }
-    }
 }
