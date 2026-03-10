@@ -2,7 +2,6 @@ package teameins.lecturerassignmentsystem.model.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.Setter;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
@@ -119,14 +118,25 @@ public class LecturerDto {
     }
 
     public static boolean validatePreference(String preference) {
+        if (preference == null || preference.isBlank()) {
+            return true;
+        }
         return Preference.validate(preference);
     }
 
     public void setPreference(String preference) throws IllegalArgumentException {
+        if (preference == null || preference.isBlank()) {
+            this.preference = null;
+            return;
+        }
+
         if (validatePreference(preference)) {
             this.preference = preference;
         } else {
-            throw new IllegalArgumentException("Die Präferenz ist ungültig: " + preference + ". Gültige Werte sind: " + Arrays.toString(Preference.getValidValues()));
+            throw new IllegalArgumentException(
+                    "Die Präferenz ist ungültig: " + preference +
+                            ". Gültige Werte sind: " + Arrays.toString(Preference.getValidValues())
+            );
         }
     }
 }

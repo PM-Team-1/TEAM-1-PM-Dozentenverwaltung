@@ -42,9 +42,22 @@ public class LecturerService {
         return getLecturerById(id);
     }
 
+    public LecturerDto updateLecturer(LecturerDto lecturerDto) {
+        int lecturerId = lecturerDto.getId();
+
+        if (!lecturerRepository.existsById(lecturerId)) {
+            throw new LecturerNotFoundException(
+                    "Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."
+            );
+        }
+
+        lecturerRepository.save(mappingService.map(lecturerDto));
+        return getLecturerById(lecturerId);
+    }
+
     public void deleteLecturer(LecturerDto lecturer) {
         List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
-        for (LecturerCanHoldCourseDto lchc: canHoldCourses) {
+        for (LecturerCanHoldCourseDto lchc : canHoldCourses) {
             lecturerCanHoldCourseRepository.deleteById(lchc.getId());
         }
         lecturerRepository.deleteById(lecturer.getId());
