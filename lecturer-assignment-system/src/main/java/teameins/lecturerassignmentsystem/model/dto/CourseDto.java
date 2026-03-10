@@ -51,7 +51,7 @@ public class CourseDto {
         if (semester == null || semester.isEmpty()) {
             return "Das Semester der Vorlesung darf nicht leer sein.";
         }
-        if (!semester.matches("(WiSe \\d{2,4}/\\d{2,4}|SoSe \\d{2,4}).*")) {
+        if (!semester.strip().matches("(WiSe \\d{2,4}/\\d{2,4}|SoSe \\d{2,4})")) {
             return "Das Semester muss im erwarteten Format sein (z. B. WiSe 25/26 oder SoSe 27).";
         }
         return "";
