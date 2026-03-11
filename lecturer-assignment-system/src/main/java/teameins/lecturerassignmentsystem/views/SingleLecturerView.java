@@ -28,6 +28,7 @@ import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
 import java.util.List;
 
@@ -107,7 +108,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 : lecturer.getCanHoldCourses().stream()
                 .map(lchc -> new CourseToLecturerRelation(lchc, courseService))
                 .toList();
-
         Div coursesLecturerCanHold = renderCoursesLecturerCanHold(ctlr);
         Div coursesLecturerHasHeld = renderCoursesLecturerHasHeld(ctlr);
         coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-l)");
@@ -276,6 +276,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         binder.readBean(lecturer);
 
         info.add(title, lastName, firstName, secondName, status, email, phone);
+
         return info;
     }
 

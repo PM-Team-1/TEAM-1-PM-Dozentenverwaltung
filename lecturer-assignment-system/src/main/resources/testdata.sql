@@ -53,26 +53,26 @@ INSERT INTO lecturer (id, title, first_name, last_name, second_name, email, phon
 
 -- 20 Vorlesungen: 1-10 Bachelor (is_master=0), 11-20 Master (is_master=1)
 INSERT INTO course (id, name, is_closed, is_master, semester) VALUES
-  (1, 'Programmieren I', 0, 0, 'WS 24/25'),
-  (2, 'Mathematik für Informatik', 0, 0, 'WS 24/25'),
-  (3, 'Datenbanken Grundlagen', 0, 0, 'SS 25'),
-  (4, 'Betriebssysteme Grundlagen', 0, 0, 'SS 25'),
-  (5, 'Softwareengineering Grundlagen', 0, 0, 'WS 25/26'),
-  (6, 'Netzwerkgrundlagen', 0, 0, 'WS 25/26'),
-  (7, 'Programmierung II', 0, 0, 'SS 26'),
-  (8, 'IT-Sicherheit Grundlagen', 0, 0, 'SS 26'),
-  (9, 'Datenstrukturen und Algorithmen I', 0, 0, 'WS 26/27'),
-  (10, 'Webtechnologien', 0, 0, 'WS 26/27'),
-  (11, 'Algorithmen Fortgeschritten', 0, 1, 'SS 27'),
-  (12, 'Maschinelles Lernen', 0, 1, 'SS 27'),
-  (13, 'Verteilte Systeme Fortgeschritten', 0, 1, 'WS 27/28'),
-  (14, 'Softwarearchitektur', 0, 1, 'WS 27/28'),
-  (15, 'Datenbanksysteme Fortgeschritten', 0, 1, 'SS 28'),
-  (16, 'IT-Sicherheitsmanagement', 0, 1, 'SS 28'),
-  (17, 'Fortgeschrittene Programmierung', 0, 1, 'WS 28/29'),
-  (18, 'Cloud Computing', 0, 1, 'WS 28/29'),
-  (19, 'AI Systems', 0, 1, 'SS 29'),
-  (20, 'Software Projektarbeit', 0, 1, 'SS 29');
+  (1, 'Programmieren I', 0, 0, 'WiSe 24/25'),
+  (2, 'Mathematik für Informatik', 0, 0, 'WiSe 24/25'),
+  (3, 'Datenbanken Grundlagen', 0, 0, 'SoSe 25'),
+  (4, 'Betriebssysteme Grundlagen', 0, 0, 'SoSe 25'),
+  (5, 'Softwareengineering Grundlagen', 0, 0, 'WiSe 25/26'),
+  (6, 'Netzwerkgrundlagen', 0, 0, 'WiSe 25/26'),
+  (7, 'Programmierung II', 0, 0, 'SoSe 26'),
+  (8, 'IT-Sicherheit Grundlagen', 0, 0, 'SoSe 26'),
+  (9, 'Datenstrukturen und Algorithmen I', 0, 0, 'WiSe 26/27'),
+  (10, 'Webtechnologien', 0, 0, 'WiSe 26/27'),
+  (11, 'Algorithmen Fortgeschritten', 0, 1, 'SoSe 27'),
+  (12, 'Maschinelles Lernen', 0, 1, 'SoSe 27'),
+  (13, 'Verteilte Systeme Fortgeschritten', 0, 1, 'WiSe 27/28'),
+  (14, 'Softwarearchitektur', 0, 1, 'WiSe 27/28'),
+  (15, 'Datenbanksysteme Fortgeschritten', 0, 1, 'SoSe 28'),
+  (16, 'IT-Sicherheitsmanagement', 0, 1, 'SoSe 28'),
+  (17, 'Fortgeschrittene Programmierung', 0, 1, 'WiSe 28/29'),
+  (18, 'Cloud Computing', 0, 1, 'WiSe 28/29'),
+  (19, 'AI Systems', 0, 1, 'SoSe 29'),
+  (20, 'Software Projektarbeit', 0, 1, 'SoSe 29');
 
 -- LecturerCanHoldCourse: erzeugt nach Präferenzlogik
 -- already_held: PROVADIS, OTHER_SCHOOL, NOT_YET_HELD
