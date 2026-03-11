@@ -28,35 +28,49 @@ public class CourseDto {
     }
 
     public static boolean validate(CourseDto course) {
-        return validateName(course.getName()) &&
-               validateSemester(course.getSemester());
+        return validateNameMessage(course.getName()).isEmpty() &&
+               validateSemesterMessage(course.getSemester()).isEmpty();
     }
 
     public boolean validate(){
         return validate(this);
     }
 
-    public static boolean validateName(String name) {
-        return name != null && !name.isEmpty();
+    public static String validateNameMessage(String name) {
+        if (name == null || name.isEmpty()) {
+            return "Der Name der Vorlesung darf nicht leer sein.";
+        }
+        return "";
     }
 
     public void setName(String name) throws IllegalArgumentException {
-        if (validateName(name)) {
-            this.name = name;
-        } else {
-            throw new IllegalArgumentException("Der Name der Vorlesung darf nicht leer sein.");
-        }
+        this.name = name;
     }
 
-    public static boolean validateSemester(String semester) {
-        return semester != null && !semester.isEmpty();
+    public static String validateSemesterMessage(String semester) {
+        if (semester == null || semester.isEmpty()) {
+            return "Das Semester der Vorlesung darf nicht leer sein.";
+        }
+        if (!semester.strip().matches("(WiSe \\d{2,4}/\\d{2,4}|SoSe \\d{2,4})")) {
+            return "Das Semester muss im erwarteten Format sein (z. B. WiSe 25/26 oder SoSe 27).";
+        }
+        return "";
     }
 
     public void setSemester(String semester) throws IllegalArgumentException {
-        if (validateSemester(semester)) {
-            this.semester = semester;
-        } else {
-            throw new IllegalArgumentException("Das Semester der Vorlesung darf nicht leer sein.");
+        this.semester = semester;
+    }
+
+    public String getSemesterSortable() {
+        if (semester == null || semester.isEmpty()) {
+            return "";
         }
+        String[] parts = semester.split(" ");
+        if (parts.length != 2) {
+            return semester;
+        }
+        String term = parts[0];
+        String yearPart = parts[1];
+        return yearPart + " " + (term.contains("SoSe") ? 1 : 2);
     }
 }

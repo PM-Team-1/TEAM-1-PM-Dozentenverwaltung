@@ -43,6 +43,8 @@ public class CourseService {
     }
 
     public CourseDto updateCourse(CourseDto courseDto) {
+        courseRepository.findById(courseDto.getId()).
+                orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseDto.getId() + " gefunden werden."));
         courseRepository.save(mappingService.map(courseDto));
         return getCourseById(courseDto.getId());
     }

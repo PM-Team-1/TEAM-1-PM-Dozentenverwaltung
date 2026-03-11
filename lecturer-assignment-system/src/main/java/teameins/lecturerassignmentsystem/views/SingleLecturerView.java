@@ -17,15 +17,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.*;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import teameins.lecturerassignmentsystem.model.dto.CourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
 import java.util.List;
 
@@ -185,7 +183,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
         canHoldgrid.addColumn(row -> row.getCourse().getSemester()).setHeader("Semester")
-                .setSortable(true).setComparator(CourseToLecturerRelation::getSemesterSortable)
+                .setSortable(true).setComparator(row -> row.getCourse().getSemesterSortable())
                 .setAutoWidth(true).setFlexGrow(1);
         canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit")
                 .setSortable(true)
@@ -276,29 +274,5 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void saveEdits() {
         // Implement save functionality here
-    }
-
-    @Getter
-    private static class CourseToLecturerRelation {
-
-        private final CourseService courseService;
-        private final LecturerCanHoldCourseDto lecturerCanHoldCourse;
-        private final CourseDto course;
-
-        public CourseToLecturerRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, CourseService courseService) {
-            this.courseService = courseService;
-            this.lecturerCanHoldCourse = lecturerCanHoldCourse;
-            this.course = courseService.getCourseById(lecturerCanHoldCourse.getCourseId());
-        }
-
-        public String getSemesterSortable() {
-            String semester = this.getCourse().getSemester();
-            String yearPart = semester.replaceAll("\\D", "");
-            if (yearPart.contains("/")) {
-                yearPart = yearPart.split("/")[0];
-            }
-            String termPart = semester.toLowerCase().contains("winter") ? "1" : "2";
-            return yearPart + termPart;
-        }
     }
 }
