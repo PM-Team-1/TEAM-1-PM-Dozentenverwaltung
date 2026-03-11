@@ -395,6 +395,8 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
             if (lecturer.getId() == 0) {
                 lecturer = lecturerService.createLecturer(lecturer);
+                UI.getCurrent().navigate("dozenten/" + lecturer.getId());
+
             } else {
                 lecturer = lecturerService.updateLecturer(lecturer);
             }
