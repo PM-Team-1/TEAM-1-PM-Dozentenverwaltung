@@ -17,6 +17,7 @@ import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.service.CourseService;
+import teameins.lecturerassignmentsystem.views.components.CreateCourseDialog;
 
 @Route("vorlesungen")
 @PageTitle("Vorlesungen")
@@ -46,7 +47,7 @@ public class AllCoursesView extends VerticalLayout {
         toolbar.addClassName("toolbar");
 
         Button addLecturerButton = new Button("Vorlesung hinzufügen");
-        addLecturerButton.addClickListener(e -> UI.getCurrent().navigate("vorlesungen/neu"));
+        addLecturerButton.addClickListener(e -> new CreateCourseDialog(courseService));
 
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suche");
@@ -72,7 +73,7 @@ public class AllCoursesView extends VerticalLayout {
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
         grid.addColumn(CourseDto::getSemester).setHeader("Semester")
-                .setSortable(true).setComparator(this::getSemesterSortable)
+                .setSortable(true).setComparator(CourseDto::getSemesterSortable)
                 .setAutoWidth(true).setFlexGrow(1);
         grid.addColumn(course -> course.isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit")
                 .setAutoWidth(true).setFlexGrow(1);
@@ -119,16 +120,5 @@ public class AllCoursesView extends VerticalLayout {
 
     private boolean matchesTerm(String value, String searchTerm) {
         return value != null && value.toLowerCase().contains(searchTerm.toLowerCase());
-    }
-
-
-    public String getSemesterSortable(CourseDto course) {
-        String semester = course.getSemester();
-        String yearPart = semester.replaceAll("\\D", "");
-        if (yearPart.contains("/")) {
-            yearPart = yearPart.split("/")[0];
-        }
-        String termPart = semester.toLowerCase().contains("winter") ? "1" : "2";
-        return yearPart + termPart;
     }
 }
