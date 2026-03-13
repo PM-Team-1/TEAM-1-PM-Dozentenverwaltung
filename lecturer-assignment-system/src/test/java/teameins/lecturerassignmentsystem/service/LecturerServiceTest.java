@@ -1,6 +1,5 @@
 package teameins.lecturerassignmentsystem.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,8 +7,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
@@ -31,7 +28,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class LecturerServiceTest {
+class LecturerServiceTest {
 
     @Mock
     LecturerRepository lecturerRepository;
@@ -66,13 +63,6 @@ public class LecturerServiceTest {
     void getLecturerByIdTestError(){
         int lecturerId = 100;
         Mockito.doReturn(Optional.empty()).when(lecturerRepository).findById(lecturerId);
-
-        Lecturer lecturer = getLecturerById(lecturerId);
-        List<LecturerCanHoldCourse> lecturerCanHoldCourses = listAllCoursesLecturerCanHold(lecturerId, List.of(1,2,3,4,5,6,7,8,9));
-        LecturerDto lecturerDto = mappingService.map(
-                lecturer,
-                lecturerCanHoldCourses.stream().map(mappingService::map).toList()
-        );
 
         assertThrows(LecturerNotFoundException.class, () -> lecturerService.getLecturerById(lecturerId));
     }
@@ -127,7 +117,7 @@ public class LecturerServiceTest {
                 lecturerCanHoldCourses.stream().map(mappingService::map).toList()
         );
 
-        assertEquals(lecturerDto, lecturerService.createLecturer(lecturerDto));
+        assertEquals(lecturerDto, lecturerService.updateLecturer(lecturerDto));
     }
 
     @Test
