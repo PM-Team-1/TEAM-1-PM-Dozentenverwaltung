@@ -2,6 +2,7 @@ package teameins.lecturerassignmentsystem.model.dto;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Null;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 @Getter
 @Setter
 @NoArgsConstructor
+@EqualsAndHashCode
 public class LecturerCanHoldCourseDto {
     private int id;
     private int lecturerId;
