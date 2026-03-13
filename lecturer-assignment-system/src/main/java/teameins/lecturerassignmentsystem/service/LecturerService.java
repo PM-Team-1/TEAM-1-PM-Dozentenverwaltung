@@ -46,52 +46,54 @@ public class LecturerService {
         int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
         return getLecturerById(id);
     }
-
     public LecturerDto updateLecturer(LecturerDto lecturerDto) {
-        // Ensure the lecturer exists before updating
         lecturerRepository.findById(lecturerDto.getId())
-                .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerDto.getId() + " gefunden werden."));
+                .orElseThrow(() -> new LecturerNotFoundException(
+                        "Es konnte kein Dozent mit der ID " + lecturerDto.getId() + " gefunden werden."
+                ));
+
         lecturerRepository.save(mappingService.map(lecturerDto));
         return getLecturerById(lecturerDto.getId());
     }
 
     public LecturerCanHoldCourseDto addCourseToLecturer(LecturerCanHoldCourseDto dto) {
-        // Load lecturer or throw exception
         Lecturer lecturer = lecturerRepository.findById(dto.getLecturerId())
                 .orElseThrow(() -> new LecturerNotFoundException(
-                        "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."));
+                        "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."
+                ));
 
-        // Load course or throw exception
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new CourseNotFoundException(
-                        "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."));
+                        "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."
+                ));
 
-        // Validation: relationship already exists
-        if (lecturerCanHoldCourseRepository.existsByLecturerIdAndCourseId(dto.getLecturerId(), dto.getCourseId())) {
+        if (lecturerCanHoldCourseRepository.existsByLecturerIdAndCourseId(
+                dto.getLecturerId(), dto.getCourseId())) {
             throw new IllegalArgumentException(
-                    "Die Beziehung zwischen Dozent (ID " + dto.getLecturerId() + ") und Vorlesung (ID " + dto.getCourseId() + ") existiert bereits.");
+                    "Die Beziehung zwischen Dozent (ID " + dto.getLecturerId()
+                            + ") und Vorlesung (ID " + dto.getCourseId() + ") existiert bereits."
+            );
         }
 
-        // Validation: preference vs. master/bachelor mismatch
         Preference preference = lecturer.getPreference();
         if (preference == Preference.ONLY_MASTER && !course.isMaster()) {
             throw new IllegalArgumentException(
-                    "Der Dozent hält nur Master-Vorlesungen, aber die Vorlesung ist eine Bachelor-Vorlesung.");
+                    "Der Dozent hält nur Master-Vorlesungen, aber die Vorlesung ist eine Bachelor-Vorlesung."
+            );
         }
         if (preference == Preference.ONLY_BACHELOR && course.isMaster()) {
             throw new IllegalArgumentException(
-                    "Der Dozent hält nur Bachelor-Vorlesungen, aber die Vorlesung ist eine Master-Vorlesung.");
+                    "Der Dozent hält nur Bachelor-Vorlesungen, aber die Vorlesung ist eine Master-Vorlesung."
+            );
         }
 
-        // Create and save the relationship
         LecturerCanHoldCourse entity = mappingService.map(dto, lecturer, course);
         LecturerCanHoldCourse saved = lecturerCanHoldCourseRepository.save(entity);
         return mappingService.map(saved);
     }
-
     public void deleteLecturer(LecturerDto lecturer) {
         List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
-        for (LecturerCanHoldCourseDto lchc: canHoldCourses) {
+        for (LecturerCanHoldCourseDto lchc : canHoldCourses) {
             lecturerCanHoldCourseRepository.deleteById(lchc.getId());
         }
         lecturerRepository.deleteById(lecturer.getId());
