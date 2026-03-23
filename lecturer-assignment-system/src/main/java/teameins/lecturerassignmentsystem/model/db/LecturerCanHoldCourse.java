@@ -2,18 +2,10 @@ package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class LecturerCanHoldCourse {
 
     @Id
@@ -36,4 +28,67 @@ public class LecturerCanHoldCourse {
 
     @Nullable
     private Boolean priority;
+    
+    public LecturerCanHoldCourse() {
+    	
+    }
+    
+	public LecturerCanHoldCourse(int id, AlreadyHeld alreadyHeld, Qualification qualification, Course course,
+			Lecturer lecturer, Boolean priority) {
+		super();
+		this.id = id;
+		this.alreadyHeld = alreadyHeld;
+		this.qualification = qualification;
+		this.course = course;
+		this.lecturer = lecturer;
+		this.priority = priority;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public AlreadyHeld getAlreadyHeld() {
+		return alreadyHeld;
+	}
+
+	public void setAlreadyHeld(AlreadyHeld alreadyHeld) {
+		this.alreadyHeld = alreadyHeld;
+	}
+
+	public Qualification getQualification() {
+		return qualification;
+	}
+
+	public void setQualification(Qualification qualification) {
+		this.qualification = qualification;
+	}
+
+	public Course getCourse() {
+		return course;
+	}
+
+	public void setCourse(Course course) {
+		this.course = course;
+	}
+
+	public Lecturer getLecturer() {
+		return lecturer;
+	}
+
+	public void setLecturer(Lecturer lecturer) {
+		this.lecturer = lecturer;
+	}
+
+	public Boolean getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Boolean priority) {
+		this.priority = priority;
+	}
 }

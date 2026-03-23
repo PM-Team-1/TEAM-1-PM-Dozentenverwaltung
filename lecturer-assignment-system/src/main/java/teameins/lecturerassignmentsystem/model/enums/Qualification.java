@@ -1,10 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
-import lombok.Getter;
-
 import java.util.Arrays;
 
-@Getter
 public enum Qualification {
     IMMEDIATELY("S"),
     FOUR_WEEKS("4"),
@@ -37,4 +34,8 @@ public enum Qualification {
             default -> code;
         };
     }
+
+	public String getValue() {
+		return value;
+	}
 }

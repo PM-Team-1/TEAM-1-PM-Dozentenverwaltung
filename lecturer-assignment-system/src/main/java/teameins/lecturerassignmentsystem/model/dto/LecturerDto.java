@@ -1,16 +1,12 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import lombok.*;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
 public class LecturerDto {
 
     private int id;
@@ -23,6 +19,10 @@ public class LecturerDto {
     private boolean isExtern;
     private String preference;
     private List<LecturerCanHoldCourseDto> canHoldCourses;
+    
+    public LecturerDto() {
+    	
+    }
 
     public LecturerDto(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String preference, List<LecturerCanHoldCourseDto> canHoldCourses) throws IllegalArgumentException {
         setId(id);
@@ -127,4 +127,83 @@ public class LecturerDto {
             throw new IllegalArgumentException("Die Präferenz ist ungültig: " + preference + ". Gültige Werte sind: " + Arrays.toString(Preference.getValidValues()));
         }
     }
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getSecondName() {
+		return secondName;
+	}
+
+	public void setSecondName(String secondName) {
+		this.secondName = secondName;
+	}
+
+	public boolean isExtern() {
+		return isExtern;
+	}
+
+	public void setExtern(boolean isExtern) {
+		this.isExtern = isExtern;
+	}
+
+	public List<LecturerCanHoldCourseDto> getCanHoldCourses() {
+		return canHoldCourses;
+	}
+
+	public void setCanHoldCourses(List<LecturerCanHoldCourseDto> canHoldCourses) {
+		this.canHoldCourses = canHoldCourses;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public String getPreference() {
+		return preference;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(canHoldCourses, email, firstName, id, isExtern, lastName, phone, preference, secondName,
+				title);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof LecturerDto)) {
+			return false;
+		}
+		LecturerDto other = (LecturerDto) obj;
+		return Objects.equals(canHoldCourses, other.canHoldCourses) && Objects.equals(email, other.email)
+				&& Objects.equals(firstName, other.firstName) && id == other.id && isExtern == other.isExtern
+				&& Objects.equals(lastName, other.lastName) && Objects.equals(phone, other.phone)
+				&& Objects.equals(preference, other.preference) && Objects.equals(secondName, other.secondName)
+				&& Objects.equals(title, other.title);
+	}
+	
 }
