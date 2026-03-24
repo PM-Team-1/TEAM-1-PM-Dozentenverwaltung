@@ -2,33 +2,52 @@ package teameins.lecturerassignmentsystem.views;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 
 @Layout
 public class AppLayoutBasic extends AppLayout {
 
     public AppLayoutBasic() {
 
+        Image provadisLogo = new Image("images/provadis.svg", "Provadis");
+        provadisLogo.setHeight("60px");
+
         H1 title = new H1("Dozentenverwaltungssystem");
         title.addClassName("h1-custom");
+
+        HorizontalLayout topBar = new HorizontalLayout();
+        topBar.setWidthFull();
+        topBar.setAlignItems(FlexComponent.Alignment.CENTER);
+        topBar.setPadding(true);
+        topBar.setSpacing(true);
+        HorizontalLayout center = new HorizontalLayout(title);
+        center.setWidthFull();
+        center.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        topBar.add(provadisLogo, center);
+        topBar.expand(center);
 
         SideNav nav = getSideNav();
 
         Scroller scroller = new Scroller(nav);
 
         addToDrawer(scroller);
-        addToNavbar(title);
+        addToNavbar(topBar);
     }
 
     private SideNav getSideNav() {
         SideNav nav = new SideNav();
         nav.addClassName("sidebar-custom");
+        nav.addItem(new SideNavItem("Dashboard", "/dashboard", VaadinIcon.MODAL_LIST.create()));
         nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.CALENDAR.create()));
         nav.addItem(new SideNavItem("Dozenten", "/dozenten", VaadinIcon.USERS.create()));
+        nav.addItem(new SideNavItem("Admin", "/admin", VaadinIcon.WRENCH.create()));
         return nav;
     }
 }
