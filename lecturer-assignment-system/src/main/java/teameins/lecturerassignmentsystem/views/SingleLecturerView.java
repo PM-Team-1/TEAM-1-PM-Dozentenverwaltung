@@ -3,6 +3,7 @@ package teameins.lecturerassignmentsystem.views;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -13,11 +14,15 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import teameins.lecturerassignmentsystem.model.dto.CourseDto;
+import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
@@ -26,6 +31,8 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
 import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
@@ -81,10 +88,14 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         List<CourseToLecturerRelation> ctlr = lecturer.getCanHoldCourses().stream()
                 .map(lchc -> new CourseToLecturerRelation(lchc, courseService))
                 .toList();
+
+        Button addCourseButton = new Button("Vorlesung hinzufügen", e -> openAddCourseDialog());
+        addCourseButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         Div coursesLecturerCanHold = renderCoursesLecturerCanHold(ctlr);
         Div coursesLecturerHasHeld = renderCoursesLecturerHasHeld(ctlr);
         coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-l)");
-        courses.add(coursesLecturerCanHold, coursesLecturerHasHeld);
+        courses.add(addCourseButton, coursesLecturerCanHold, coursesLecturerHasHeld);
 
         HorizontalLayout singleLecturer = new HorizontalLayout(lecturerInfo, courses);
         singleLecturer.setWidthFull();
@@ -274,5 +285,120 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void saveEdits() {
         // Implement save functionality here
+    }
+
+    private void openAddCourseDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Vorlesung hinzufügen");
+        dialog.addClassName("dialog");
+        dialog.setWidth("500px");
+
+        // Determine which courses the lecturer already holds
+        Set<Integer> alreadyAssignedCourseIds = lecturer.getCanHoldCourses().stream()
+                .map(LecturerCanHoldCourseDto::getCourseId)
+                .collect(Collectors.toSet());
+
+        // Load all courses and filter out already assigned ones
+        List<CourseDto> availableCourses = courseService.listCourses().stream()
+                .filter(c -> !alreadyAssignedCourseIds.contains(c.getId()))
+                .toList();
+
+        if (availableCourses.isEmpty()) {
+            dialog.add(new Paragraph("Es sind keine weiteren Vorlesungen verfügbar, die diesem Dozenten zugewiesen werden können."));
+            Button closeButton = new Button("Schließen", e -> dialog.close());
+            dialog.getFooter().add(closeButton);
+            dialog.open();
+            return;
+        }
+
+        // Course selection
+        ComboBox<CourseDto> courseComboBox = new ComboBox<>("Vorlesung");
+        courseComboBox.setItems(availableCourses);
+        courseComboBox.setItemLabelGenerator(c -> c.getName() + " (" + (c.isMaster() ? "Master" : "Bachelor") + ", " + c.getSemester() + ")");
+        courseComboBox.setWidthFull();
+        courseComboBox.setRequired(true);
+        courseComboBox.setPlaceholder("Vorlesung auswählen...");
+
+        // Already held selection
+        ComboBox<String> alreadyHeldComboBox = new ComboBox<>("Bereits gehalten?");
+        alreadyHeldComboBox.setItems(
+                AlreadyHeld.NOT_YET_HELD.getValue(),
+                AlreadyHeld.PROVADIS.getValue(),
+                AlreadyHeld.OTHER_SCHOOL.getValue()
+        );
+        alreadyHeldComboBox.setItemLabelGenerator(code -> switch (code) {
+            case "N" -> "Noch nicht gehalten";
+            case "P" -> "Provadis";
+            case "A" -> "Andere Hochschule";
+            default -> code;
+        });
+        alreadyHeldComboBox.setValue(AlreadyHeld.NOT_YET_HELD.getValue());
+        alreadyHeldComboBox.setWidthFull();
+        alreadyHeldComboBox.setRequired(true);
+
+        // Qualification selection
+        ComboBox<String> qualificationComboBox = new ComboBox<>("Vorbereitungszeit");
+        qualificationComboBox.setItems(
+                teameins.lecturerassignmentsystem.model.enums.Qualification.IMMEDIATELY.getValue(),
+                teameins.lecturerassignmentsystem.model.enums.Qualification.FOUR_WEEKS.getValue(),
+                teameins.lecturerassignmentsystem.model.enums.Qualification.OVER_FOUR_WEEKS.getValue()
+        );
+        qualificationComboBox.setItemLabelGenerator(code -> switch (code) {
+            case "S" -> "Keine (sofort einsetzbar)";
+            case "4" -> "Vier Wochen";
+            case "M" -> "Über vier Wochen";
+            default -> code;
+        });
+        qualificationComboBox.setValue(teameins.lecturerassignmentsystem.model.enums.Qualification.IMMEDIATELY.getValue());
+        qualificationComboBox.setWidthFull();
+        qualificationComboBox.setRequired(true);
+
+        // Priority checkbox
+        Checkbox priorityCheckbox = new Checkbox("Priorität");
+
+        VerticalLayout formLayout = new VerticalLayout(courseComboBox, alreadyHeldComboBox, qualificationComboBox, priorityCheckbox);
+        formLayout.setPadding(false);
+        formLayout.setSpacing(true);
+        dialog.add(formLayout);
+
+        // Save button
+        Button saveButton = new Button("Hinzufügen", e -> {
+            if (courseComboBox.getValue() == null) {
+                Notification.show("Bitte wählen Sie eine Vorlesung aus.", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            try {
+                LecturerCanHoldCourseDto dto = new LecturerCanHoldCourseDto(
+                        0,
+                        lecturer.getId(),
+                        courseComboBox.getValue().getId(),
+                        alreadyHeldComboBox.getValue(),
+                        qualificationComboBox.getValue(),
+                        priorityCheckbox.getValue()
+                );
+
+                lecturerService.addCourseToLecturer(dto);
+                dialog.close();
+
+                // Refresh the view
+                lecturer = lecturerService.getLecturerById(lecturer.getId());
+                removeAll();
+                renderSingleLecturer(isInEditMode);
+
+                Notification.show("Vorlesung erfolgreich hinzugefügt.", 3000, Notification.Position.BOTTOM_START)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            } catch (IllegalArgumentException ex) {
+                Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+
+        dialog.getFooter().add(cancelButton, saveButton);
+        dialog.open();
     }
 }
