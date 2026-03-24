@@ -17,6 +17,7 @@ import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 
 @Route("dozenten")
 @PageTitle("Dozenten")
@@ -46,7 +47,7 @@ public class AllLecturersView extends VerticalLayout {
         toolbar.addClassName("toolbar");
 
         Button addLecturerButton = new Button("Dozenten hinzufügen");
-        addLecturerButton.addClickListener(e -> UI.getCurrent().navigate("dozenten/neu"));
+        addLecturerButton.addClickListener(e -> new CreateLecturerDialog(lecturerService));
 
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suche");

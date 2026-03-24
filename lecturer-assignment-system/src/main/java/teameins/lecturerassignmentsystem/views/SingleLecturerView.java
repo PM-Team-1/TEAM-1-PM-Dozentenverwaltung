@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +25,10 @@ import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
-import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
+import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 
 import java.util.List;
 
@@ -58,17 +58,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
         try {
-            if ("neu".equalsIgnoreCase(parameter)) {
-                lecturer = new LecturerDto();
-                lecturer.setExtern(false);
-                lecturer.setCanHoldCourses(List.of());
-                lecturer.setPreference(Preference.ALLES.getValue()); // Default
-                isInEditMode = true;
-                removeAll();
-                renderSingleLecturer(true);
-                return;
-            }
-
             int id = Integer.parseInt(parameter);
             lecturer = lecturerService.getLecturerById(id);
             isInEditMode = false;
@@ -84,12 +73,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     }
 
     private void renderSingleLecturer(boolean isInEditMode) {
-        boolean isNewLecturer =
-                lecturer.getId() == 0
-                        && (lecturer.getFirstName() == null || lecturer.getFirstName().isBlank())
-                        && (lecturer.getLastName() == null || lecturer.getLastName().isBlank());
-
-        H2 heading = new H2(isNewLecturer ? "Neuen Dozenten anlegen" : lecturer.getFullName());
+        H2 heading = new H2(lecturer.getFullName());
 
         VerticalLayout lecturerInfo = new VerticalLayout();
         lecturerInfo.getStyle().set("flex", "0 0 auto");
@@ -129,18 +113,15 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
         toolbar.add(back);
 
-        boolean isNewLecturer = lecturer.getId() == 0;
-
         if (!isInEditMode) {
             Button edit = new Button("Bearbeiten", e -> toggleEditLecturerMode());
             edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
             toolbar.add(edit);
 
-            if (!isNewLecturer) {
-                Button delete = new Button("Löschen", e -> deleteLecturer());
-                delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-                toolbar.add(delete);
-            }
+            Button delete = new Button("Löschen", e -> deleteLecturer());
+            delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+            toolbar.add(delete);
+
         } else {
             Button save = new Button("Speichern", e -> {
                 if (saveEdits()) {
@@ -149,13 +130,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             });
             save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-            Button cancel = new Button("Abbrechen", e -> {
-                if (isNewLecturer) {
-                    UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE);
-                } else {
-                    toggleEditLecturerMode();
-                }
-            });
+            Button cancel = new Button("Abbrechen", e -> toggleEditLecturerMode());
             cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
             toolbar.add(save, cancel);
@@ -393,19 +368,16 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private boolean saveEdits() {
         try {
             binder.writeBean(lecturer);
-
-            if (lecturer.getId() == 0) {
-                lecturer = lecturerService.createLecturer(lecturer);
-                UI.getCurrent().navigate("dozenten/" + lecturer.getId());
-
-            } else {
-                lecturer = lecturerService.updateLecturer(lecturer);
-            }
-
+            lecturer = lecturerService.updateLecturer(lecturer);
             return true;
+
+        } catch (ValidationException ex) {
+            Dialog errorDialog = new ValidationErrorDialog(ex);
+            errorDialog.open();
+            return false;
         } catch (Exception ex) {
             Dialog errorDialog = new Dialog();
-            errorDialog.add(new H3("Validierungsfehler"));
+            errorDialog.add(new H3("Unerwarteter Fehler"));
             errorDialog.add(new Paragraph("Die Änderungen konnten nicht gespeichert werden: " + ex.getMessage()));
             Button closeButton = new Button("Schließen", e -> errorDialog.close());
             errorDialog.add(closeButton);
