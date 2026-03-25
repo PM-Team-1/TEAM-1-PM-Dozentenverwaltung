@@ -1,10 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
-import lombok.Getter;
-
 import java.util.Arrays;
 
-@Getter
 public enum Title {
     DOCTOR("Dr."),
     PROFESSOR("Prof."),
@@ -27,4 +24,8 @@ public enum Title {
                 .map(Title::getValue)
                 .toArray(String[]::new);
     }
+
+	public String getValue() {
+		return value;
+	}
 }

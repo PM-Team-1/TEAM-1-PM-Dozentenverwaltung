@@ -1,7 +1,6 @@
 package teameins.lecturerassignmentsystem.service;
 
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
@@ -16,8 +15,11 @@ import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class MappingService {
+	
+	public MappingService() {
+		
+	}
 
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
         return new LecturerDto(

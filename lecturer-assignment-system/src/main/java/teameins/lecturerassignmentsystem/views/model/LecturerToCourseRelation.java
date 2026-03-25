@@ -1,11 +1,9 @@
 package teameins.lecturerassignmentsystem.views.model;
 
-import lombok.Getter;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
-@Getter
 public class LecturerToCourseRelation {
 
     private final LecturerService lecturerService;
@@ -17,4 +15,16 @@ public class LecturerToCourseRelation {
         this.lecturerCanHoldCourse = lecturerCanHoldCourse;
         this.lecturer = lecturerService.getLecturerById(lecturerCanHoldCourse.getLecturerId());
     }
+
+	public LecturerService getLecturerService() {
+		return lecturerService;
+	}
+
+	public LecturerCanHoldCourseDto getLecturerCanHoldCourse() {
+		return lecturerCanHoldCourse;
+	}
+
+	public LecturerDto getLecturer() {
+		return lecturer;
+	}
 }
