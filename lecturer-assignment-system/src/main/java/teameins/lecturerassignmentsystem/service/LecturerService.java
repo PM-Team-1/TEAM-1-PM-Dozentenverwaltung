@@ -1,7 +1,6 @@
 package teameins.lecturerassignmentsystem.service;
 
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
@@ -18,14 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
     private final LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
     private final CourseRepository courseRepository;
     private final MappingService mappingService;
 
-    public LecturerDto getLecturerById(int lecturerId) {
+    public LecturerService(LecturerRepository lecturerRepository,
+			LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository, CourseRepository courseRepository,
+			MappingService mappingService) {
+		super();
+		this.lecturerRepository = lecturerRepository;
+		this.lecturerCanHoldCourseRepository = lecturerCanHoldCourseRepository;
+		this.courseRepository = courseRepository;
+		this.mappingService = mappingService;
+	}
+
+	public LecturerDto getLecturerById(int lecturerId) {
         Lecturer lecturer = lecturerRepository.findById(lecturerId)
                 .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHold(lecturerId);

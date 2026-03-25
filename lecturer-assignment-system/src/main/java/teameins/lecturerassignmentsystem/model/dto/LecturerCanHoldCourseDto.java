@@ -1,20 +1,11 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.Null;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 
 import java.util.Arrays;
+import java.util.Objects;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
 public class LecturerCanHoldCourseDto {
     private int id;
     private int lecturerId;
@@ -22,6 +13,10 @@ public class LecturerCanHoldCourseDto {
     private String alreadyHeld;
     private String qualification;
     private Boolean priority;
+    
+    public LecturerCanHoldCourseDto() {
+    	
+    }
 
     public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, Boolean priority) throws IllegalArgumentException {
         setId(id);
@@ -64,4 +59,64 @@ public class LecturerCanHoldCourseDto {
             throw new IllegalArgumentException("Die Angabe, ob die Vorlesung bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
         }
     }
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getLecturerId() {
+		return lecturerId;
+	}
+
+	public void setLecturerId(int lecturerId) {
+		this.lecturerId = lecturerId;
+	}
+
+	public int getCourseId() {
+		return courseId;
+	}
+
+	public void setCourseId(int courseId) {
+		this.courseId = courseId;
+	}
+
+	public Boolean getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Boolean priority) {
+		this.priority = priority;
+	}
+
+	public String getAlreadyHeld() {
+		return alreadyHeld;
+	}
+
+	public String getQualification() {
+		return qualification;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(alreadyHeld, courseId, id, lecturerId, priority, qualification);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof LecturerCanHoldCourseDto)) {
+			return false;
+		}
+		LecturerCanHoldCourseDto other = (LecturerCanHoldCourseDto) obj;
+		return Objects.equals(alreadyHeld, other.alreadyHeld) && courseId == other.courseId && id == other.id
+				&& lecturerId == other.lecturerId && Objects.equals(priority, other.priority)
+				&& Objects.equals(qualification, other.qualification);
+	}
+	
 }
