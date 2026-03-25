@@ -19,16 +19,14 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import teameins.lecturerassignmentsystem.model.dto.CourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
+import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
 import java.util.List;
 
@@ -144,10 +142,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         info.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         ComboBox<String> title = new ComboBox<>("Titel");
-        title.setItems("Dr.", "Prof.", "Keine Angabe");
+        title.setItems("Dr.", "Prof.", "Kein Titel");
         title.setValue(
                 lecturer.getTitle() == null || lecturer.getTitle().isBlank()
-                        ? "Keine Angabe"
+                        ? "Kein Titel"
                         : lecturer.getTitle()
         );
         title.setReadOnly(!edit);
@@ -201,17 +199,17 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
         binder.removeBean();
 
+
         binder.forField(title)
-                .asRequired("Titel auswählen")
                 .withValidator(
-                        value -> "Keine Angabe".equals(value) || LecturerDto.validateTitle(value),
+                        value -> "Kein Titel".equals(value) || (value != null && !value.isBlank()),
                         "Gültigen Titel angeben"
                 )
                 .bind(
-                        dto -> dto.getTitle() == null || dto.getTitle().isBlank() ? "Keine Angabe" : dto.getTitle(),
-                        (dto, value) -> dto.setTitle("Keine Angabe".equals(value) ? "" : value)
-                );
+                        dto -> dto.getTitle() == null || dto.getTitle().isBlank() ? "Kein Titel" : dto.getTitle(),
 
+                        (dto, value) -> dto.setTitle("Kein Titel".equals(value) ? "" : value)
+                );
         binder.forField(lastName)
                 .asRequired("Nachname darf nicht leer sein")
                 .withValidator(LecturerDto::validateLastName, "Nachname darf nicht leer sein")
@@ -386,27 +384,4 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         }
     }
 
-    @Getter
-    private static class CourseToLecturerRelation {
-
-        private final CourseService courseService;
-        private final LecturerCanHoldCourseDto lecturerCanHoldCourse;
-        private final CourseDto course;
-
-        public CourseToLecturerRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, CourseService courseService) {
-            this.courseService = courseService;
-            this.lecturerCanHoldCourse = lecturerCanHoldCourse;
-            this.course = courseService.getCourseById(lecturerCanHoldCourse.getCourseId());
-        }
-
-        public String getSemesterSortable() {
-            String semester = this.getCourse().getSemester();
-            String yearPart = semester.replaceAll("\\D", "");
-            if (yearPart.contains("/")) {
-                yearPart = yearPart.split("/")[0];
-            }
-            String termPart = semester.toLowerCase().contains("winter") ? "1" : "2";
-            return yearPart + termPart;
-        }
-    }
 }

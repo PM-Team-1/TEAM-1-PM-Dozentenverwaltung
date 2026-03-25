@@ -47,8 +47,8 @@ public class CreateLecturerDialog extends Dialog {
         layout.setPadding(false);
 
         ComboBox<String> title = new ComboBox<>("Titel");
-        title.setItems("Dr.", "Prof.", "Keine Angabe");
-        title.setValue("Keine Angabe");
+        title.setItems("Dr.", "Prof.", "Kein Titel");
+        title.setValue("Kein Titel");
         title.setWidthFull();
 
         TextField lastName = new TextField("Nachname");
@@ -71,13 +71,16 @@ public class CreateLecturerDialog extends Dialog {
         TextField phone = new TextField("Telefonnummer");
         phone.setWidthFull();
 
-        // Validierungen binden
         binder.forField(title)
-                .asRequired("Titel auswählen")
-                .withValidator(value -> "Keine Angabe".equals(value) || LecturerDto.validateTitle(value), "Gültigen Titel angeben")
-                .bind(dto -> dto.getTitle() == null || dto.getTitle().isBlank() ? "Keine Angabe" : dto.getTitle(),
-                        (dto, value) -> dto.setTitle("Keine Angabe".equals(value) ? "" : value));
+                .withValidator(
+                        value -> "Kein Titel".equals(value) || (value != null && !value.isBlank()),
+                        "Gültigen Titel angeben"
+                )
+                .bind(
+                        dto -> dto.getTitle() == null || dto.getTitle().isBlank() ? "Kein Titel" : dto.getTitle(),
 
+                        (dto, value) -> dto.setTitle("Kein Titel".equals(value) ? "" : value)
+                );
         binder.forField(lastName)
                 .asRequired("Nachname darf nicht leer sein")
                 .withValidator(LecturerDto::validateLastName, "Nachname darf nicht leer sein")

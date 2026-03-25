@@ -96,7 +96,7 @@ public class MappingService {
     }
 
     private Title parseTitle(String titleStr) {
-        if (titleStr == null || titleStr.isBlank()) {
+        if (titleStr == null) {
             throw new IllegalArgumentException("Title darf nicht leer sein");
         }
         for (Title t : Title.values()) {

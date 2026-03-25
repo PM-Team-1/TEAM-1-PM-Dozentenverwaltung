@@ -18,4 +18,17 @@ public class CourseToLecturerRelation {
         this.lecturerCanHoldCourse = lecturerCanHoldCourse;
         this.course = courseService.getCourseById(lecturerCanHoldCourse.getCourseId());
     }
+    public String getSemesterSortable() {
+        String semester = this.getCourse().getSemester();
+        if (semester == null) {
+            return "";
+        }
+
+        String yearPart = semester.replaceAll("\\D", "");
+        if (yearPart.contains("/")) {
+            yearPart = yearPart.split("/")[0];
+        }
+        String termPart = semester.toLowerCase().contains("winter") ? "1" : "2";
+        return yearPart + termPart;
+    }
 }
