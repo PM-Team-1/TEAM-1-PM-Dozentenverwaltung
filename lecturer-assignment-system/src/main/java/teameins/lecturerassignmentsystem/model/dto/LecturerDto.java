@@ -117,18 +117,10 @@ public class LecturerDto {
     }
 
     public static boolean validatePreference(String preference) {
-        if (preference == null || preference.isBlank()) {
-            return true;
-        }
         return Preference.validate(preference);
     }
 
     public void setPreference(String preference) throws IllegalArgumentException {
-        if (preference == null || preference.isBlank()) {
-            this.preference = null;
-            return;
-        }
-
         if (validatePreference(preference)) {
             this.preference = preference;
         } else {
