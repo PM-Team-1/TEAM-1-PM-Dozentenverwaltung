@@ -47,6 +47,7 @@ public class AppLayoutBasic extends AppLayout {
         nav.addItem(new SideNavItem("Dashboard", "/dashboard", VaadinIcon.MODAL_LIST.create()));
         nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.CALENDAR.create()));
         nav.addItem(new SideNavItem("Dozenten", "/dozenten", VaadinIcon.USERS.create()));
+        nav.addItem(new SideNavItem("Reports", "/reports", VaadinIcon.BAR_CHART.create()));
         nav.addItem(new SideNavItem("Admin", "/admin", VaadinIcon.WRENCH.create()));
         return nav;
     }
