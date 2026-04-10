@@ -1,8 +1,11 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
+import lombok.ToString;
+
 import java.util.List;
 import java.util.Objects;
 
+@ToString
 public class CourseDto {
 
     private int id;

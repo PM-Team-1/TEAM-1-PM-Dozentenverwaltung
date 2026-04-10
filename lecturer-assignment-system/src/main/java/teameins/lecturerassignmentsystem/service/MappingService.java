@@ -11,6 +11,8 @@ import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
+import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
+import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 
 import java.util.List;
 
@@ -95,6 +97,34 @@ public class MappingService {
         entity.setQualification(parseQualification(dto.getQualification()));
         entity.setPriority(dto.getPriority());
         return entity;
+    }
+
+    public LecturerReportEntity mapReport(Lecturer lecturer, List<LecturerCanHoldCourse> canHoldCourses) {
+        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
+        lecturerReportEntity.setTitle(lecturer.getTitle().getValue());
+        lecturerReportEntity.setFirstName(lecturer.getFirstName());
+        lecturerReportEntity.setLastName(lecturer.getLastName());
+        lecturerReportEntity.setSecondName(lecturer.getSecondName());
+        lecturerReportEntity.setEmail(lecturer.getEmail());
+        lecturerReportEntity.setPhone(lecturer.getPhone());
+        lecturerReportEntity.setExtern(lecturer.isExtern());
+        lecturerReportEntity.setPreference(lecturer.getPreference().getDescription());
+        lecturerReportEntity.setCanHoldCourses(
+                canHoldCourses.stream().map(canHoldCourse ->
+                        mapReport(canHoldCourse.getCourse(), canHoldCourse)).toList());
+        return lecturerReportEntity;
+    }
+
+    public CourseReportEntity mapReport(Course course, LecturerCanHoldCourse lecturerCanHoldCourse) {
+        CourseReportEntity courseReportEntity = new CourseReportEntity();
+        courseReportEntity.setName(course.getName());
+        courseReportEntity.setOpenStatus(course.isClosed() ? "geschlossen" : "offen");
+        courseReportEntity.setAcademicDegree(course.isMaster() ? "Master" : "Bachelor");
+        courseReportEntity.setSemester(course.getSemester());
+        courseReportEntity.setPriority(lecturerCanHoldCourse.getPriority());
+        courseReportEntity.setAlreadyHeld(lecturerCanHoldCourse.getAlreadyHeld().getDescription());
+        courseReportEntity.setQualification(lecturerCanHoldCourse.getQualification().getDescription());
+        return courseReportEntity;
     }
 
     private Title parseTitle(String titleStr) {

@@ -1,5 +1,6 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
+import lombok.ToString;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
@@ -7,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+@ToString
 public class LecturerDto {
 
     private int id;

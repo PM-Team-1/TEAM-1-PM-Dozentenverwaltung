@@ -3,6 +3,7 @@ package teameins.lecturerassignmentsystem.views;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.button.Button;
@@ -14,18 +15,29 @@ import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
+import teameins.lecturerassignmentsystem.service.ExportService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 
 @Route("dozenten")
 @PageTitle("Dozenten")
 public class AllLecturersView extends VerticalLayout {
 
     private final transient LecturerService lecturerService;
+    private FileCreationMode creationMode;
 
     @Autowired
-    public AllLecturersView(LecturerService lecturerService) {
+    public AllLecturersView(LecturerService lecturerService, ExportService exportService) {
         this.lecturerService = lecturerService;
 
         H2 heading = new H2("Dozenten");
@@ -46,8 +58,9 @@ public class AllLecturersView extends VerticalLayout {
         toolbar.addClassName("toolbar");
 
         Button addLecturerButton = new Button("Dozenten hinzufügen");
-        addLecturerButton.addClickListener(e -> UI.getCurrent().navigate("dozenten/neu"));
-
+        addLecturerButton.addClickListener(e -> {
+            UI.getCurrent().navigate("dozenten/neu");
+        });
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suche");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
