@@ -11,6 +11,7 @@ import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
+import teameins.lecturerassignmentsystem.model.enums.ReportMode;
 import teameins.lecturerassignmentsystem.service.ExportService;
 
 import java.io.ByteArrayInputStream;
@@ -40,28 +41,32 @@ public class DashboardView extends VerticalLayout {
 
         Anchor pdfAnchor = new Anchor(DownloadHandler.fromInputStream(event -> {
             FileCreationMode creationMode = FileCreationMode.PDF;
-            byte[] fileBytes = exportService.exportFile(creationMode, new ArrayList<>());
-            event.setFileName(creationMode.getFileName());
-            return new DownloadResponse(new ByteArrayInputStream(fileBytes), creationMode.getFileName(), creationMode.getContentType(), fileBytes.length);
+            return getDownloadResponse(creationMode);
         }), "PDF herunterladen");
 
         Anchor csvAnchor = new Anchor(DownloadHandler.fromInputStream(event -> {
             FileCreationMode creationMode = FileCreationMode.CSV;
-            byte[] fileBytes = exportService.exportFile(creationMode, new ArrayList<>());
-            event.setFileName(creationMode.getFileName());
-            return new DownloadResponse(new ByteArrayInputStream(fileBytes), creationMode.getFileName(), creationMode.getContentType(), fileBytes.length);
+            return getDownloadResponse(creationMode);
         }), "CSV herunterladen");
 
         Anchor jsonAnchor = new Anchor(DownloadHandler.fromInputStream(event -> {
             FileCreationMode creationMode = FileCreationMode.JSON;
-            byte[] fileBytes = exportService.exportFile(creationMode, new ArrayList<>());
-            event.setFileName(creationMode.getFileName());
-            return new DownloadResponse(new ByteArrayInputStream(fileBytes), creationMode.getFileName(), creationMode.getContentType(), fileBytes.length);
+            return getDownloadResponse(creationMode);
         }), "JSON herunterladen");
 
         toolbar.add(pdfAnchor, csvAnchor, jsonAnchor);
 
         return toolbar;
+    }
+
+    private DownloadResponse getDownloadResponse(FileCreationMode creationMode) {
+        ReportMode reportMode = ReportMode.ALL_COURSES_WITH_NO_LECTURERS;
+        byte[] fileBytes = exportService.exportFile(creationMode, reportMode, new ArrayList<>());
+        return new DownloadResponse(
+                new ByteArrayInputStream(fileBytes),
+                reportMode.getFilename() + creationMode.getFileEnd(),
+                creationMode.getContentType(),
+                fileBytes.length);
     }
     
 }

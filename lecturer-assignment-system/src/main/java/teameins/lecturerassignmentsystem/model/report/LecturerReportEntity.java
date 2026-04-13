@@ -20,7 +20,7 @@ public class LecturerReportEntity {
     @JsonProperty("Telefonnummer")
     private String phone;
     @JsonProperty("Externer")
-    private boolean isExtern;
+    private Boolean isExtern;
     @JsonProperty("Präferenz")
     private String preference;
     @JsonProperty("Kann Kurse halten")
@@ -28,7 +28,7 @@ public class LecturerReportEntity {
 
     public LecturerReportEntity() {}
 
-    public LecturerReportEntity(String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String preference, List<CourseReportEntity> canHoldCourses) {
+    public LecturerReportEntity(String title, String firstName, String lastName, String secondName, String email, String phone, Boolean isExtern, String preference, List<CourseReportEntity> canHoldCourses) {
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -88,11 +88,11 @@ public class LecturerReportEntity {
         this.phone = phone;
     }
 
-    public boolean isExtern() {
+    public Boolean isExtern() {
         return isExtern;
     }
 
-    public void setExtern(boolean extern) {
+    public void setExtern(Boolean extern) {
         isExtern = extern;
     }
 
