@@ -2,6 +2,7 @@ package teameins.lecturerassignmentsystem.views.model;
 
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
 public class LecturerToCourseRelation {
@@ -26,5 +27,19 @@ public class LecturerToCourseRelation {
 
 	public LecturerDto getLecturer() {
 		return lecturer;
+	}
+
+	public double getPreferenceScore(boolean isMaster){
+		int affinityScore = Affinity.mapAffinityScore(lecturerCanHoldCourse.getAffinity());
+		String degree = isMaster ? "M" : "B";
+		double degreeScore;
+		if (lecturer.getPreference().equals("A")) {
+			degreeScore = 0.0;
+		} else if (lecturer.getPreference().contains(degree)) {
+			degreeScore = 0.5;
+		} else {
+			degreeScore = -0.5;
+		}
+		return affinityScore + degreeScore;
 	}
 }

@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
@@ -282,6 +284,15 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
+                .setKey("preference")
+                .setHeader("Präferenz")
+                .setComparator(row -> row.getPreferenceScore(lecturer.getPreference()))
+                .setSortable(false)
+                .setAutoWidth(true).setFlexGrow(1);
+
+
+        canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("preference"), SortDirection.DESCENDING)));
 
         canHoldgrid.setItems(rows);
         coursesDiv.add(heading, canHoldgrid);

@@ -25,6 +25,15 @@ public enum Affinity {
                 .toArray(String[]::new);
     }
 
+    public static int mapAffinityScore(String affinity) {
+        return switch (affinity) {
+            case "niedrig" -> 1;
+            case "mittel" -> 2;
+            case "hoch" -> 3;
+            default -> throw new IllegalArgumentException("Ungültige Affinität: " + affinity);
+        };
+    }
+
 	public String getValue() {
 		return value;
 	}

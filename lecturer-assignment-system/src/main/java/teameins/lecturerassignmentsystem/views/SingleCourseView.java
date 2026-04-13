@@ -209,19 +209,19 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         lecturersWhoCanHoldGrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
-        Grid.Column<LecturerToCourseRelation> prefColumn = lecturersWhoCanHoldGrid.addColumn(this::mapPreference)
-                .setHeader("Präferenz")
-                .setSortable(true)
-                .setComparator(row -> affinityScore(row.getLecturerCanHoldCourse().getAffinity()))
-                .setAutoWidth(true).setFlexGrow(1);
-
         lecturersWhoCanHoldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld())).setHeader("Bereits gehalten an")
                 .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        lecturersWhoCanHoldGrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
+                .setKey("preference")
+                .setHeader("Präferenz")
+                .setComparator(row -> row.getPreferenceScore(course.isMaster()))
+                .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
 
         lecturersWhoCanHoldGrid.setItems(rows);
 
-        lecturersWhoCanHoldGrid.sort(List.of(new GridSortOrder<>(prefColumn, SortDirection.ASCENDING)));
+        lecturersWhoCanHoldGrid.sort(List.of(new GridSortOrder<>(lecturersWhoCanHoldGrid.getColumnByKey("preference"), SortDirection.DESCENDING)));
 
         return lecturersWhoCanHoldGrid;
     }
@@ -285,33 +285,6 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         add(header, desc, back);
     }
 
-    private String mapPreference(LecturerToCourseRelation ltcr){
-//        Boolean priority = ltcr.getLecturerCanHoldCourse().getPriority();
-//        if (priority == null) {
-//            return "-";
-//        }
-//        if (priority) {
-//            return "Hält gerne im " + (course.isMaster() ? MASTER : BACHELOR);
-//        } else {
-//            return "Hält lieber im " + (course.isMaster() ? BACHELOR : MASTER);
-//        }
-        return "";
-    }
-
-    private int affinityScore(String affinity) {
-         switch (affinity) {
-             case "niedrig" -> {
-                 return 0;
-             }
-             case "mittel" -> {
-                 return 1;
-             }
-             case "hoch" -> {
-                 return 2;
-             }
-             default -> throw new IllegalArgumentException("Ungültige Affinität: " + affinity);
-         }
-    }
 
     private Div getFilterBar(Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse, Component noLecturersMessage) {
         Div filterBar = new Div();
