@@ -7,6 +7,7 @@ import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
@@ -18,7 +19,7 @@ import java.util.List;
 public class MappingService {
 	
 	public MappingService() {
-		
+		//no args constructor
 	}
 
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
@@ -54,7 +55,7 @@ public class MappingService {
                 lecturerCanHoldCourse.getCourse().getId(),
                 lecturerCanHoldCourse.getAlreadyHeld().getValue(),
                 lecturerCanHoldCourse.getQualification().getValue(),
-                lecturerCanHoldCourse.getPriority()
+                lecturerCanHoldCourse.getAffinity().getValue()
         );
     }
 
@@ -93,7 +94,7 @@ public class MappingService {
         entity.setCourse(course);
         entity.setAlreadyHeld(parseAlreadyHeld(dto.getAlreadyHeld()));
         entity.setQualification(parseQualification(dto.getQualification()));
-        entity.setPriority(dto.getPriority());
+        entity.setAffinity(parseAffinity(dto.getAffinity()));
         return entity;
     }
 
@@ -143,5 +144,17 @@ public class MappingService {
             }
         }
         throw new IllegalArgumentException("Ungültige Qualification: '" + value + "'");
+    }
+
+    private Affinity parseAffinity(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Affinity darf nicht leer sein");
+        }
+        for (Affinity a : Affinity.values()) {
+            if (a.getValue().equalsIgnoreCase(value)) {
+                return a;
+            }
+        }
+        throw new IllegalArgumentException("Ungültige Affinity: '" + value + "'");
     }
 }

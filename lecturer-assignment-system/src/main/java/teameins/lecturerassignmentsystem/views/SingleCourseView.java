@@ -212,7 +212,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         Grid.Column<LecturerToCourseRelation> prefColumn = lecturersWhoCanHoldGrid.addColumn(this::mapPreference)
                 .setHeader("Präferenz")
                 .setSortable(true)
-                .setComparator(row -> priorityScore(row.getLecturerCanHoldCourse().getPriority()))
+                .setComparator(row -> affinityScore(row.getLecturerCanHoldCourse().getAffinity()))
                 .setAutoWidth(true).setFlexGrow(1);
 
         lecturersWhoCanHoldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld())).setHeader("Bereits gehalten an")
@@ -286,20 +286,31 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     }
 
     private String mapPreference(LecturerToCourseRelation ltcr){
-        Boolean priority = ltcr.getLecturerCanHoldCourse().getPriority();
-        if (priority == null) {
-            return "-";
-        }
-        if (priority) {
-            return "Hält gerne im " + (course.isMaster() ? MASTER : BACHELOR);
-        } else {
-            return "Hält lieber im " + (course.isMaster() ? BACHELOR : MASTER);
-        }
+//        Boolean priority = ltcr.getLecturerCanHoldCourse().getPriority();
+//        if (priority == null) {
+//            return "-";
+//        }
+//        if (priority) {
+//            return "Hält gerne im " + (course.isMaster() ? MASTER : BACHELOR);
+//        } else {
+//            return "Hält lieber im " + (course.isMaster() ? BACHELOR : MASTER);
+//        }
+        return "";
     }
 
-    private int priorityScore(Boolean priority) {
-        if (priority == null) return 1;
-        return priority ? 0 : 2;
+    private int affinityScore(String affinity) {
+         switch (affinity) {
+             case "niedrig" -> {
+                 return 0;
+             }
+             case "mittel" -> {
+                 return 1;
+             }
+             case "hoch" -> {
+                 return 2;
+             }
+             default -> throw new IllegalArgumentException("Ungültige Affinität: " + affinity);
+         }
     }
 
     private Div getFilterBar(Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse, Component noLecturersMessage) {

@@ -12,6 +12,7 @@ import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
@@ -318,7 +319,7 @@ class LecturerServiceTest {
                 Qualification.IMMEDIATELY,
                 getMasterCourseById(id),
                 getLecturerById(id),
-                false
+                Affinity.LOW
         );
     }
 
@@ -329,7 +330,7 @@ class LecturerServiceTest {
                 Qualification.IMMEDIATELY,
                 getMasterCourseById(id),
                 getLecturerById(lecturerId),
-                false
+                Affinity.LOW
         );
     }
 
@@ -340,7 +341,7 @@ class LecturerServiceTest {
                 Qualification.IMMEDIATELY,
                 getMasterCourseById(courseId),
                 getLecturerById(lecturerId),
-                false
+                Affinity.LOW
         );
     }
 
