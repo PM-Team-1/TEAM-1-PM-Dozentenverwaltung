@@ -7,6 +7,8 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import teameins.lecturerassignmentsystem.model.enums.ReportMode;
+import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 
 import java.io.ByteArrayOutputStream;
@@ -16,8 +18,8 @@ import java.util.List;
 
 public class PdfCreator extends FileCreator{
 
-    public PdfCreator(List<LecturerReportEntity> allValidLecturers) {
-        super(allValidLecturers);
+    public PdfCreator(List<LecturerReportEntity> allValidLecturers, ReportMode reportMode) {
+        super(allValidLecturers, reportMode);
     }
 
     @Override
@@ -50,11 +52,17 @@ public class PdfCreator extends FileCreator{
             String label = jsonProperty != null ? jsonProperty.value() : field.getName();
             if(!field.getType().equals(List.class)) {
                 Object value = field.get(obj);
-
-                builder.writeLabelWithValue(label, value != null ? value.toString() : "null", PdfDocumentBuilder.MARGIN_LEFT + indent);
+                if (reportMode != ReportMode.ALL_COURSES_WITH_NO_LECTURERS || obj instanceof CourseReportEntity) {
+                    builder.writeLabelWithValue(label, value != null ? value.toString() : "null", PdfDocumentBuilder.MARGIN_LEFT + indent);
+                }
             } else {
                 List<?> list = (List<?>) field.get(obj);
-                builder.writeLabel(label, PdfDocumentBuilder.MARGIN_LEFT + indent);
+
+                if (reportMode != ReportMode.ALL_COURSES_WITH_NO_LECTURERS) {
+                    builder.writeLabel(label, PdfDocumentBuilder.MARGIN_LEFT + indent);
+                } else {
+                    builder.writeLabel("Kurse ohne Dozenten", PdfDocumentBuilder.MARGIN_LEFT + indent);
+                }
                 for(Object item : list) {
                     builder.writeListSeparator();
                     writeEntity(item, builder, PdfDocumentBuilder.INDENT_SUB);
