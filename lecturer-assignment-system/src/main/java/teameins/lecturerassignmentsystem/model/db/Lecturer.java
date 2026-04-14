@@ -27,11 +27,11 @@ public class Lecturer {
 
     @Enumerated(EnumType.STRING)
     private Preference preference;
-    
+
     public Lecturer() {
-    	
+
     }
-    
+
     public Lecturer(int id, Title title, String firstName, String lastName, String secondName, String email,
 			String phone, boolean isExtern, Preference preference) {
 		super();

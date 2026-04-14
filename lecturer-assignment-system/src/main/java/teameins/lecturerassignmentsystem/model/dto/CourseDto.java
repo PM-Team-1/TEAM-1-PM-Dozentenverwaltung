@@ -26,16 +26,16 @@ public class CourseDto {
     }
 
     public static boolean validate(CourseDto course) {
-        return validateNameMessage(course.getName()).isEmpty() &&
-               validateSemesterMessage(course.getSemester()).isEmpty();
+        return validateName(course.getName()).isEmpty() &&
+               validateSemester(course.getSemester()).isEmpty();
     }
 
     public boolean validate(){
         return validate(this);
     }
 
-    public static String validateNameMessage(String name) {
-        if (name == null || name.isEmpty()) {
+    public static String validateName(String name) {
+        if (name == null || name.isBlank()) {
             return "Der Name der Vorlesung darf nicht leer sein.";
         }
         return "";
@@ -45,8 +45,8 @@ public class CourseDto {
         this.name = name;
     }
 
-    public static String validateSemesterMessage(String semester) {
-        if (semester == null || semester.isEmpty()) {
+    public static String validateSemester(String semester) {
+        if (semester == null || semester.isBlank()) {
             return "Das Semester der Vorlesung darf nicht leer sein.";
         }
         if (!semester.strip().matches("(WiSe \\d{2,4}/\\d{2,4}|SoSe \\d{2,4})")) {

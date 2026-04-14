@@ -6,6 +6,7 @@ import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.InvalidCourseException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 
@@ -44,11 +45,17 @@ public class CourseService {
     }
 
     public CourseDto createCourse(CourseDto courseDto) {
+        if (!courseDto.validate()) {
+            throw new InvalidCourseException("Die Vorlesung ist ungültig.");
+        }
         int id = courseRepository.save(mappingService.map(courseDto)).getId();
         return getCourseById(id);
     }
 
     public CourseDto updateCourse(CourseDto courseDto) {
+        if (!courseDto.validate()) {
+            throw new InvalidCourseException("Die Vorlesung ist ungültig.");
+        }
         courseRepository.findById(courseDto.getId()).
                 orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseDto.getId() + " gefunden werden."));
         courseRepository.save(mappingService.map(courseDto));

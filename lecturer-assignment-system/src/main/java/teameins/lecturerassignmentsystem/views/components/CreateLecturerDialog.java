@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValidationException;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Preference;
@@ -71,6 +72,19 @@ public class CreateLecturerDialog extends Dialog {
         TextField phone = new TextField("Telefonnummer");
         phone.setWidthFull();
 
+        bindTitle(title);
+        bindLastName(lastName);
+        bindFirstName(firstName);
+        bindSecondName(secondName);
+        bindStatus(status);
+        bindEmail(email);
+        bindPhone(phone);
+
+        layout.add(title, lastName, firstName, secondName, status, email, phone);
+        return layout;
+    }
+
+    private void bindTitle(ComboBox<String> title) {
         binder.forField(title)
                 .withValidator(
                         value -> "Kein Titel".equals(value) || (value != null && !value.isBlank()),
@@ -78,39 +92,56 @@ public class CreateLecturerDialog extends Dialog {
                 )
                 .bind(
                         dto -> dto.getTitle() == null || dto.getTitle().isBlank() ? "Kein Titel" : dto.getTitle(),
-
                         (dto, value) -> dto.setTitle("Kein Titel".equals(value) ? "" : value)
                 );
+    }
+
+    private void bindLastName(TextField lastName) {
         binder.forField(lastName)
-                .asRequired("Nachname darf nicht leer sein")
-                .withValidator(LecturerDto::validateLastName, "Nachname darf nicht leer sein")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateLastName(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getLastName, LecturerDto::setLastName);
+    }
 
+    private void bindFirstName(TextField firstName) {
         binder.forField(firstName)
-                .asRequired("Vorname darf nicht leer sein")
-                .withValidator(LecturerDto::validateFirstName, "Vorname darf nicht leer sein")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateFirstName(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getFirstName, LecturerDto::setFirstName);
+    }
 
+    private void bindSecondName(TextField secondName) {
         binder.forField(secondName)
                 .bind(dto -> dto.getSecondName() == null ? "" : dto.getSecondName(),
                         (dto, value) -> dto.setSecondName(value == null || value.isBlank() ? null : value));
+    }
 
+    private void bindStatus(ComboBox<String> status) {
         binder.forField(status)
                 .asRequired("Status auswählen")
                 .bind(dto -> dto.isExtern() ? "Extern" : "Intern", (dto, value) -> dto.setExtern("Extern".equals(value)));
+    }
 
+    private void bindEmail(TextField email) {
         binder.forField(email)
-                .asRequired("E-Mail darf nicht leer sein")
-                .withValidator(LecturerDto::validateEmail, "Die E-Mail Adresse muss ein @ enthalten")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateEmail(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getEmail, LecturerDto::setEmail);
+    }
 
+    private void bindPhone(TextField phone) {
         binder.forField(phone)
-                .asRequired("Telefonnummer darf nicht leer sein")
-                .withValidator(LecturerDto::validatePhone, "Die Telefonnummer darf nur Ziffern und optional ein führendes + enthalten")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validatePhone(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getPhone, LecturerDto::setPhone);
-
-        layout.add(title, lastName, firstName, secondName, status, email, phone);
-        return layout;
     }
 
     private void saveLecturer() {
@@ -123,9 +154,8 @@ public class CreateLecturerDialog extends Dialog {
             this.close();
             UI.getCurrent().navigate("dozenten/" + newLecturer.getId());
         } catch (ValidationException ex) {
-            // Normaler Fehler Felder werden rot nix machen
+            //validation errors are already shown by the binder, so we can ignore this exception here
         } catch (Exception ex) {
-            // Special kram
             ex.printStackTrace();
         }
     }

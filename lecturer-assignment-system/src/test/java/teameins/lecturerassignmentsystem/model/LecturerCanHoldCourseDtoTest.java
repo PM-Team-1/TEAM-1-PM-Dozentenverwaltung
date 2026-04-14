@@ -14,41 +14,44 @@ class LecturerCanHoldCourseDtoTest {
 
     @Test
     void testEmptyAlreadyHeldError() {
-        LecturerCanHoldCourseDto emptyString = getLecturerCanHoldCourseDto("", "S", "mittel");
-        LecturerCanHoldCourseDto nullString = getLecturerCanHoldCourseDto(null, "S", "mittel");
-        assertThrows(IllegalArgumentException.class, emptyString::validate);
-        assertThrows(IllegalArgumentException.class, nullString::validate);
+        assertFalse(getLecturerCanHoldCourseDto("", "S", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto(null, "S", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto(" ", "S", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto("\t", "S", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto("\n", "S", "mittel").validate());
     }
 
     @Test
     void testInvalidAlreadyHeldError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerCanHoldCourseDto("asdf", "S", "mittel"));
+        assertFalse(getLecturerCanHoldCourseDto("asdf", "S", "mittel").validate());
     }
 
     @Test
     void testEmptyQualificationError() {
-        LecturerCanHoldCourseDto emptyString = getLecturerCanHoldCourseDto("P", "", "mittel");
-        LecturerCanHoldCourseDto nullString = getLecturerCanHoldCourseDto("P", null, "mittel");
-        assertThrows(IllegalArgumentException.class, emptyString::validate);
-        assertThrows(IllegalArgumentException.class, nullString::validate);
+        assertFalse(getLecturerCanHoldCourseDto("P", "", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", null, "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", " ", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", "\t", "mittel").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", "\n", "mittel").validate());
     }
 
     @Test
     void testInvalidQualificationError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerCanHoldCourseDto("P", "asdf", "mittel"));
+        assertFalse(getLecturerCanHoldCourseDto("P", "asdf", "mittel").validate());
     }
 
     @Test
     void testEmptyAffinityError() {
-        LecturerCanHoldCourseDto emptyString = getLecturerCanHoldCourseDto("P", "S", "");
-        LecturerCanHoldCourseDto nullString = getLecturerCanHoldCourseDto("P", "S", null);
-        assertThrows(IllegalArgumentException.class, emptyString::validate);
-        assertThrows(IllegalArgumentException.class, nullString::validate);
+        assertFalse(getLecturerCanHoldCourseDto("P", "S", "").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", "S", null).validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", "S", " ").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", "S", "\t").validate());
+        assertFalse(getLecturerCanHoldCourseDto("P", "S", "\n").validate());
     }
 
     @Test
     void testInvalidAffinityError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerCanHoldCourseDto("P", "S", "asdf"));
+        assertFalse(getLecturerCanHoldCourseDto("P", "S", "asdf").validate());
     }
 
     @Test

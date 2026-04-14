@@ -160,7 +160,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         name.setWidthFull();
         binder.forField(name)
                 .withValidator((value, context) -> {
-                    String msg = CourseDto.validateNameMessage(value);
+                    String msg = CourseDto.validateName(value);
                     return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
                 })
                 .bind(CourseDto::getName, CourseDto::setName);
@@ -186,7 +186,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         semester.setWidthFull();
         binder.forField(semester)
                 .withValidator((value, context) -> {
-                    String msg = CourseDto.validateSemesterMessage(value);
+                    String msg = CourseDto.validateSemester(value);
                     return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
                 })
                 .bind(CourseDto::getSemester, CourseDto::setSemester);

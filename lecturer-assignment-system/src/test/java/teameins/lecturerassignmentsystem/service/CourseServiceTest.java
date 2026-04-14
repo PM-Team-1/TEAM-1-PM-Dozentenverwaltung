@@ -3,14 +3,23 @@ package teameins.lecturerassignmentsystem.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import teameins.lecturerassignmentsystem.model.db.Course;
+import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.InvalidCourseException;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
+import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
+import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.Qualification;
+import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 
@@ -29,7 +38,7 @@ class CourseServiceTest {
     @Mock
     private CourseRepository courseRepository;
 
-    @Mock
+    @Spy
     private MappingService mappingService;
 
     @Mock
@@ -43,14 +52,14 @@ class CourseServiceTest {
 
     @BeforeEach
     void setUp() {
-        course = new Course(1, "Programmierung 1", false, false, "WS2024/2025");
+        course = new Course(1, "Programmierung 1", false, false, "WiSe 24/25");
 
         courseDto = new CourseDto();
         courseDto.setId(1);
         courseDto.setName("Programmierung 1");
         courseDto.setClosed(false);
         courseDto.setMaster(false);
-        courseDto.setSemester("WS2024/2025");
+        courseDto.setSemester("WiSe 24/25");
         courseDto.setCanBeHeldBy(new ArrayList<>());
     }
 
@@ -62,13 +71,13 @@ class CourseServiceTest {
     void getCourseById_kursExistiert_gibtCourseDtoZurueck() {
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
-        when(mappingService.map(course, new ArrayList<>())).thenReturn(courseDto);
 
         CourseDto result = courseService.getCourseById(1);
 
         assertNotNull(result);
         assertEquals(1, result.getId());
         assertEquals("Programmierung 1", result.getName());
+        assertEquals("WiSe 24/25", result.getSemester());
         verify(courseRepository).findById(1);
     }
 
@@ -89,7 +98,6 @@ class CourseServiceTest {
     void getCourseById_rufsMappingServiceAuf() {
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
-        when(mappingService.map(course, new ArrayList<>())).thenReturn(courseDto);
 
         courseService.getCourseById(1);
 
@@ -113,42 +121,49 @@ class CourseServiceTest {
 
     @Test
     void listCourses_mehrereKurseVorhanden_gibtAlleKurseZurueck() {
-        Course course2 = new Course(2, "Mathematik", false, true, "SS2025");
-        CourseDto courseDto2 = new CourseDto();
-        courseDto2.setId(2);
-        courseDto2.setName("Mathematik");
-        courseDto2.setCanBeHeldBy(new ArrayList<>());
+        Course course2 = new Course(2, "Mathematik", false, true, "SoSe 25");
 
         when(courseRepository.findAll()).thenReturn(List.of(course, course2));
         when(courseRepository.findLecturersWhoCanHoldCourse(anyInt())).thenReturn(new ArrayList<>());
-        when(mappingService.map(eq(course), anyList())).thenReturn(courseDto);
-        when(mappingService.map(eq(course2), anyList())).thenReturn(courseDto2);
 
         List<CourseDto> result = courseService.listCourses();
 
         assertEquals(2, result.size());
+        assertEquals(1, result.get(0).getId());
+        assertEquals(2, result.get(1).getId());
         verify(courseRepository).findAll();
         verify(mappingService, times(2)).map(any(Course.class), anyList());
     }
 
     @Test
     void listCourses_kursHatZugeordneteDozenten_gibtKurseMitDozentenZurueck() {
-        LecturerCanHoldCourse lchc = new LecturerCanHoldCourse();
-        LecturerCanHoldCourseDto lchcDto = new LecturerCanHoldCourseDto();
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(7);
+        lecturer.setTitle(Title.PROFESSOR);
+        lecturer.setFirstName("Max");
+        lecturer.setLastName("Mustermann");
+        lecturer.setSecondName(null);
+        lecturer.setEmail("max.mustermann@hs.de");
+        lecturer.setPhone("0123456789");
+        lecturer.setExtern(false);
+        lecturer.setPreference(Preference.ALLES);
 
-        CourseDto courseDtoWithLecturers = new CourseDto();
-        courseDtoWithLecturers.setId(1);
-        courseDtoWithLecturers.setCanBeHeldBy(List.of(lchcDto));
+        LecturerCanHoldCourse lchc = new LecturerCanHoldCourse();
+        lchc.setId(10);
+        lchc.setLecturer(lecturer);
+        lchc.setCourse(course);
+        lchc.setAlreadyHeld(AlreadyHeld.NOT_YET_HELD);
+        lchc.setQualification(Qualification.IMMEDIATELY);
+        lchc.setAffinity(Affinity.MEDIUM);
 
         when(courseRepository.findAll()).thenReturn(List.of(course));
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(List.of(lchc));
-        when(mappingService.map(lchc)).thenReturn(lchcDto);
-        when(mappingService.map(eq(course), anyList())).thenReturn(courseDtoWithLecturers);
 
         List<CourseDto> result = courseService.listCourses();
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getCanBeHeldBy().size());
+        assertEquals(10, result.get(0).getCanBeHeldBy().get(0).getId());
     }
 
     // -------------------------------------------------------------------------
@@ -160,43 +175,61 @@ class CourseServiceTest {
         CourseDto neuerKursDto = new CourseDto();
         neuerKursDto.setId(0);
         neuerKursDto.setName("Algorithmen");
-        neuerKursDto.setSemester("WS2024/2025");
+        neuerKursDto.setClosed(false);
+        neuerKursDto.setMaster(false);
+        neuerKursDto.setSemester("WiSe 24/25");
         neuerKursDto.setCanBeHeldBy(new ArrayList<>());
 
-        Course gespeicherterKurs = new Course(5, "Algorithmen", false, false, "WS2024/2025");
+        Course gespeicherterKurs = new Course(5, "Algorithmen", false, false, "WiSe 24/25");
 
-        CourseDto erwartetesErgebnis = new CourseDto();
-        erwartetesErgebnis.setId(5);
-        erwartetesErgebnis.setName("Algorithmen");
-        erwartetesErgebnis.setCanBeHeldBy(new ArrayList<>());
-
-        when(mappingService.map(neuerKursDto)).thenReturn(gespeicherterKurs);
-        when(courseRepository.save(gespeicherterKurs)).thenReturn(gespeicherterKurs);
+        when(courseRepository.save(any(Course.class))).thenReturn(gespeicherterKurs);
         when(courseRepository.findById(5)).thenReturn(Optional.of(gespeicherterKurs));
         when(courseRepository.findLecturersWhoCanHoldCourse(5)).thenReturn(new ArrayList<>());
-        when(mappingService.map(eq(gespeicherterKurs), anyList())).thenReturn(erwartetesErgebnis);
 
         CourseDto result = courseService.createCourse(neuerKursDto);
 
         assertNotNull(result);
         assertEquals(5, result.getId());
         assertEquals("Algorithmen", result.getName());
-        verify(courseRepository).save(any(Course.class));
+        ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
+        verify(courseRepository).save(captor.capture());
+        assertEquals("Algorithmen", captor.getValue().getName());
+        assertEquals("WiSe 24/25", captor.getValue().getSemester());
     }
 
     @Test
     void createCourse_speichertKursInDatenbank() {
-        Course mappedCourse = new Course(3, "Datenbanken", false, false, "SS2025");
+        Course mappedCourse = new Course(3, "Datenbanken", false, false, "WiSe 24/25");
+        CourseDto input = new CourseDto();
+        input.setId(1);
+        input.setName("Programmierung 1");
+        input.setClosed(false);
+        input.setMaster(false);
+        input.setSemester("WiSe 24/25");
+        input.setCanBeHeldBy(new ArrayList<>());
 
-        when(mappingService.map(courseDto)).thenReturn(mappedCourse);
-        when(courseRepository.save(mappedCourse)).thenReturn(mappedCourse);
+        when(courseRepository.save(any(Course.class))).thenReturn(mappedCourse);
         when(courseRepository.findById(3)).thenReturn(Optional.of(mappedCourse));
         when(courseRepository.findLecturersWhoCanHoldCourse(3)).thenReturn(new ArrayList<>());
-        when(mappingService.map(eq(mappedCourse), anyList())).thenReturn(courseDto);
 
-        courseService.createCourse(courseDto);
+        courseService.createCourse(input);
 
         verify(courseRepository, times(1)).save(any(Course.class));
+    }
+
+    @Test
+    void createCourse_ungueltigerKurs_wirftInvalidCourseException_und_mapWirdNichtAufgerufen() {
+        CourseDto invalid = new CourseDto();
+        invalid.setId(0);
+        invalid.setName("");
+        invalid.setClosed(false);
+        invalid.setMaster(false);
+        invalid.setSemester("WiSe 24/25");
+        invalid.setCanBeHeldBy(new ArrayList<>());
+
+        assertThrows(InvalidCourseException.class, () -> courseService.createCourse(invalid));
+        verify(mappingService, never()).map(any(CourseDto.class));
+        verify(courseRepository, never()).save(any());
     }
 
     // -------------------------------------------------------------------------
@@ -208,17 +241,17 @@ class CourseServiceTest {
         CourseDto aktualisiertesDto = new CourseDto();
         aktualisiertesDto.setId(1);
         aktualisiertesDto.setName("Programmierung 1 - Aktualisiert");
-        aktualisiertesDto.setSemester("WS2024/2025");
+        aktualisiertesDto.setClosed(false);
+        aktualisiertesDto.setMaster(false);
+        aktualisiertesDto.setSemester("WiSe 24/25");
         aktualisiertesDto.setCanBeHeldBy(new ArrayList<>());
 
-        Course aktualisiertKurs = new Course(1, "Programmierung 1 - Aktualisiert", false, false, "WS2024/2025");
+        Course aktualisiertKurs = new Course(1, "Programmierung 1 - Aktualisiert", false, false, "WiSe 24/25");
 
         // findById wird zweimal aufgerufen: einmal für die Existenzprüfung, einmal in getCourseById
         when(courseRepository.findById(1)).thenReturn(Optional.of(course)).thenReturn(Optional.of(aktualisiertKurs));
-        when(mappingService.map(aktualisiertesDto)).thenReturn(aktualisiertKurs);
-        when(courseRepository.save(aktualisiertKurs)).thenReturn(aktualisiertKurs);
+        when(courseRepository.save(any(Course.class))).thenReturn(aktualisiertKurs);
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
-        when(mappingService.map(any(Course.class), anyList())).thenReturn(aktualisiertesDto);
 
         CourseDto result = courseService.updateCourse(aktualisiertesDto);
 
@@ -232,6 +265,9 @@ class CourseServiceTest {
         CourseDto nichtExistierenderKurs = new CourseDto();
         nichtExistierenderKurs.setId(99);
         nichtExistierenderKurs.setName("Unbekannt");
+        nichtExistierenderKurs.setClosed(false);
+        nichtExistierenderKurs.setMaster(false);
+        nichtExistierenderKurs.setSemester("WiSe 24/25");
         nichtExistierenderKurs.setCanBeHeldBy(new ArrayList<>());
 
         when(courseRepository.findById(99)).thenReturn(Optional.empty());
@@ -247,15 +283,29 @@ class CourseServiceTest {
 
     @Test
     void updateCourse_speichertAenderungenInDatenbank() {
+        Course mappedEntity = new Course(1, "Programmierung 1", false, false, "WiSe 24/25");
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
-        when(mappingService.map(courseDto)).thenReturn(course);
-        when(courseRepository.save(course)).thenReturn(course);
+        when(courseRepository.save(any(Course.class))).thenReturn(mappedEntity);
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
-        when(mappingService.map(eq(course), anyList())).thenReturn(courseDto);
 
         courseService.updateCourse(courseDto);
 
         verify(courseRepository, times(1)).save(any(Course.class));
+    }
+
+    @Test
+    void updateCourse_ungueltigerKurs_wirftInvalidCourseException_und_mapWirdNichtAufgerufen() {
+        CourseDto invalid = new CourseDto();
+        invalid.setId(1);
+        invalid.setName(null);
+        invalid.setClosed(false);
+        invalid.setMaster(false);
+        invalid.setSemester("WiSe 24/25");
+        invalid.setCanBeHeldBy(new ArrayList<>());
+
+        assertThrows(InvalidCourseException.class, () -> courseService.updateCourse(invalid));
+        verify(mappingService, never()).map(any(CourseDto.class));
+        verify(courseRepository, never()).save(any());
     }
 
     // -------------------------------------------------------------------------

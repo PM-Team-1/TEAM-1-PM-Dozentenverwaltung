@@ -18,6 +18,7 @@ import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerException;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
@@ -102,6 +103,26 @@ class LecturerServiceTest {
         );
 
         assertEquals(lecturerDto, lecturerService.createLecturer(lecturerDto));
+        Mockito.verify(mappingService).map(Mockito.any(LecturerDto.class));
+    }
+
+    @Test
+    void createLecturerTestInvalid(){
+        LecturerDto invalid = new LecturerDto();
+        invalid.setId(1);
+        invalid.setTitle("Dr.");
+        invalid.setFirstName("");
+        invalid.setLastName("Fall");
+        invalid.setSecondName(null);
+        invalid.setEmail("test@testfall.com");
+        invalid.setPhone("+123456789");
+        invalid.setExtern(false);
+        invalid.setPreference(Preference.ALLES.getValue());
+        invalid.setCanHoldCourses(List.of());
+
+        assertThrows(InvalidLecturerException.class, () -> lecturerService.createLecturer(invalid));
+        Mockito.verify(mappingService, Mockito.never()).map(Mockito.any(LecturerDto.class));
+        Mockito.verify(lecturerRepository, Mockito.never()).save(Mockito.any());
     }
 
     @Test
@@ -119,6 +140,26 @@ class LecturerServiceTest {
         );
 
         assertEquals(lecturerDto, lecturerService.updateLecturer(lecturerDto));
+        Mockito.verify(mappingService).map(Mockito.any(LecturerDto.class));
+    }
+
+    @Test
+    void updateLecturerTestInvalid() {
+        LecturerDto invalid = new LecturerDto();
+        invalid.setId(1);
+        invalid.setTitle("Dr.");
+        invalid.setFirstName("Test");
+        invalid.setLastName("Fall");
+        invalid.setSecondName(null);
+        invalid.setEmail("invalid");
+        invalid.setPhone("+123456789");
+        invalid.setExtern(false);
+        invalid.setPreference(Preference.ALLES.getValue());
+        invalid.setCanHoldCourses(List.of());
+
+        assertThrows(InvalidLecturerException.class, () -> lecturerService.updateLecturer(invalid));
+        Mockito.verify(mappingService, Mockito.never()).map(Mockito.any(LecturerDto.class));
+        Mockito.verify(lecturerRepository, Mockito.never()).save(Mockito.any());
     }
 
     @Test
@@ -151,6 +192,22 @@ class LecturerServiceTest {
         LecturerCanHoldCourseDto lecturerCanHoldCourseDto = mappingService.map(lecturerCanHoldCourse);
 
         assertEquals(lecturerCanHoldCourseDto, lecturerService.addCourseToLecturer(lecturerCanHoldCourseDto));
+    }
+
+    @Test
+    void addCourseToLecturerTestInvalid(){
+        LecturerCanHoldCourseDto invalid = new LecturerCanHoldCourseDto();
+        invalid.setId(1);
+        invalid.setLecturerId(1);
+        invalid.setCourseId(1);
+        invalid.setAlreadyHeld(null);
+        invalid.setQualification(Qualification.IMMEDIATELY.getValue());
+        invalid.setAffinity(Affinity.LOW.getValue());
+
+        assertThrows(IllegalArgumentException.class, () -> lecturerService.addCourseToLecturer(invalid));
+        Mockito.verify(lecturerRepository, Mockito.never()).findById(Mockito.anyInt());
+        Mockito.verify(courseRepository, Mockito.never()).findById(Mockito.anyInt());
+        Mockito.verify(lecturerCanHoldCourseRepository, Mockito.never()).save(Mockito.any());
     }
 
     @Test
