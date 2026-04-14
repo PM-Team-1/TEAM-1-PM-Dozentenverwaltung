@@ -32,8 +32,8 @@ public class Lecturer {
 
     }
 
-    public Lecturer(int id, Title title, String firstName, String lastName, String secondName, String email,
-			String phone, boolean isExtern, Preference preference) {
+    public Lecturer(int id, Title title, String firstName, String lastName, @Nullable String secondName, String email,
+                    String phone, boolean isExtern, Preference preference) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -78,11 +78,11 @@ public class Lecturer {
 		this.lastName = lastName;
 	}
 
-	public String getSecondName() {
+	public @Nullable String getSecondName() {
 		return secondName;
 	}
 
-	public void setSecondName(String secondName) {
+	public void setSecondName(@Nullable String secondName) {
 		this.secondName = secondName;
 	}
 

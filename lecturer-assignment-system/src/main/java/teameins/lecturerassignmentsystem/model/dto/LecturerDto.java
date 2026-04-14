@@ -200,11 +200,10 @@ public class LecturerDto {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof LecturerDto)) {
+		if (!(obj instanceof LecturerDto other)) {
 			return false;
 		}
-		LecturerDto other = (LecturerDto) obj;
-		return Objects.equals(canHoldCourses, other.canHoldCourses) && Objects.equals(email, other.email)
+        return Objects.equals(canHoldCourses, other.canHoldCourses) && Objects.equals(email, other.email)
 				&& Objects.equals(firstName, other.firstName) && id == other.id && isExtern == other.isExtern
 				&& Objects.equals(lastName, other.lastName) && Objects.equals(phone, other.phone)
 				&& Objects.equals(preference, other.preference) && Objects.equals(secondName, other.secondName)

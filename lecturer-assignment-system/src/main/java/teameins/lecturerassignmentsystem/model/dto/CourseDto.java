@@ -122,11 +122,10 @@ public class CourseDto {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof CourseDto)) {
+		if (!(obj instanceof CourseDto other)) {
 			return false;
 		}
-		CourseDto other = (CourseDto) obj;
-		return Objects.equals(canBeHeldBy, other.canBeHeldBy) && id == other.id && isClosed == other.isClosed
+        return Objects.equals(canBeHeldBy, other.canBeHeldBy) && id == other.id && isClosed == other.isClosed
 				&& isMaster == other.isMaster && Objects.equals(name, other.name)
 				&& Objects.equals(semester, other.semester);
 	}

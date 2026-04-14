@@ -162,8 +162,8 @@ class CourseServiceTest {
         List<CourseDto> result = courseService.listCourses();
 
         assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getCanBeHeldBy().size());
-        assertEquals(10, result.get(0).getCanBeHeldBy().get(0).getId());
+        assertEquals(1, result.getFirst().getCanBeHeldBy().size());
+        assertEquals(10, result.getFirst().getCanBeHeldBy().getFirst().getId());
     }
 
     // -------------------------------------------------------------------------
