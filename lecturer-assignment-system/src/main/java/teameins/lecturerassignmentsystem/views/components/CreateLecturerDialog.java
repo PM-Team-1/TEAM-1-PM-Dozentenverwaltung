@@ -13,7 +13,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValidationException;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
 import java.util.List;
@@ -148,7 +148,7 @@ public class CreateLecturerDialog extends Dialog {
         try {
             LecturerDto newLecturer = new LecturerDto();
             newLecturer.setCanHoldCourses(List.of());
-            newLecturer.setPreference(Preference.ALLES.getValue());
+            newLecturer.setTeachingPreference(TeachingPreference.ALLES.getValue());
             binder.writeBean(newLecturer);
             newLecturer = lecturerService.createLecturer(newLecturer);
             this.close();

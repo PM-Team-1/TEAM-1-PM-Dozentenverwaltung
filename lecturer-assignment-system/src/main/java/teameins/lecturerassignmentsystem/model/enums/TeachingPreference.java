@@ -2,7 +2,7 @@ package teameins.lecturerassignmentsystem.model.enums;
 
 import java.util.Arrays;
 
-public enum Preference {
+public enum TeachingPreference {
     ALLES("A"),
     ONLY_MASTER("XM"),
     ONLY_BACHELOR("XB"),
@@ -11,19 +11,19 @@ public enum Preference {
 
     private final String value;
 
-    Preference(String value) {
+    TeachingPreference(String value) {
         this.value = value;
     }
 
     public static boolean validate(String name) {
-        return Arrays.stream(Preference.values())
-                .map(Preference::getValue)
+        return Arrays.stream(TeachingPreference.values())
+                .map(TeachingPreference::getValue)
                 .anyMatch(value -> value.equals(name));
     }
 
     public static String[] getValidValues() {
-        return Arrays.stream(Preference.values())
-                .map(Preference::getValue)
+        return Arrays.stream(TeachingPreference.values())
+                .map(TeachingPreference::getValue)
                 .toArray(String[]::new);
     }
 

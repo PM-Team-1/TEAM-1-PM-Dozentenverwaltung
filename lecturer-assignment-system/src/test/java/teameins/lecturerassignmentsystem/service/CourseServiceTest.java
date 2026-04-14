@@ -17,7 +17,7 @@ import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException
 import teameins.lecturerassignmentsystem.model.exception.InvalidCourseException;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
@@ -146,7 +146,7 @@ class CourseServiceTest {
         lecturer.setEmail("max.mustermann@hs.de");
         lecturer.setPhone("0123456789");
         lecturer.setExtern(false);
-        lecturer.setPreference(Preference.ALLES);
+        lecturer.setTeachingPreference(TeachingPreference.ALLES);
 
         LecturerCanHoldCourse lchc = new LecturerCanHoldCourse();
         lchc.setId(10);

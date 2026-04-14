@@ -313,7 +313,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
                 .setKey("preference")
                 .setHeader("Präferenz")
-                .setComparator(row -> row.getPreferenceScore(lecturer.getPreference()))
+                .setComparator(row -> row.getPreferenceScore(lecturer.getTeachingPreference()))
                 .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
 

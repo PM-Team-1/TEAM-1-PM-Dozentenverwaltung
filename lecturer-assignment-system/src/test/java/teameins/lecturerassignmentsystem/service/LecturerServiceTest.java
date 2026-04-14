@@ -14,7 +14,7 @@ import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
@@ -117,7 +117,7 @@ class LecturerServiceTest {
         invalid.setEmail("test@testfall.com");
         invalid.setPhone("+123456789");
         invalid.setExtern(false);
-        invalid.setPreference(Preference.ALLES.getValue());
+        invalid.setTeachingPreference(TeachingPreference.ALLES.getValue());
         invalid.setCanHoldCourses(List.of());
 
         assertThrows(InvalidLecturerException.class, () -> lecturerService.createLecturer(invalid));
@@ -154,7 +154,7 @@ class LecturerServiceTest {
         invalid.setEmail("invalid");
         invalid.setPhone("+123456789");
         invalid.setExtern(false);
-        invalid.setPreference(Preference.ALLES.getValue());
+        invalid.setTeachingPreference(TeachingPreference.ALLES.getValue());
         invalid.setCanHoldCourses(List.of());
 
         assertThrows(InvalidLecturerException.class, () -> lecturerService.updateLecturer(invalid));
@@ -256,7 +256,7 @@ class LecturerServiceTest {
     }
 
     @Test
-    void addCourseToLecturerTestPreferenceOnlyMasterError(){
+    void addCourseToLecturerTestTeachingPreferenceOnlyMasterError(){
         int lecturerId = 1;
         int courseId = 1;
         int lecturerCanHoldCourseId = 1;
@@ -272,7 +272,7 @@ class LecturerServiceTest {
     }
 
     @Test
-    void addCourseToLecturerTestPreferenceOnlyBachelorError(){
+    void addCourseToLecturerTestTeachingPreferenceOnlyBachelorError(){
         int lecturerId = 1;
         int courseId = 1;
         int lecturerCanHoldCourseId = 1;
@@ -313,7 +313,7 @@ class LecturerServiceTest {
                 "test@testfall.com",
                 "+123456789",
                 false,
-                Preference.ALLES
+                TeachingPreference.ALLES
         );
     }
 
@@ -327,7 +327,7 @@ class LecturerServiceTest {
                 "test@testfall.com",
                 "+123456789",
                 false,
-                Preference.ONLY_MASTER
+                TeachingPreference.ONLY_MASTER
         );
     }
 
@@ -341,7 +341,7 @@ class LecturerServiceTest {
                 "test@testfall.com",
                 "+123456789",
                 false,
-                Preference.ONLY_BACHELOR
+                TeachingPreference.ONLY_BACHELOR
         );
     }
 

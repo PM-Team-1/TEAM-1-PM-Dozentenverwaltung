@@ -28,13 +28,13 @@ public class CourseToLecturerRelation {
         return yearPart + termPart;
     }
 
-    public double getPreferenceScore(String preference){
+    public double getPreferenceScore(String teachingPreference){
         int affinityScore = Affinity.mapAffinityScore(lecturerCanHoldCourse.getAffinity());
         String degree = course.isMaster() ? "M" : "B";
         double degreeScore;
-        if (preference.equals("A")) {
+        if (teachingPreference.equals("A")) {
             degreeScore = 0.0;
-        } else if (preference.contains(degree)) {
+        } else if (teachingPreference.contains(degree)) {
             degreeScore = 0.5;
         } else {
             degreeScore = -0.5;

@@ -27,9 +27,9 @@ public class LecturerToCourseRelation {
 		int affinityScore = Affinity.mapAffinityScore(lecturerCanHoldCourse.getAffinity());
 		String degree = isMaster ? "M" : "B";
 		double degreeScore;
-		if (lecturer.getPreference().equals("A")) {
+		if (lecturer.getTeachingPreference().equals("A")) {
 			degreeScore = 0.0;
-		} else if (lecturer.getPreference().contains(degree)) {
+		} else if (lecturer.getTeachingPreference().contains(degree)) {
 			degreeScore = 0.5;
 		} else {
 			degreeScore = -0.5;

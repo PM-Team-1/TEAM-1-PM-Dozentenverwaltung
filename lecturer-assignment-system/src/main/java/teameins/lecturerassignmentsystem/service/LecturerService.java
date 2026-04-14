@@ -6,7 +6,7 @@ import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
 import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerException;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
@@ -93,13 +93,13 @@ public class LecturerService {
             );
         }
 
-        Preference preference = lecturer.getPreference();
-        if (preference == Preference.ONLY_MASTER && !course.isMaster()) {
+        TeachingPreference teachingPreference = lecturer.getTeachingPreference();
+        if (teachingPreference == TeachingPreference.ONLY_MASTER && !course.isMaster()) {
             throw new IllegalArgumentException(
                     "Der Dozent hält nur Master-Vorlesungen, aber die Vorlesung ist eine Bachelor-Vorlesung."
             );
         }
-        if (preference == Preference.ONLY_BACHELOR && course.isMaster()) {
+        if (teachingPreference == TeachingPreference.ONLY_BACHELOR && course.isMaster()) {
             throw new IllegalArgumentException(
                     "Der Dozent hält nur Bachelor-Vorlesungen, aber die Vorlesung ist eine Master-Vorlesung."
             );

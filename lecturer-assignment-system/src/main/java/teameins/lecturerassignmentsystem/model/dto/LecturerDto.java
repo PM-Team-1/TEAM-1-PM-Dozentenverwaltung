@@ -1,6 +1,6 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
 import java.util.List;
@@ -16,14 +16,14 @@ public class LecturerDto {
     private String email;
     private String phone;
     private boolean isExtern;
-    private String preference;
+    private String teachingPreference;
     private List<LecturerCanHoldCourseDto> canHoldCourses;
     
     public LecturerDto() {
     	
     }
 
-    public LecturerDto(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String preference, List<LecturerCanHoldCourseDto> canHoldCourses) throws IllegalArgumentException {
+    public LecturerDto(int id, String title, String firstName, String lastName, String secondName, String email, String phone, boolean isExtern, String teachingPreference, List<LecturerCanHoldCourseDto> canHoldCourses) throws IllegalArgumentException {
         setId(id);
         setTitle(title);
         setFirstName(firstName);
@@ -32,7 +32,7 @@ public class LecturerDto {
         setEmail(email);
         setPhone(phone);
         setExtern(isExtern);
-        setPreference(preference);
+        setTeachingPreference(teachingPreference);
         setCanHoldCourses(canHoldCourses);
     }
 
@@ -42,7 +42,7 @@ public class LecturerDto {
                validateLastName(lecturer.getLastName()).isEmpty() &&
                validateEmail(lecturer.getEmail()).isEmpty() &&
                validatePhone(lecturer.getPhone()).isEmpty() &&
-               validatePreference(lecturer.getPreference()).isEmpty();
+               validateTeachingPreference(lecturer.getTeachingPreference()).isEmpty();
     }
 
     public boolean validate(){
@@ -119,18 +119,18 @@ public class LecturerDto {
         this.phone = phone;
     }
 
-    public static String validatePreference(String preference) {
-        if (preference == null || preference.isBlank()) {
-            return "Die Präferenz darf nicht leer sein.";
+    public static String validateTeachingPreference(String teachingPreference) {
+        if (teachingPreference == null || teachingPreference.isBlank()) {
+            return "Die Lehrpräferenz darf nicht leer sein.";
         }
-        if (!Preference.validate(preference)) {
-            return "Die Präferenz ist ungültig.";
+        if (!TeachingPreference.validate(teachingPreference)) {
+            return "Die Lehrpräferenz ist ungültig.";
         }
         return "";
     }
 
-    public void setPreference(String preference) throws IllegalArgumentException {
-        this.preference = preference;
+    public void setTeachingPreference(String teachingPreference) throws IllegalArgumentException {
+        this.teachingPreference = teachingPreference;
     }
 
 	public int getId() {
@@ -185,13 +185,13 @@ public class LecturerDto {
 		return phone;
 	}
 
-	public String getPreference() {
-		return preference;
+	public String getTeachingPreference() {
+		return teachingPreference;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(canHoldCourses, email, firstName, id, isExtern, lastName, phone, preference, secondName,
+		return Objects.hash(canHoldCourses, email, firstName, id, isExtern, lastName, phone, teachingPreference, secondName,
 				title);
 	}
 
@@ -206,7 +206,7 @@ public class LecturerDto {
         return Objects.equals(canHoldCourses, other.canHoldCourses) && Objects.equals(email, other.email)
 				&& Objects.equals(firstName, other.firstName) && id == other.id && isExtern == other.isExtern
 				&& Objects.equals(lastName, other.lastName) && Objects.equals(phone, other.phone)
-				&& Objects.equals(preference, other.preference) && Objects.equals(secondName, other.secondName)
+				&& Objects.equals(teachingPreference, other.teachingPreference) && Objects.equals(secondName, other.secondName)
 				&& Objects.equals(title, other.title);
 	}
 	

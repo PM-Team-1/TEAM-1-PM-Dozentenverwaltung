@@ -73,7 +73,7 @@ class LecturerDtoTest {
     }
 
     @Test
-    void testEmptyPreferenceError() {
+    void testEmptyTeachingPreferenceError() {
         assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "").validate());
         assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", null).validate());
         assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", " ").validate());
@@ -82,7 +82,7 @@ class LecturerDtoTest {
     }
 
     @Test
-    void testWrongPreferenceError() {
+    void testWrongTeachingPreferenceError() {
         assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "X").validate());
     }
 
@@ -97,7 +97,7 @@ class LecturerDtoTest {
         lecturerDto.setEmail("kollege.schnürrschuh@deichmann.de");
         lecturerDto.setPhone("+123456789");
         lecturerDto.setExtern(false);
-        lecturerDto.setPreference("A");
+        lecturerDto.setTeachingPreference("A");
         lecturerDto.setCanHoldCourses(new ArrayList<>());
 
         LecturerDto expectedLecturerDto = getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A");
@@ -111,13 +111,13 @@ class LecturerDtoTest {
         assertEquals(expectedLecturerDto.getEmail(), lecturerDto.getEmail());
         assertEquals(expectedLecturerDto.getPhone(), lecturerDto.getPhone());
         assertEquals(expectedLecturerDto.isExtern(), lecturerDto.isExtern());
-        assertEquals(expectedLecturerDto.getPreference(), lecturerDto.getPreference());
+        assertEquals(expectedLecturerDto.getTeachingPreference(), lecturerDto.getTeachingPreference());
         assertEquals(expectedLecturerDto.getCanHoldCourses(), lecturerDto.getCanHoldCourses());
         assertEquals(expectedLecturerDto, lecturerDto);
         assertEquals(expectedLecturerDto.hashCode(), lecturerDto.hashCode());
     }
 
-    LecturerDto getLecturerDto(String title, String firstName, String lastName, String email, String phone, String preference) {
-        return new LecturerDto(1, title, firstName, lastName, "", email, phone, false, preference, new ArrayList<>());
+    LecturerDto getLecturerDto(String title, String firstName, String lastName, String email, String phone, String teachingPreference) {
+        return new LecturerDto(1, title, firstName, lastName, "", email, phone, false, teachingPreference, new ArrayList<>());
     }
 }
