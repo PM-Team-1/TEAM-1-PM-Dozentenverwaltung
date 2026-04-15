@@ -23,16 +23,16 @@ public class LecturerToCourseRelation {
 		return lecturer;
 	}
 
-	public double getPreferenceScore(boolean isMaster){
+	public double getPriorityScore(boolean isMaster){
 		int affinityScore = Affinity.mapAffinityScore(lecturerCanHoldCourse.getAffinity());
 		String degree = isMaster ? "M" : "B";
 		double degreeScore;
 		if (lecturer.getTeachingPreference().equals("A")) {
 			degreeScore = 0.0;
 		} else if (lecturer.getTeachingPreference().contains(degree)) {
-			degreeScore = 0.5;
+			degreeScore = 0.4;
 		} else {
-			degreeScore = -0.5;
+			degreeScore = -0.4;
 		}
 		return affinityScore + degreeScore;
 	}

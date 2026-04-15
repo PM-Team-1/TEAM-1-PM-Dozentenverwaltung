@@ -311,14 +311,14 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
         canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
-                .setKey("preference")
-                .setHeader("Präferenz")
-                .setComparator(row -> row.getPreferenceScore(lecturer.getTeachingPreference()))
+                .setKey("priority")
+                .setHeader("Priorität")
+                .setComparator(row -> row.getPriorityScore(lecturer.getTeachingPreference()))
                 .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
 
 
-        canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("preference"), SortDirection.DESCENDING)));
+        canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
 
         canHoldgrid.setItems(rows);
         coursesDiv.add(heading, canHoldgrid);

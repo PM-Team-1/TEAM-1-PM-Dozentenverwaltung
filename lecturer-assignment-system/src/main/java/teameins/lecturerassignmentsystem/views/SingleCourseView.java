@@ -213,15 +213,15 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
         lecturersWhoCanHoldGrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
-                .setKey("preference")
-                .setHeader("Präferenz")
-                .setComparator(row -> row.getPreferenceScore(course.isMaster()))
+                .setKey("priority")
+                .setHeader("Priorität")
+                .setComparator(row -> row.getPriorityScore(course.isMaster()))
                 .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
 
         lecturersWhoCanHoldGrid.setItems(rows);
 
-        lecturersWhoCanHoldGrid.sort(List.of(new GridSortOrder<>(lecturersWhoCanHoldGrid.getColumnByKey("preference"), SortDirection.DESCENDING)));
+        lecturersWhoCanHoldGrid.sort(List.of(new GridSortOrder<>(lecturersWhoCanHoldGrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
 
         return lecturersWhoCanHoldGrid;
     }
