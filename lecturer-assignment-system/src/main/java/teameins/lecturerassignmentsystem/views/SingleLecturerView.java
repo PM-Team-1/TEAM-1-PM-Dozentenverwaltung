@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -17,7 +18,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
@@ -198,8 +201,22 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         phone.setWidthFull();
 
         binder.removeBean();
+        bindTitle(title);
+        bindLastName(lastName);
+        bindFirstName(firstName);
+        bindSecondName(secondName);
+        bindStatus(status);
+        bindEmail(email);
+        bindPhone(phone);
 
+        binder.readBean(lecturer);
 
+        info.add(title, lastName, firstName, secondName, status, email, phone);
+
+        return info;
+    }
+
+    private void bindTitle(ComboBox<String> title) {
         binder.forField(title)
                 .withValidator(
                         value -> "Kein Titel".equals(value) || (value != null && !value.isBlank()),
@@ -207,50 +224,61 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 )
                 .bind(
                         dto -> dto.getTitle() == null || dto.getTitle().isBlank() ? "Kein Titel" : dto.getTitle(),
-
                         (dto, value) -> dto.setTitle("Kein Titel".equals(value) ? "" : value)
                 );
+    }
+
+    private void bindLastName(TextField lastName) {
         binder.forField(lastName)
-                .asRequired("Nachname darf nicht leer sein")
-                .withValidator(LecturerDto::validateLastName, "Nachname darf nicht leer sein")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateLastName(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getLastName, LecturerDto::setLastName);
+    }
 
+    private void bindFirstName(TextField firstName) {
         binder.forField(firstName)
-                .asRequired("Vorname darf nicht leer sein")
-                .withValidator(LecturerDto::validateFirstName, "Vorname darf nicht leer sein")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateFirstName(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getFirstName, LecturerDto::setFirstName);
+    }
 
+    private void bindSecondName(TextField secondName) {
         binder.forField(secondName)
                 .bind(
                         dto -> dto.getSecondName() == null ? "" : dto.getSecondName(),
                         (dto, value) -> dto.setSecondName(value == null || value.isBlank() ? null : value)
                 );
+    }
 
+    private void bindStatus(ComboBox<String> status) {
         binder.forField(status)
                 .asRequired("Status auswählen")
                 .bind(
                         dto -> dto.isExtern() ? "Extern" : "Intern",
                         (dto, value) -> dto.setExtern("Extern".equals(value))
                 );
+    }
 
+    private void bindEmail(TextField email) {
         binder.forField(email)
-                .asRequired("E-Mail darf nicht leer sein")
-                .withValidator(LecturerDto::validateEmail, "Die E-Mail Adresse muss ein @ enthalten")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateEmail(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getEmail, LecturerDto::setEmail);
+    }
 
+    private void bindPhone(TextField phone) {
         binder.forField(phone)
-                .asRequired("Telefonnummer darf nicht leer sein")
-                .withValidator(
-                        LecturerDto::validatePhone,
-                        "Die Telefonnummer darf nur Ziffern und optional ein führendes + enthalten"
-                )
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validatePhone(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
                 .bind(LecturerDto::getPhone, LecturerDto::setPhone);
-
-        binder.readBean(lecturer);
-
-        info.add(title, lastName, firstName, secondName, status, email, phone);
-
-        return info;
     }
 
     private Div renderCoursesLecturerCanHold(List<CourseToLecturerRelation> rows) {
@@ -282,6 +310,15 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
+                .setKey("priority")
+                .setHeader("Priorität")
+                .setComparator(row -> row.getPriorityScore(lecturer.getTeachingPreference()))
+                .setSortable(false)
+                .setAutoWidth(true).setFlexGrow(1);
+
+
+        canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
 
         canHoldgrid.setItems(rows);
         coursesDiv.add(heading, canHoldgrid);

@@ -6,8 +6,9 @@ import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerException;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
@@ -51,10 +52,16 @@ public class LecturerService {
     }
 
     public LecturerDto createLecturer(LecturerDto lecturerDto) {
+            if (!lecturerDto.validate()) {
+                throw new InvalidLecturerException("Der Dozent ist ungültig.");
+            }
         int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
         return getLecturerById(id);
     }
     public LecturerDto updateLecturer(LecturerDto lecturerDto) {
+            if (!lecturerDto.validate()) {
+                throw new InvalidLecturerException("Der Dozent ist ungültig.");
+            }
         lecturerRepository.findById(lecturerDto.getId())
                 .orElseThrow(() -> new LecturerNotFoundException(
                         "Es konnte kein Dozent mit der ID " + lecturerDto.getId() + " gefunden werden."
@@ -65,6 +72,9 @@ public class LecturerService {
     }
 
     public LecturerCanHoldCourseDto addCourseToLecturer(LecturerCanHoldCourseDto dto) {
+        if (!dto.validate()) {
+            throw new IllegalArgumentException("Die Beziehung ist ungültig.");
+        }
         Lecturer lecturer = lecturerRepository.findById(dto.getLecturerId())
                 .orElseThrow(() -> new LecturerNotFoundException(
                         "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."
@@ -83,13 +93,13 @@ public class LecturerService {
             );
         }
 
-        Preference preference = lecturer.getPreference();
-        if (preference == Preference.ONLY_MASTER && !course.isMaster()) {
+        TeachingPreference teachingPreference = lecturer.getTeachingPreference();
+        if (teachingPreference == TeachingPreference.ONLY_MASTER && !course.isMaster()) {
             throw new IllegalArgumentException(
                     "Der Dozent hält nur Master-Vorlesungen, aber die Vorlesung ist eine Bachelor-Vorlesung."
             );
         }
-        if (preference == Preference.ONLY_BACHELOR && course.isMaster()) {
+        if (teachingPreference == TeachingPreference.ONLY_BACHELOR && course.isMaster()) {
             throw new IllegalArgumentException(
                     "Der Dozent hält nur Bachelor-Vorlesungen, aber die Vorlesung ist eine Master-Vorlesung."
             );

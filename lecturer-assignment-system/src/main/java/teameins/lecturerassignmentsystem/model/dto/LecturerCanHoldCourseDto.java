@@ -1,9 +1,8 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
-
-import java.util.Arrays;
 import java.util.Objects;
 
 public class LecturerCanHoldCourseDto {
@@ -12,53 +11,73 @@ public class LecturerCanHoldCourseDto {
     private int courseId;
     private String alreadyHeld;
     private String qualification;
-    private Boolean priority;
+    private String affinity;
     
     public LecturerCanHoldCourseDto() {
     	
     }
 
-    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, Boolean priority) throws IllegalArgumentException {
+    public LecturerCanHoldCourseDto(int id, int lecturerId, int courseId, String alreadyHeld, String qualification, String affinity) throws IllegalArgumentException {
         setId(id);
         setLecturerId(lecturerId);
         setCourseId(courseId);
         setAlreadyHeld(alreadyHeld);
         setQualification(qualification);
-        setPriority(priority);
+        setAffinity(affinity);
     }
 
     public static boolean validate(LecturerCanHoldCourseDto lecturerCanHoldCourse) {
-        return validateAlreadyHeld(lecturerCanHoldCourse.getAlreadyHeld()) &&
-               validateQualification(lecturerCanHoldCourse.getQualification());
+		return validateAlreadyHeld(lecturerCanHoldCourse.getAlreadyHeld()).isEmpty() &&
+			   validateQualification(lecturerCanHoldCourse.getQualification()).isEmpty() &&
+		 validateAffinity(lecturerCanHoldCourse.getAffinity()).isEmpty();
     }
 
     public boolean validate(){
         return validate(this);
     }
 
-    public static boolean validateQualification(String qualification) {
-        return Qualification.validate(qualification);
+	public static String validateQualification(String qualification) {
+		if (qualification == null || qualification.isBlank()) {
+			return "Die Qualifikation darf nicht leer sein.";
+		}
+		if (!Qualification.validate(qualification)) {
+			return "Die Qualifikation ist ungültig.";
+		}
+		return "";
     }
 
     public void setQualification(String qualification) throws IllegalArgumentException{
-        if (validateQualification(qualification)) {
-            this.qualification = qualification;
-        } else {
-            throw new IllegalArgumentException("Die Qualifikation ist ungültig: " + qualification + ". Gültige Werte sind: " + Arrays.toString(Qualification.getValidValues()));
-        }
+		this.qualification = qualification;
     }
 
-    public static boolean validateAlreadyHeld(String alreadyHeld) {
-        return AlreadyHeld.validate(alreadyHeld);
-    }
+  public static String validateAlreadyHeld(String alreadyHeld) {
+	if (alreadyHeld == null || alreadyHeld.isBlank()) {
+	  return "Die Angabe, ob die Vorlesung bereits gehalten wurde, darf nicht leer sein.";
+	}
+	if (!AlreadyHeld.validate(alreadyHeld)) {
+	  return "Die Angabe, ob die Vorlesung bereits gehalten wurde, ist ungültig.";
+	}
+	return "";
+	}
 
     public void setAlreadyHeld(String alreadyHeld) throws IllegalArgumentException {
-        if (validateAlreadyHeld(alreadyHeld)) {
-            this.alreadyHeld = alreadyHeld;
-        } else {
-            throw new IllegalArgumentException("Die Angabe, ob die Vorlesung bereits gehalten wurde, ist ungültig: " + alreadyHeld + ". Gültige Werte sind: " + Arrays.toString(AlreadyHeld.getValidValues()));
-        }
+		this.alreadyHeld = alreadyHeld;
     }
+
+  public static String validateAffinity(String affinity) {
+	if (affinity == null || affinity.isBlank()) {
+	  return "Die Affinity darf nicht leer sein.";
+	}
+	if (!Affinity.validate(affinity)) {
+	  return "Die Affinity ist ungültig.";
+	}
+	return "";
+	}
+
+
+	public void setAffinity(String affinity) {
+		this.affinity = affinity;
+	}
 
 	public int getId() {
 		return id;
@@ -84,14 +103,6 @@ public class LecturerCanHoldCourseDto {
 		this.courseId = courseId;
 	}
 
-	public Boolean getPriority() {
-		return priority;
-	}
-
-	public void setPriority(Boolean priority) {
-		this.priority = priority;
-	}
-
 	public String getAlreadyHeld() {
 		return alreadyHeld;
 	}
@@ -100,9 +111,13 @@ public class LecturerCanHoldCourseDto {
 		return qualification;
 	}
 
+	public String getAffinity() {
+		return affinity;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(alreadyHeld, courseId, id, lecturerId, priority, qualification);
+		return Objects.hash(alreadyHeld, courseId, id, lecturerId, affinity, qualification);
 	}
 
 	@Override
@@ -110,12 +125,11 @@ public class LecturerCanHoldCourseDto {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof LecturerCanHoldCourseDto)) {
+		if (!(obj instanceof LecturerCanHoldCourseDto other)) {
 			return false;
 		}
-		LecturerCanHoldCourseDto other = (LecturerCanHoldCourseDto) obj;
-		return Objects.equals(alreadyHeld, other.alreadyHeld) && courseId == other.courseId && id == other.id
-				&& lecturerId == other.lecturerId && Objects.equals(priority, other.priority)
+        return Objects.equals(alreadyHeld, other.alreadyHeld) && courseId == other.courseId && id == other.id
+				&& lecturerId == other.lecturerId && Objects.equals(affinity, other.affinity)
 				&& Objects.equals(qualification, other.qualification);
 	}
 	
