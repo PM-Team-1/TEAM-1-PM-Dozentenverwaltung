@@ -1,12 +1,12 @@
 package teameins.lecturerassignmentsystem.service;
 
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.InvalidCourseException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 
@@ -14,13 +14,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CourseService {
     private final CourseRepository courseRepository;
     private final MappingService mappingService;
     private final LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
 
-    public CourseDto getCourseById(int courseId) {
+    public CourseService(CourseRepository courseRepository, MappingService mappingService,
+			LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository) {
+		super();
+		this.courseRepository = courseRepository;
+		this.mappingService = mappingService;
+		this.lecturerCanHoldCourseRepository = lecturerCanHoldCourseRepository;
+	}
+
+	public CourseDto getCourseById(int courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(courseId);
@@ -38,11 +45,17 @@ public class CourseService {
     }
 
     public CourseDto createCourse(CourseDto courseDto) {
+        if (!courseDto.validate()) {
+            throw new InvalidCourseException("Die Vorlesung ist ungültig.");
+        }
         int id = courseRepository.save(mappingService.map(courseDto)).getId();
         return getCourseById(id);
     }
 
     public CourseDto updateCourse(CourseDto courseDto) {
+        if (!courseDto.validate()) {
+            throw new InvalidCourseException("Die Vorlesung ist ungültig.");
+        }
         courseRepository.findById(courseDto.getId()).
                 orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseDto.getId() + " gefunden werden."));
         courseRepository.save(mappingService.map(courseDto));

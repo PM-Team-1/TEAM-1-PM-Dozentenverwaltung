@@ -2,22 +2,14 @@ package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Lecturer {
 
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
@@ -34,5 +26,95 @@ public class Lecturer {
     private boolean isExtern;
 
     @Enumerated(EnumType.STRING)
-    private Preference preference;
+    private TeachingPreference teachingPreference;
+
+    public Lecturer() {
+
+    }
+
+    public Lecturer(int id, Title title, String firstName, String lastName, @Nullable String secondName, String email,
+                    String phone, boolean isExtern, TeachingPreference teachingPreference) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.secondName = secondName;
+		this.email = email;
+		this.phone = phone;
+		this.isExtern = isExtern;
+		this.teachingPreference = teachingPreference;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public Title getTitle() {
+		return title;
+	}
+
+	public void setTitle(Title title) {
+		this.title = title;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public @Nullable String getSecondName() {
+		return secondName;
+	}
+
+	public void setSecondName(@Nullable String secondName) {
+		this.secondName = secondName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public boolean isExtern() {
+		return isExtern;
+	}
+
+	public void setExtern(boolean isExtern) {
+		this.isExtern = isExtern;
+	}
+
+	public TeachingPreference getTeachingPreference() {
+		return teachingPreference;
+	}
+
+	public void setTeachingPreference(TeachingPreference teachingPreference) {
+		this.teachingPreference = teachingPreference;
+	}
 }

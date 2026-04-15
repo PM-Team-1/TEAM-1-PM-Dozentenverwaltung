@@ -1,10 +1,7 @@
 package teameins.lecturerassignmentsystem.model.enums;
 
-import lombok.Getter;
-
 import java.util.Arrays;
 
-@Getter
 public enum AlreadyHeld {
     PROVADIS("P"),
     OTHER_SCHOOL("A"),
@@ -37,4 +34,8 @@ public enum AlreadyHeld {
             default -> code;
         };
     }
+
+	public String getValue() {
+		return value;
+	}
 }

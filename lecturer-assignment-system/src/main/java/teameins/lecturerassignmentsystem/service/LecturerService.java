@@ -1,14 +1,14 @@
 package teameins.lecturerassignmentsystem.service;
 
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerException;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
@@ -18,14 +18,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
     private final LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
     private final CourseRepository courseRepository;
     private final MappingService mappingService;
 
-    public LecturerDto getLecturerById(int lecturerId) {
+    public LecturerService(LecturerRepository lecturerRepository,
+			LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository, CourseRepository courseRepository,
+			MappingService mappingService) {
+		super();
+		this.lecturerRepository = lecturerRepository;
+		this.lecturerCanHoldCourseRepository = lecturerCanHoldCourseRepository;
+		this.courseRepository = courseRepository;
+		this.mappingService = mappingService;
+	}
+
+	public LecturerDto getLecturerById(int lecturerId) {
         Lecturer lecturer = lecturerRepository.findById(lecturerId)
                 .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHold(lecturerId);
@@ -43,55 +52,66 @@ public class LecturerService {
     }
 
     public LecturerDto createLecturer(LecturerDto lecturerDto) {
+            if (!lecturerDto.validate()) {
+                throw new InvalidLecturerException("Der Dozent ist ungültig.");
+            }
         int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
         return getLecturerById(id);
     }
-
     public LecturerDto updateLecturer(LecturerDto lecturerDto) {
-        // Ensure the lecturer exists before updating
+            if (!lecturerDto.validate()) {
+                throw new InvalidLecturerException("Der Dozent ist ungültig.");
+            }
         lecturerRepository.findById(lecturerDto.getId())
-                .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerDto.getId() + " gefunden werden."));
+                .orElseThrow(() -> new LecturerNotFoundException(
+                        "Es konnte kein Dozent mit der ID " + lecturerDto.getId() + " gefunden werden."
+                ));
+
         lecturerRepository.save(mappingService.map(lecturerDto));
         return getLecturerById(lecturerDto.getId());
     }
 
     public LecturerCanHoldCourseDto addCourseToLecturer(LecturerCanHoldCourseDto dto) {
-        // Load lecturer or throw exception
+        if (!dto.validate()) {
+            throw new IllegalArgumentException("Die Beziehung ist ungültig.");
+        }
         Lecturer lecturer = lecturerRepository.findById(dto.getLecturerId())
                 .orElseThrow(() -> new LecturerNotFoundException(
-                        "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."));
+                        "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."
+                ));
 
-        // Load course or throw exception
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new CourseNotFoundException(
-                        "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."));
+                        "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."
+                ));
 
-        // Validation: relationship already exists
-        if (lecturerCanHoldCourseRepository.existsByLecturerIdAndCourseId(dto.getLecturerId(), dto.getCourseId())) {
+        if (lecturerCanHoldCourseRepository.existsByLecturerIdAndCourseId(
+                dto.getLecturerId(), dto.getCourseId())) {
             throw new IllegalArgumentException(
-                    "Die Beziehung zwischen Dozent (ID " + dto.getLecturerId() + ") und Vorlesung (ID " + dto.getCourseId() + ") existiert bereits.");
+                    "Die Beziehung zwischen Dozent (ID " + dto.getLecturerId()
+                            + ") und Vorlesung (ID " + dto.getCourseId() + ") existiert bereits."
+            );
         }
 
-        // Validation: preference vs. master/bachelor mismatch
-        Preference preference = lecturer.getPreference();
-        if (preference == Preference.ONLY_MASTER && !course.isMaster()) {
+        TeachingPreference teachingPreference = lecturer.getTeachingPreference();
+        if (teachingPreference == TeachingPreference.ONLY_MASTER && !course.isMaster()) {
             throw new IllegalArgumentException(
-                    "Der Dozent hält nur Master-Vorlesungen, aber die Vorlesung ist eine Bachelor-Vorlesung.");
+                    "Der Dozent hält nur Master-Vorlesungen, aber die Vorlesung ist eine Bachelor-Vorlesung."
+            );
         }
-        if (preference == Preference.ONLY_BACHELOR && course.isMaster()) {
+        if (teachingPreference == TeachingPreference.ONLY_BACHELOR && course.isMaster()) {
             throw new IllegalArgumentException(
-                    "Der Dozent hält nur Bachelor-Vorlesungen, aber die Vorlesung ist eine Master-Vorlesung.");
+                    "Der Dozent hält nur Bachelor-Vorlesungen, aber die Vorlesung ist eine Master-Vorlesung."
+            );
         }
 
-        // Create and save the relationship
         LecturerCanHoldCourse entity = mappingService.map(dto, lecturer, course);
         LecturerCanHoldCourse saved = lecturerCanHoldCourseRepository.save(entity);
         return mappingService.map(saved);
     }
-
     public void deleteLecturer(LecturerDto lecturer) {
         List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
-        for (LecturerCanHoldCourseDto lchc: canHoldCourses) {
+        for (LecturerCanHoldCourseDto lchc : canHoldCourses) {
             lecturerCanHoldCourseRepository.deleteById(lchc.getId());
         }
         lecturerRepository.deleteById(lecturer.getId());

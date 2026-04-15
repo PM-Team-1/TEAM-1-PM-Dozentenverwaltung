@@ -160,7 +160,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         name.setWidthFull();
         binder.forField(name)
                 .withValidator((value, context) -> {
-                    String msg = CourseDto.validateNameMessage(value);
+                    String msg = CourseDto.validateName(value);
                     return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
                 })
                 .bind(CourseDto::getName, CourseDto::setName);
@@ -186,7 +186,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         semester.setWidthFull();
         binder.forField(semester)
                 .withValidator((value, context) -> {
-                    String msg = CourseDto.validateSemesterMessage(value);
+                    String msg = CourseDto.validateSemester(value);
                     return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
                 })
                 .bind(CourseDto::getSemester, CourseDto::setSemester);
@@ -209,19 +209,19 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         lecturersWhoCanHoldGrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
-        Grid.Column<LecturerToCourseRelation> prefColumn = lecturersWhoCanHoldGrid.addColumn(this::mapPreference)
-                .setHeader("Präferenz")
-                .setSortable(true)
-                .setComparator(row -> priorityScore(row.getLecturerCanHoldCourse().getPriority()))
-                .setAutoWidth(true).setFlexGrow(1);
-
         lecturersWhoCanHoldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld())).setHeader("Bereits gehalten an")
                 .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
+        lecturersWhoCanHoldGrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
+                .setKey("priority")
+                .setHeader("Priorität")
+                .setComparator(row -> row.getPriorityScore(course.isMaster()))
+                .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
 
         lecturersWhoCanHoldGrid.setItems(rows);
 
-        lecturersWhoCanHoldGrid.sort(List.of(new GridSortOrder<>(prefColumn, SortDirection.ASCENDING)));
+        lecturersWhoCanHoldGrid.sort(List.of(new GridSortOrder<>(lecturersWhoCanHoldGrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
 
         return lecturersWhoCanHoldGrid;
     }
@@ -285,22 +285,6 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         add(header, desc, back);
     }
 
-    private String mapPreference(LecturerToCourseRelation ltcr){
-        Boolean priority = ltcr.getLecturerCanHoldCourse().getPriority();
-        if (priority == null) {
-            return "-";
-        }
-        if (priority) {
-            return "Hält gerne im " + (course.isMaster() ? MASTER : BACHELOR);
-        } else {
-            return "Hält lieber im " + (course.isMaster() ? BACHELOR : MASTER);
-        }
-    }
-
-    private int priorityScore(Boolean priority) {
-        if (priority == null) return 1;
-        return priority ? 0 : 2;
-    }
 
     private Div getFilterBar(Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse, Component noLecturersMessage) {
         Div filterBar = new Div();

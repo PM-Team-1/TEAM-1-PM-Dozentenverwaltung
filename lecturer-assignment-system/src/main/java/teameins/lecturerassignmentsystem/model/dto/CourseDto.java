@@ -1,16 +1,8 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.List;
+import java.util.Objects;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
 public class CourseDto {
 
     private int id;
@@ -19,6 +11,10 @@ public class CourseDto {
     private boolean isMaster;
     private String semester;
     private List<LecturerCanHoldCourseDto> canBeHeldBy;
+    
+    public CourseDto() {
+    	
+    }
 
     public CourseDto(int id, String name, boolean isClosed, boolean isMaster, String semester, List<LecturerCanHoldCourseDto> canBeHeldBy) throws IllegalArgumentException {
         setId(id);
@@ -30,16 +26,16 @@ public class CourseDto {
     }
 
     public static boolean validate(CourseDto course) {
-        return validateNameMessage(course.getName()).isEmpty() &&
-               validateSemesterMessage(course.getSemester()).isEmpty();
+        return validateName(course.getName()).isEmpty() &&
+               validateSemester(course.getSemester()).isEmpty();
     }
 
     public boolean validate(){
         return validate(this);
     }
 
-    public static String validateNameMessage(String name) {
-        if (name == null || name.isEmpty()) {
+    public static String validateName(String name) {
+        if (name == null || name.isBlank()) {
             return "Der Name der Vorlesung darf nicht leer sein.";
         }
         return "";
@@ -49,8 +45,8 @@ public class CourseDto {
         this.name = name;
     }
 
-    public static String validateSemesterMessage(String semester) {
-        if (semester == null || semester.isEmpty()) {
+    public static String validateSemester(String semester) {
+        if (semester == null || semester.isBlank()) {
             return "Das Semester der Vorlesung darf nicht leer sein.";
         }
         if (!semester.strip().matches("(WiSe \\d{2,4}/\\d{2,4}|SoSe \\d{2,4})")) {
@@ -75,4 +71,63 @@ public class CourseDto {
         String yearPart = parts[1];
         return yearPart + " " + (term.contains("SoSe") ? 1 : 2);
     }
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public boolean isClosed() {
+		return isClosed;
+	}
+
+	public void setClosed(boolean isClosed) {
+		this.isClosed = isClosed;
+	}
+
+	public boolean isMaster() {
+		return isMaster;
+	}
+
+	public void setMaster(boolean isMaster) {
+		this.isMaster = isMaster;
+	}
+
+	public List<LecturerCanHoldCourseDto> getCanBeHeldBy() {
+		return canBeHeldBy;
+	}
+
+	public void setCanBeHeldBy(List<LecturerCanHoldCourseDto> canBeHeldBy) {
+		this.canBeHeldBy = canBeHeldBy;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getSemester() {
+		return semester;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(canBeHeldBy, id, isClosed, isMaster, name, semester);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof CourseDto other)) {
+			return false;
+		}
+        return Objects.equals(canBeHeldBy, other.canBeHeldBy) && id == other.id && isClosed == other.isClosed
+				&& isMaster == other.isMaster && Objects.equals(name, other.name)
+				&& Objects.equals(semester, other.semester);
+	}
+	
 }

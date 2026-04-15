@@ -2,14 +2,12 @@ package teameins.lecturerassignmentsystem.model;
 
 import org.junit.jupiter.api.Test;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
-import teameins.lecturerassignmentsystem.model.enums.Title;
 
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LecturerDtoTest {
+class LecturerDtoTest {
 
     @Test
     void testSuccessfulValidate() {
@@ -18,38 +16,74 @@ public class LecturerDtoTest {
 
     @Test
     void testWrongTitleError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Blödmann", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto(null, "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Blödmann", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto(null, "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto(" ", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("\t", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("\n", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
     }
 
     @Test
     void testEmptyFirstNameError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", null, "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", null, "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", " ", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "\t", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "\n", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
     }
 
     @Test
     void testEmptyLastNameError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", null, "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", null, "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", " ", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "\t", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "\n", "kollege.schnürrschuh@deichmann.de", "+123456789", "A").validate());
     }
 
     @Test
     void testEmptyEmailError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "", "+123456789", "A").validate());
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "Schnürrschuh", null, "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", null, "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", " ", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "\t", "+123456789", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "\n", "+123456789", "A").validate());
+    }
+
+    @Test
+    void testWrongEmailError() {
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "not-an-email", "+123456789", "A").validate());
+        assertTrue(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "a@b", "+123456789", "A").validate());
     }
 
     @Test
     void testEmptyPhoneError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "", "A").validate());
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", null, "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", null, "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", " ", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "\t", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "\n", "A").validate());
     }
 
     @Test
-    void testEmptyPreferenceError() {
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "").validate());
-        assertThrows(IllegalArgumentException.class, () -> getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", null).validate());
+    void testWrongPhoneError() {
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "abc", "A").validate());
+        assertTrue(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "123-456", "A").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "++123", "A").validate());
+    }
+
+    @Test
+    void testEmptyTeachingPreferenceError() {
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", null).validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", " ").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "\t").validate());
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "\n").validate());
+    }
+
+    @Test
+    void testWrongTeachingPreferenceError() {
+        assertFalse(getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "X").validate());
     }
 
     @Test
@@ -63,7 +97,7 @@ public class LecturerDtoTest {
         lecturerDto.setEmail("kollege.schnürrschuh@deichmann.de");
         lecturerDto.setPhone("+123456789");
         lecturerDto.setExtern(false);
-        lecturerDto.setPreference("A");
+        lecturerDto.setTeachingPreference("A");
         lecturerDto.setCanHoldCourses(new ArrayList<>());
 
         LecturerDto expectedLecturerDto = getLecturerDto("Dr.", "Kollege", "Schnürrschuh", "kollege.schnürrschuh@deichmann.de", "+123456789", "A");
@@ -77,13 +111,13 @@ public class LecturerDtoTest {
         assertEquals(expectedLecturerDto.getEmail(), lecturerDto.getEmail());
         assertEquals(expectedLecturerDto.getPhone(), lecturerDto.getPhone());
         assertEquals(expectedLecturerDto.isExtern(), lecturerDto.isExtern());
-        assertEquals(expectedLecturerDto.getPreference(), lecturerDto.getPreference());
+        assertEquals(expectedLecturerDto.getTeachingPreference(), lecturerDto.getTeachingPreference());
         assertEquals(expectedLecturerDto.getCanHoldCourses(), lecturerDto.getCanHoldCourses());
         assertEquals(expectedLecturerDto, lecturerDto);
         assertEquals(expectedLecturerDto.hashCode(), lecturerDto.hashCode());
     }
 
-    LecturerDto getLecturerDto(String title, String firstName, String lastName, String email, String phone, String preference) {
-        return new LecturerDto(1, title, firstName, lastName, "", email, phone, false, preference, new ArrayList<>());
+    LecturerDto getLecturerDto(String title, String firstName, String lastName, String email, String phone, String teachingPreference) {
+        return new LecturerDto(1, title, firstName, lastName, "", email, phone, false, teachingPreference, new ArrayList<>());
     }
 }
