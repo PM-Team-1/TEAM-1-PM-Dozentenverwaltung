@@ -59,6 +59,14 @@ public class MappingService {
         );
     }
 
+    public teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto map(teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse assignment) {
+        return new teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto(
+                assignment.getId(),
+                assignment.getLecturer().getId(),
+                assignment.getCourse().getId()
+        );
+    }
+
     public Lecturer map(LecturerDto dto) {
         Lecturer entity = new Lecturer();
         entity.setId(dto.getId());
