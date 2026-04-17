@@ -12,7 +12,9 @@ import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerExceptio
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
+import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
+import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +23,19 @@ import java.util.List;
 public class LecturerService {
     private final LecturerRepository lecturerRepository;
     private final LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
+    private final LecturerHoldsCourseRepository lecturerHoldsCourseRepository;
     private final CourseRepository courseRepository;
     private final MappingService mappingService;
 
     public LecturerService(LecturerRepository lecturerRepository,
-			LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository, CourseRepository courseRepository,
+			LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository, 
+            LecturerHoldsCourseRepository lecturerHoldsCourseRepository,
+            CourseRepository courseRepository,
 			MappingService mappingService) {
 		super();
 		this.lecturerRepository = lecturerRepository;
 		this.lecturerCanHoldCourseRepository = lecturerCanHoldCourseRepository;
+        this.lecturerHoldsCourseRepository = lecturerHoldsCourseRepository;
 		this.courseRepository = courseRepository;
 		this.mappingService = mappingService;
 	}
@@ -114,6 +120,12 @@ public class LecturerService {
         for (LecturerCanHoldCourseDto lchc : canHoldCourses) {
             lecturerCanHoldCourseRepository.deleteById(lchc.getId());
         }
+        
+        List<LecturerHoldsCourse> holdsCourses = lecturerHoldsCourseRepository.findByLecturerId(lecturer.getId());
+        for (LecturerHoldsCourse lhc : holdsCourses) {
+            lecturerHoldsCourseRepository.deleteById(lhc.getId());
+        }
+
         lecturerRepository.deleteById(lecturer.getId());
     }
 
