@@ -2,7 +2,7 @@ package teameins.lecturerassignmentsystem.model.db;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
 
@@ -26,14 +26,14 @@ public class Lecturer {
     private boolean isExtern;
 
     @Enumerated(EnumType.STRING)
-    private Preference preference;
-    
+    private TeachingPreference teachingPreference;
+
     public Lecturer() {
-    	
+
     }
-    
-    public Lecturer(int id, Title title, String firstName, String lastName, String secondName, String email,
-			String phone, boolean isExtern, Preference preference) {
+
+    public Lecturer(int id, Title title, String firstName, String lastName, @Nullable String secondName, String email,
+                    String phone, boolean isExtern, TeachingPreference teachingPreference) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -43,7 +43,7 @@ public class Lecturer {
 		this.email = email;
 		this.phone = phone;
 		this.isExtern = isExtern;
-		this.preference = preference;
+		this.teachingPreference = teachingPreference;
 	}
 
 	public int getId() {
@@ -78,11 +78,11 @@ public class Lecturer {
 		this.lastName = lastName;
 	}
 
-	public String getSecondName() {
+	public @Nullable String getSecondName() {
 		return secondName;
 	}
 
-	public void setSecondName(String secondName) {
+	public void setSecondName(@Nullable String secondName) {
 		this.secondName = secondName;
 	}
 
@@ -110,11 +110,11 @@ public class Lecturer {
 		this.isExtern = isExtern;
 	}
 
-	public Preference getPreference() {
-		return preference;
+	public TeachingPreference getTeachingPreference() {
+		return teachingPreference;
 	}
 
-	public void setPreference(Preference preference) {
-		this.preference = preference;
+	public void setTeachingPreference(TeachingPreference teachingPreference) {
+		this.teachingPreference = teachingPreference;
 	}
 }

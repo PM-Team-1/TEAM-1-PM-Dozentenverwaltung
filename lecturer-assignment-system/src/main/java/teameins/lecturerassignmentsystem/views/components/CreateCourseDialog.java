@@ -52,7 +52,7 @@ public class CreateCourseDialog extends Dialog {
         name.setWidthFull();
         binder.forField(name)
                 .withValidator((value, context) -> {
-                    String msg = CourseDto.validateNameMessage(value);
+                    String msg = CourseDto.validateName(value);
                     return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
                 })
                 .bind(CourseDto::getName, CourseDto::setName);
@@ -75,7 +75,7 @@ public class CreateCourseDialog extends Dialog {
         semester.setWidthFull();
         binder.forField(semester)
                 .withValidator((value, context) -> {
-                    String msg = CourseDto.validateSemesterMessage(value);
+                    String msg = CourseDto.validateSemester(value);
                     return msg.isEmpty() ? ValidationResult.ok() : ValidationResult.error(msg);
                 })
                 .bind(CourseDto::getSemester, CourseDto::setSemester);
@@ -107,8 +107,7 @@ public class CreateCourseDialog extends Dialog {
             this.close();
             UI.getCurrent().navigate("vorlesungen/" + course.getId());
         } catch (ValidationException e) {
-            Dialog errorDialog = new ValidationErrorDialog(e);
-            errorDialog.open();
+            //validation errors are already shown by the binder, so we can ignore this exception here
         }
     }
 }

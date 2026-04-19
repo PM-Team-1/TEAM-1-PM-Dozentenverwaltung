@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CourseDtoTest {
+class CourseDtoTest {
 
     @Test
     void testSuccessfulValidate() {

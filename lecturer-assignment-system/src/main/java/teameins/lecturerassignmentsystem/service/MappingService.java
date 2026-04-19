@@ -7,8 +7,9 @@ import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
-import teameins.lecturerassignmentsystem.model.enums.Preference;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
@@ -20,7 +21,7 @@ import java.util.List;
 public class MappingService {
 	
 	public MappingService() {
-		
+		//no args constructor
 	}
 
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
@@ -33,7 +34,7 @@ public class MappingService {
                 lecturer.getEmail(),
                 lecturer.getPhone(),
                 lecturer.isExtern(),
-                lecturer.getPreference().getValue(),
+                lecturer.getTeachingPreference().getValue(),
                 canHoldCourses
         );
     }
@@ -56,7 +57,7 @@ public class MappingService {
                 lecturerCanHoldCourse.getCourse().getId(),
                 lecturerCanHoldCourse.getAlreadyHeld().getValue(),
                 lecturerCanHoldCourse.getQualification().getValue(),
-                lecturerCanHoldCourse.getPriority()
+                lecturerCanHoldCourse.getAffinity().getValue()
         );
     }
 
@@ -73,7 +74,7 @@ public class MappingService {
         entity.setEmail(dto.getEmail());
         entity.setPhone(dto.getPhone());
         entity.setExtern(dto.isExtern());
-        entity.setPreference(parsePreference(dto.getPreference()));
+        entity.setTeachingPreference(parseTeachingPreference(dto.getTeachingPreference()));
         return entity;
     }
 
@@ -95,7 +96,7 @@ public class MappingService {
         entity.setCourse(course);
         entity.setAlreadyHeld(parseAlreadyHeld(dto.getAlreadyHeld()));
         entity.setQualification(parseQualification(dto.getQualification()));
-        entity.setPriority(dto.getPriority());
+        entity.setAffinity(parseAffinity(dto.getAffinity()));
         return entity;
     }
 
@@ -129,26 +130,26 @@ public class MappingService {
 
     private Title parseTitle(String titleStr) {
         if (titleStr == null) {
-            throw new IllegalArgumentException("Title darf nicht leer sein");
+            throw new IllegalArgumentException("Titel darf nicht leer sein");
         }
         for (Title t : Title.values()) {
             if (t.getValue().equalsIgnoreCase(titleStr)) {
                 return t;
             }
         }
-        throw new IllegalArgumentException("Ungültiger Title: '" + titleStr + "'");
+        throw new IllegalArgumentException("Ungültiger Titel: '" + titleStr + "'");
     }
 
-    private Preference parsePreference(String prefStr) {
+    private TeachingPreference parseTeachingPreference(String prefStr) {
         if (prefStr == null || prefStr.isBlank()) {
-            throw new IllegalArgumentException("Preference darf nicht leer sein");
+            throw new IllegalArgumentException("Lehrpräferenz darf nicht leer sein");
         }
-        for (Preference p : Preference.values()) {
+        for (TeachingPreference p : TeachingPreference.values()) {
             if (p.getValue().equalsIgnoreCase(prefStr)) {
                 return p;
             }
         }
-        throw new IllegalArgumentException("Ungültige Preference: '" + prefStr + "'");
+        throw new IllegalArgumentException("Ungültige Lehrpräferenz: '" + prefStr + "'");
     }
 
     private AlreadyHeld parseAlreadyHeld(String value) {
@@ -165,13 +166,25 @@ public class MappingService {
 
     private Qualification parseQualification(String value) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Qualification darf nicht leer sein");
+            throw new IllegalArgumentException("Qualifikation darf nicht leer sein");
         }
         for (Qualification q : Qualification.values()) {
             if (q.getValue().equalsIgnoreCase(value)) {
                 return q;
             }
         }
-        throw new IllegalArgumentException("Ungültige Qualification: '" + value + "'");
+        throw new IllegalArgumentException("Ungültige Qualifikation: '" + value + "'");
+    }
+
+    private Affinity parseAffinity(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Affinität darf nicht leer sein");
+        }
+        for (Affinity a : Affinity.values()) {
+            if (a.getValue().equalsIgnoreCase(value)) {
+                return a;
+            }
+        }
+        throw new IllegalArgumentException("Ungültige Affinität: '" + value + "'");
     }
 }

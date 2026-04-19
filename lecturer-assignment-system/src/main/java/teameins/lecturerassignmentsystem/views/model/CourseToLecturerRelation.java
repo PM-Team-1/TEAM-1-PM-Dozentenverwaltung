@@ -2,16 +2,15 @@ package teameins.lecturerassignmentsystem.views.model;
 
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.service.CourseService;
 
 public class CourseToLecturerRelation {
 
-    private final CourseService courseService;
     private final LecturerCanHoldCourseDto lecturerCanHoldCourse;
     private final CourseDto course;
 
     public CourseToLecturerRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, CourseService courseService) {
-        this.courseService = courseService;
         this.lecturerCanHoldCourse = lecturerCanHoldCourse;
         this.course = courseService.getCourseById(lecturerCanHoldCourse.getCourseId());
     }
@@ -29,9 +28,19 @@ public class CourseToLecturerRelation {
         return yearPart + termPart;
     }
 
-	public CourseService getCourseService() {
-		return courseService;
-	}
+    public double getPriorityScore(String teachingPreference){
+        int affinityScore = Affinity.mapAffinityScore(lecturerCanHoldCourse.getAffinity());
+        String degree = course.isMaster() ? "M" : "B";
+        double degreeScore;
+        if (teachingPreference.equals("A")) {
+            degreeScore = 0.0;
+        } else if (teachingPreference.contains(degree)) {
+            degreeScore = 0.4;
+        } else {
+            degreeScore = -0.4;
+        }
+        return affinityScore + degreeScore;
+    }
 
 	public LecturerCanHoldCourseDto getLecturerCanHoldCourse() {
 		return lecturerCanHoldCourse;
