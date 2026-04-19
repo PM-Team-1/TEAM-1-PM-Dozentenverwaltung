@@ -93,14 +93,14 @@ public class AllLecturersView extends VerticalLayout {
             }
         });
 
-        grid.setItems(lecturerService.listLecturers());
+        grid.setItems(lecturerService.listLecturerDtos());
         return grid;
     }
 
     private DataView<LecturerDto> addSearchFunctionality(Grid<LecturerDto> lecturerGrid, TextField searchField) {
         GridListDataView<LecturerDto> dataView = lecturerGrid.getListDataView();
         if (dataView == null) {
-            dataView = lecturerGrid.setItems(lecturerService.listLecturers());
+            dataView = lecturerGrid.setItems(lecturerService.listLecturerDtos());
         }
         dataView.addFilter(lecturer -> {
             String searchTerm = searchField.getValue().trim();
