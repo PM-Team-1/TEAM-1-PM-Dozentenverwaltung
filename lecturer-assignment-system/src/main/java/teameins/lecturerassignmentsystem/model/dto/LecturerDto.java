@@ -126,7 +126,10 @@ public class LecturerDto {
         if (validatePreference(preference)) {
             this.preference = preference;
         } else {
-            throw new IllegalArgumentException("Die Präferenz ist ungültig: " + preference + ". Gültige Werte sind: " + Arrays.toString(Preference.getValidValues()));
+            throw new IllegalArgumentException(
+                    "Die Präferenz ist ungültig: " + preference +
+                            ". Gültige Werte sind: " + Arrays.toString(Preference.getValidValues())
+            );
         }
     }
 

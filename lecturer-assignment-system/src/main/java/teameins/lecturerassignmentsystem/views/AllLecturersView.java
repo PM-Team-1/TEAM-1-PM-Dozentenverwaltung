@@ -22,6 +22,7 @@ import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
 import teameins.lecturerassignmentsystem.service.ExportService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -58,9 +59,8 @@ public class AllLecturersView extends VerticalLayout {
         toolbar.addClassName("toolbar");
 
         Button addLecturerButton = new Button("Dozenten hinzufügen");
-        addLecturerButton.addClickListener(e -> {
-            UI.getCurrent().navigate("dozenten/neu");
-        });
+        addLecturerButton.addClickListener(e -> new CreateLecturerDialog(lecturerService));
+
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suche");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
