@@ -27,7 +27,12 @@ public class CourseService {
 		this.lecturerCanHoldCourseRepository = lecturerCanHoldCourseRepository;
 	}
 
-	public CourseDto getCourseById(int courseId) {
+    public Course getCourseById(int courseId) {
+        return courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
+    }
+
+	public CourseDto getCourseDtoById(int courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(courseId);
@@ -49,7 +54,7 @@ public class CourseService {
             throw new InvalidCourseException("Die Vorlesung ist ungültig.");
         }
         int id = courseRepository.save(mappingService.map(courseDto)).getId();
-        return getCourseById(id);
+        return getCourseDtoById(id);
     }
 
     public CourseDto updateCourse(CourseDto courseDto) {
@@ -59,7 +64,7 @@ public class CourseService {
         courseRepository.findById(courseDto.getId()).
                 orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseDto.getId() + " gefunden werden."));
         courseRepository.save(mappingService.map(courseDto));
-        return getCourseById(courseDto.getId());
+        return getCourseDtoById(courseDto.getId());
     }
 
     public void deleteCourse(CourseDto courseDto) {

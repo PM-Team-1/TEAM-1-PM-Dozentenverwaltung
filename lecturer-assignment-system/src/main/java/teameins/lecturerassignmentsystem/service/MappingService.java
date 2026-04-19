@@ -16,11 +16,14 @@ import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MappingService {
+    CourseService courseService;
 	
-	public MappingService() {
+	public MappingService(CourseService courseService) {
+        this.courseService = courseService;
 		//no args constructor
 	}
 
@@ -109,7 +112,29 @@ public class MappingService {
         lecturerReportEntity.setEmail(lecturer.getEmail());
         lecturerReportEntity.setPhone(lecturer.getPhone());
         lecturerReportEntity.setExtern(lecturer.isExtern());
-        lecturerReportEntity.setPreference(lecturer.getPreference().getDescription());
+        lecturerReportEntity.setPreference(lecturer.getTeachingPreference().getDescription());
+        lecturerReportEntity.setCanHoldCourses(
+                canHoldCourses.stream().map(canHoldCourse ->
+                        mapReport(canHoldCourse.getCourse(), canHoldCourse)).toList());
+        return lecturerReportEntity;
+    }
+
+    public LecturerReportEntity mapReport(LecturerDto lecturerDto) {
+        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
+        Lecturer lecturer = map(lecturerDto);
+        List<Course> courses = lecturerDto.getCanHoldCourses()
+                .stream().map(lecturerCanHoldCourseDto -> courseService.getCourseDtoById(lecturerCanHoldCourseDto.getCourseId()))
+                .collect(Collectors.toList());
+        LecturerCanHoldCourse lecturerCanHoldCourse = map(lecturerDto.getCanHoldCourses())
+
+        lecturerReportEntity.setTitle(lecturer.getTitle().getValue());
+        lecturerReportEntity.setFirstName(lecturer.getFirstName());
+        lecturerReportEntity.setLastName(lecturer.getLastName());
+        lecturerReportEntity.setSecondName(lecturer.getSecondName());
+        lecturerReportEntity.setEmail(lecturer.getEmail());
+        lecturerReportEntity.setPhone(lecturer.getPhone());
+        lecturerReportEntity.setExtern(lecturer.isExtern());
+        lecturerReportEntity.setPreference(lecturer.getTeachingPreference().getDescription());
         lecturerReportEntity.setCanHoldCourses(
                 canHoldCourses.stream().map(canHoldCourse ->
                         mapReport(canHoldCourse.getCourse(), canHoldCourse)).toList());

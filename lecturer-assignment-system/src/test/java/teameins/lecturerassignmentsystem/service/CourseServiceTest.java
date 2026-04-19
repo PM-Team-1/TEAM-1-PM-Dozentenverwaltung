@@ -64,15 +64,15 @@ class CourseServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // getCourseById
+    // getCourseDtoById
     // -------------------------------------------------------------------------
 
     @Test
-    void getCourseById_kursExistiert_gibtCourseDtoZurueck() {
+    void getCourseById_kursExistiert_gibtCourseDtoDtoZurueck() {
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
 
-        CourseDto result = courseService.getCourseById(1);
+        CourseDto result = courseService.getCourseDtoById(1);
 
         assertNotNull(result);
         assertEquals(1, result.getId());
@@ -82,12 +82,12 @@ class CourseServiceTest {
     }
 
     @Test
-    void getCourseById_kursExistiertNicht_wirftCourseNotFoundException() {
+    void getCourseById_kursExistiertNicht_wirftCourseDtoNotFoundException() {
         when(courseRepository.findById(99)).thenReturn(Optional.empty());
 
         CourseNotFoundException exception = assertThrows(
                 CourseNotFoundException.class,
-                () -> courseService.getCourseById(99)
+                () -> courseService.getCourseDtoById(99)
         );
 
         assertTrue(exception.getMessage().contains("99"));
@@ -95,11 +95,11 @@ class CourseServiceTest {
     }
 
     @Test
-    void getCourseById_rufsMappingServiceAuf() {
+    void getCourseDtoById_rufsMappingServiceAuf() {
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
 
-        courseService.getCourseById(1);
+        courseService.getCourseDtoById(1);
 
         verify(mappingService).map(eq(course), anyList());
     }
@@ -248,7 +248,7 @@ class CourseServiceTest {
 
         Course aktualisiertKurs = new Course(1, "Programmierung 1 - Aktualisiert", false, false, "WiSe 24/25");
 
-        // findById wird zweimal aufgerufen: einmal für die Existenzprüfung, einmal in getCourseById
+        // findById wird zweimal aufgerufen: einmal für die Existenzprüfung, einmal in getCourseDtoById
         when(courseRepository.findById(1)).thenReturn(Optional.of(course)).thenReturn(Optional.of(aktualisiertKurs));
         when(courseRepository.save(any(Course.class))).thenReturn(aktualisiertKurs);
         when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
