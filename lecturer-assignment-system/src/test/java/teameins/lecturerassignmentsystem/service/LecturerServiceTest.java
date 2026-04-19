@@ -22,7 +22,9 @@ import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerExceptio
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
+import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
+import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,8 @@ class LecturerServiceTest {
     LecturerRepository lecturerRepository;
     @Mock
     LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
+    @Mock
+    LecturerHoldsCourseRepository lecturerHoldsCourseRepository;
     @Mock
     CourseRepository courseRepository;
 
@@ -291,6 +295,7 @@ class LecturerServiceTest {
     void deleteLecturerTest(){
         int lecturerId = 1;
         Mockito.doNothing().when(lecturerCanHoldCourseRepository).deleteById(Mockito.anyInt());
+        Mockito.doReturn(List.of()).when(lecturerHoldsCourseRepository).findByLecturerId(Mockito.anyInt());
         Mockito.doNothing().when(lecturerRepository).deleteById(Mockito.anyInt());
 
         Lecturer lecturer = getLecturerById(lecturerId);

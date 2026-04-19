@@ -13,8 +13,11 @@ import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto;
+import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
 import teameins.lecturerassignmentsystem.model.exception.InvalidCourseException;
+import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
@@ -22,6 +25,8 @@ import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
+import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
+import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +48,12 @@ class CourseServiceTest {
 
     @Mock
     private LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
+
+    @Mock
+    private LecturerHoldsCourseRepository lecturerHoldsCourseRepository;
+
+    @Mock
+    private LecturerRepository lecturerRepository;
 
     @InjectMocks
     private CourseService courseService;
@@ -350,5 +361,99 @@ class CourseServiceTest {
 
         inOrder.verify(lecturerCanHoldCourseRepository).deleteById(10);
         inOrder.verify(courseRepository).deleteById(1);
+    }
+
+    // -------------------------------------------------------------------------
+    // assignLecturerToCourse
+    // -------------------------------------------------------------------------
+
+    @Test
+    void assignLecturerToCourse_success() {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(2);
+        when(courseRepository.findById(1)).thenReturn(Optional.of(course));
+        when(lecturerRepository.findById(2)).thenReturn(Optional.of(lecturer));
+        when(lecturerHoldsCourseRepository.existsByCourseId(1)).thenReturn(false);
+        LecturerHoldsCourse assignment = new LecturerHoldsCourse(10, course, lecturer);
+        when(lecturerHoldsCourseRepository.save(any(LecturerHoldsCourse.class))).thenReturn(assignment);
+        LecturerHoldsCourseDto dto = new LecturerHoldsCourseDto(10, 2, 1);
+        when(mappingService.map(assignment)).thenReturn(dto);
+
+        LecturerHoldsCourseDto result = courseService.assignLecturerToCourse(1, 2);
+
+        assertNotNull(result);
+        assertEquals(10, result.getId());
+        verify(lecturerHoldsCourseRepository).save(any());
+    }
+
+    @Test
+    void assignLecturerToCourse_courseNotFound() {
+        when(courseRepository.findById(99)).thenReturn(Optional.empty());
+        assertThrows(CourseNotFoundException.class, () -> courseService.assignLecturerToCourse(99, 2));
+    }
+
+    @Test
+    void assignLecturerToCourse_lecturerNotFound() {
+        when(courseRepository.findById(1)).thenReturn(Optional.of(course));
+        when(lecturerRepository.findById(99)).thenReturn(Optional.empty());
+        assertThrows(LecturerNotFoundException.class, () -> courseService.assignLecturerToCourse(1, 99));
+    }
+
+    @Test
+    void assignLecturerToCourse_alreadyAssigned() {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(2);
+        when(courseRepository.findById(1)).thenReturn(Optional.of(course));
+        when(lecturerRepository.findById(2)).thenReturn(Optional.of(lecturer));
+        when(lecturerHoldsCourseRepository.existsByCourseId(1)).thenReturn(true);
+
+        assertThrows(InvalidCourseException.class, () -> courseService.assignLecturerToCourse(1, 2));
+    }
+
+    // -------------------------------------------------------------------------
+    // updateLecturerForCourse
+    // -------------------------------------------------------------------------
+
+    @Test
+    void updateLecturerForCourse_success() {
+        Lecturer newLecturer = new Lecturer();
+        newLecturer.setId(3);
+        LecturerHoldsCourse assignment = new LecturerHoldsCourse(10, course, new Lecturer());
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.of(assignment));
+        when(lecturerRepository.findById(3)).thenReturn(Optional.of(newLecturer));
+        when(lecturerHoldsCourseRepository.save(any(LecturerHoldsCourse.class))).thenReturn(assignment);
+        LecturerHoldsCourseDto dto = new LecturerHoldsCourseDto(10, 3, 1);
+        when(mappingService.map(assignment)).thenReturn(dto);
+
+        LecturerHoldsCourseDto result = courseService.updateLecturerForCourse(1, 3);
+
+        assertEquals(3, assignment.getLecturer().getId());
+        assertNotNull(result);
+    }
+
+    @Test
+    void updateLecturerForCourse_notAssigned() {
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.empty());
+        assertThrows(InvalidCourseException.class, () -> courseService.updateLecturerForCourse(1, 2));
+    }
+
+    // -------------------------------------------------------------------------
+    // removeLecturerFromCourse
+    // -------------------------------------------------------------------------
+
+    @Test
+    void removeLecturerFromCourse_success() {
+        LecturerHoldsCourse assignment = new LecturerHoldsCourse(10, course, new Lecturer());
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.of(assignment));
+        
+        courseService.removeLecturerFromCourse(1);
+
+        verify(lecturerHoldsCourseRepository).deleteById(10);
+    }
+
+    @Test
+    void removeLecturerFromCourse_notAssigned() {
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.empty());
+        assertThrows(InvalidCourseException.class, () -> courseService.removeLecturerFromCourse(1));
     }
 }
