@@ -2,6 +2,7 @@ package teameins.lecturerassignmentsystem.model.export;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.opencsv.CSVWriter;
+import lombok.extern.slf4j.Slf4j;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
@@ -12,8 +13,10 @@ import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+@Slf4j
 public class CsvCreator extends FileCreator{
     public CsvCreator(List<LecturerReportEntity> allValidLecturers, ReportMode reportMode) {
         super(allValidLecturers, reportMode);
@@ -23,6 +26,11 @@ public class CsvCreator extends FileCreator{
     public byte[] createFile() {
         List<String[]> rows =  new ArrayList<>();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            outputStream.write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        } catch (IOException e) {
+            log.error("BOM Bytes couldn't be attached.");
+        }
         Field[] fields = LecturerReportEntity.class.getDeclaredFields();
 
         List<String> headerValues = getHeaders(fields, LecturerReportEntity.class);
@@ -32,12 +40,13 @@ public class CsvCreator extends FileCreator{
         rows.addAll(rowsValues);
 
         try (CSVWriter writer = new CSVWriter(
-                new OutputStreamWriter(outputStream),
+                new OutputStreamWriter(outputStream, StandardCharsets.UTF_8),
                 ';',
                 '"',
                 '"',
                 "\n")) {
             writer.writeAll(rows);
+            writer.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
