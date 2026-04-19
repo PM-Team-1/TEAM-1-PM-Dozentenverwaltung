@@ -32,7 +32,6 @@ public class ExportService {
     }
 
     public byte[] exportFile(FileCreationMode fileCreationMode, ReportMode reportMode, List<LecturerReportEntity> reportEntities) {
-        FileCreator fileCreator;
         if(reportMode == ReportMode.ALL_COURSES_WITH_NO_LECTURERS) {
             CourseReportEntity courseReportEntity1 = new CourseReportEntity("Informatik", "geschlossen", "Bachelor", "WiSe 24/25", "nicht", "nichts", false);
             CourseReportEntity courseReportEntity2 = new CourseReportEntity("Informatik2", "geschlossen", "Bachelor", "WiSe 24/25", "nicht", "nichts", false);
@@ -52,12 +51,7 @@ public class ExportService {
             reportEntities.add(lecturerReportEntity);
         }
 
-        try {
-            Constructor<?> constructor = fileCreationMode.getCreatorClass().getDeclaredConstructor(List.class, ReportMode.class);
-            fileCreator = (FileCreator) constructor.newInstance(reportEntities, reportMode);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Kein gültiger Exportmodus angegeben");
-        }
+        FileCreator fileCreator = FileCreator.createCreator(fileCreationMode, reportEntities, reportMode);
 
         return fileCreator.createFile();
     }

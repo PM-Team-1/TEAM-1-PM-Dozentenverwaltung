@@ -60,7 +60,7 @@ public class DashboardView extends VerticalLayout {
     }
 
     private DownloadResponse getDownloadResponse(FileCreationMode creationMode) {
-        ReportMode reportMode = ReportMode.ALL_COURSES_WITH_NO_LECTURERS;
+        ReportMode reportMode = ReportMode.ALL_COURSES_IN_PROVADIS;
         byte[] fileBytes = exportService.exportFile(creationMode, reportMode, new ArrayList<>());
         return new DownloadResponse(
                 new ByteArrayInputStream(fileBytes),
