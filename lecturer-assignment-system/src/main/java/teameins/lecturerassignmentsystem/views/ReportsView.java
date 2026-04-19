@@ -1,8 +1,10 @@
 package teameins.lecturerassignmentsystem.views;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -12,9 +14,23 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import teameins.lecturerassignmentsystem.model.db.Lecturer;
+import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.enums.ReportMode;
+import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
+import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+import teameins.lecturerassignmentsystem.service.MappingService;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Route("reports")
 @PageTitle("Reports")
@@ -22,18 +38,20 @@ public class ReportsView extends VerticalLayout {
 
     private final transient CourseService courseService;
     private final transient LecturerService lecturerService;
+    private final transient MappingService mappingService;
 
     private final Div reportContent = new Div();
 
     @Autowired
-    public ReportsView(CourseService courseService, LecturerService lecturerService) {
+    public ReportsView(CourseService courseService, LecturerService lecturerService, MappingService mappingService) {
         this.courseService = courseService;
         this.lecturerService = lecturerService;
+        this.mappingService = mappingService;
 
         H2 heading = new H2("Reports");
         heading.addClassName("h2-custom");
 
-        Div toolbar = buildToolbar();
+        Div toolbar = getToolbar();
 
         reportContent.setWidthFull();
         showPlaceholder();
@@ -41,17 +59,14 @@ public class ReportsView extends VerticalLayout {
         add(heading, toolbar, reportContent);
     }
 
-    private Div buildToolbar() {
+    private Div getToolbar() {
         Div toolbar = new Div();
         toolbar.setWidthFull();
         toolbar.addClassName("toolbar");
 
-        ComboBox<String> reportSelector = new ComboBox<>("Report auswählen");
-        reportSelector.setItems(
-                "Dozenten-Übersicht",
-                "Vorlesungen-Übersicht",
-                "Dozenten-Vorlesungs-Zuordnung"
-        );
+        ComboBox<ReportMode> reportSelector = new ComboBox<>("Report auswählen");
+        reportSelector.setItems(ReportMode.values());
+        reportSelector.setItemLabelGenerator(ReportMode::getHeader);
         reportSelector.setPlaceholder("Bitte Report wählen...");
         reportSelector.setWidth("300px");
         reportSelector.setClearButtonVisible(true);
@@ -61,7 +76,7 @@ public class ReportsView extends VerticalLayout {
         exportButton.setEnabled(false);
 
         reportSelector.addValueChangeListener(event -> {
-            String selected = event.getValue();
+            ReportMode selected = event.getValue();
             if (selected == null) {
                 exportButton.setEnabled(false);
                 showPlaceholder();
@@ -72,7 +87,7 @@ public class ReportsView extends VerticalLayout {
         });
 
         exportButton.addClickListener(event -> {
-            String selected = reportSelector.getValue();
+            ReportMode selected = reportSelector.getValue();
             if (selected != null) {
                 // TODO: Export-Logik implementieren (z.B. CSV/PDF-Export)
             }
@@ -95,56 +110,87 @@ public class ReportsView extends VerticalLayout {
         reportContent.add(placeholder);
     }
 
-    private void showReport(String reportName) {
+    private void showReport(ReportMode reportMode) {
         reportContent.removeAll();
+        H3 reportTitle = new H3(reportMode.getHeader());
+        reportContent.add(reportTitle, buildReport(reportMode));
+    }
 
-        H3 reportTitle = new H3(reportName);
+    private Grid<LecturerGridRow> buildReport(ReportMode reportMode) {
+        Grid<LecturerGridRow> grid = new Grid<>(LecturerGridRow.class);
+        List<Lecturer> lecturers = lecturerService.listLecturers();
+        List<LecturerReportEntity> lecturerReportEntities = lecturers
+                .stream()
+                .map(lecturer -> mappingService.mapReport(lecturer, lecturerService.getCoursesLecturerCanHold(lecturer.getId())))
+                .toList();
+        List<LecturerGridRow> lecturerGridRows = lecturerReportEntities
+                .stream()
+                .map(this::transformReportEntityToGridRow)
+                .flatMap(List::stream)
+                .toList();
 
-        switch (reportName) {
-            case "Dozenten-Übersicht" -> reportContent.add(reportTitle, buildLecturersReport());
-            case "Vorlesungen-Übersicht" -> reportContent.add(reportTitle, buildCoursesReport());
-            case "Dozenten-Vorlesungs-Zuordnung" -> reportContent.add(reportTitle, buildAssignmentReport());
-            default -> showPlaceholder();
+        addGridColumns(grid, reportMode);
+        grid.setItems(lecturerGridRows);
+        grid.setWidthFull();
+        return grid;
+    }
+
+    private void getReportEntites(ReportMode reportMode) {
+
+    }
+
+    private void addGridColumns(Grid<LecturerGridRow> grid, ReportMode reportMode) {
+        Field[] fields = LecturerGridRow.class.getDeclaredFields();
+
+        for(Field field : fields) {
+            Class<?> type = field.getType();
+            if(reportMode == ReportMode.ALL_COURSES_WITH_NO_LECTURERS && type == LecturerReportEntity.class) {
+                continue;
+            }
+            Field[] itemFields = type.getDeclaredFields();
+            field.setAccessible(true);
+
+            for(Field itemField : itemFields) {
+                Class<?> itemType = itemField.getType();
+                itemField.setAccessible(true);
+                if(itemType != List.class) {
+                    JsonProperty jsonProperty = itemField.getAnnotation(JsonProperty.class);
+                    String headerValue = jsonProperty != null ? jsonProperty.value() : itemField.getName();
+
+                    grid.addColumn(item -> {
+                        try {
+                            if(field.get(item) != null) {
+                                return itemField.get(field.get(item));
+                            }
+                            return "";
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).setHeader(headerValue);
+                }
+            }
         }
     }
 
-    private com.vaadin.flow.component.grid.Grid<teameins.lecturerassignmentsystem.model.dto.LecturerDto> buildLecturersReport() {
-        var grid = new com.vaadin.flow.component.grid.Grid<>(teameins.lecturerassignmentsystem.model.dto.LecturerDto.class, false);
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerDto::getTitle).setHeader("Titel");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerDto::getFirstName).setHeader("Vorname");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerDto::getLastName).setHeader("Nachname");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerDto::getEmail).setHeader("E-Mail");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerDto::getPhone).setHeader("Telefon");
-        grid.addColumn(dto -> dto.isExtern() ? "Extern" : "Intern").setHeader("Typ");
-        grid.setItems(lecturerService.listLecturers());
-        grid.setWidthFull();
-        return grid;
+    private List<LecturerGridRow> transformReportEntityToGridRow(LecturerReportEntity reportEntity) {
+        List<LecturerGridRow> lecturerGridRows = new ArrayList<>();
+        List<CourseReportEntity> courseReportEntities = reportEntity.getCanHoldCourses();
+
+        if(courseReportEntities != null) {
+            for(CourseReportEntity courseReportEntity : courseReportEntities) {
+                lecturerGridRows.add(new LecturerGridRow(reportEntity, courseReportEntity));
+            }
+        } else {
+            lecturerGridRows.add(new LecturerGridRow(reportEntity, null));
+        }
+
+        return lecturerGridRows;
     }
 
-    private com.vaadin.flow.component.grid.Grid<teameins.lecturerassignmentsystem.model.dto.CourseDto> buildCoursesReport() {
-        var grid = new com.vaadin.flow.component.grid.Grid<>(teameins.lecturerassignmentsystem.model.dto.CourseDto.class, false);
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.CourseDto::getName).setHeader("Name");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.CourseDto::getSemester).setHeader("Semester");
-        grid.addColumn(dto -> dto.isMaster() ? "Master" : "Bachelor").setHeader("Studiengang");
-        grid.addColumn(dto -> dto.isClosed() ? "Geschlossen" : "Offen").setHeader("Status");
-        grid.setItems(courseService.listCourses());
-        grid.setWidthFull();
-        return grid;
-    }
-
-    private com.vaadin.flow.component.grid.Grid<teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto> buildAssignmentReport() {
-        var grid = new com.vaadin.flow.component.grid.Grid<>(teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto.class, false);
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto::getLecturerId).setHeader("Dozenten-ID");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto::getCourseId).setHeader("Vorlesungs-ID");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto::getQualification).setHeader("Qualifikation");
-        grid.addColumn(teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto::getAlreadyHeld).setHeader("Bereits gehalten");
-        grid.addColumn(dto -> dto.getPriority() != null && dto.getPriority() ? "Ja" : "Nein").setHeader("Priorität");
-
-        var assignments = courseService.listCourses().stream()
-                .flatMap(course -> course.getCanBeHeldBy().stream())
-                .toList();
-        grid.setItems(assignments);
-        grid.setWidthFull();
-        return grid;
+    @RequiredArgsConstructor
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    private class LecturerGridRow {
+        LecturerReportEntity lecturerReportEntity;
+        CourseReportEntity courseReportEntity;
     }
 }
