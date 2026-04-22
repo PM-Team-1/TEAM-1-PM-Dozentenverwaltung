@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
+import java.util.Objects;
+
 
 @Entity
 public class Lecturer {
@@ -116,5 +118,17 @@ public class Lecturer {
 
 	public void setTeachingPreference(TeachingPreference teachingPreference) {
 		this.teachingPreference = teachingPreference;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		Lecturer lecturer = (Lecturer) o;
+		return getId() == lecturer.getId() && isExtern() == lecturer.isExtern() && getTitle() == lecturer.getTitle() && Objects.equals(getFirstName(), lecturer.getFirstName()) && Objects.equals(getLastName(), lecturer.getLastName()) && Objects.equals(getSecondName(), lecturer.getSecondName()) && Objects.equals(getEmail(), lecturer.getEmail()) && Objects.equals(getPhone(), lecturer.getPhone()) && getTeachingPreference() == lecturer.getTeachingPreference();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getId(), getTitle(), getFirstName(), getLastName(), getSecondName(), getEmail(), getPhone(), isExtern(), getTeachingPreference());
 	}
 }
