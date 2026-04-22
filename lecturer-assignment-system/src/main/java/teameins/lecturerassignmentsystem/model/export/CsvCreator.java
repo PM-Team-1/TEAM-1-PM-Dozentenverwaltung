@@ -98,7 +98,7 @@ public class CsvCreator extends FileCreator{
                 row.add(course.getSemester());
                 row.add(course.getAlreadyHeld());
                 row.add(course.getQualification());
-                row.add(String.valueOf(course.getPriority()));
+                row.add(String.valueOf(course.getAffinity()));
 
                 rows.add(row.toArray(new String[0]));
             }

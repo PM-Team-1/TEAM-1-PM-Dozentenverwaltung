@@ -14,16 +14,17 @@ import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
+import teameins.lecturerassignmentsystem.repository.CourseRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class MappingService {
-    CourseService courseService;
+    CourseRepository courseRepository;
 	
-	public MappingService(CourseService courseService) {
-        this.courseService = courseService;
+	public MappingService(CourseRepository courseRepository) {
+        this.courseRepository = courseRepository;
 		//no args constructor
 	}
 
@@ -111,6 +112,28 @@ public class MappingService {
         return entity;
     }
 
+    public LecturerReportEntity mapReport(LecturerDto lecturerDto) {
+        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
+        Lecturer lecturer = map(lecturerDto);
+        List<LecturerCanHoldCourse> lecturerCanHoldCourses = lecturerDto.getCanHoldCourses()
+                .stream().map(lecturerCanHoldCourseDto ->
+                        map(
+                                lecturerCanHoldCourseDto,
+                                lecturer,
+                                courseRepository.findById(lecturerCanHoldCourseDto.getCourseId()).orElseThrow()))
+                .toList();
+        return mapReport(lecturer, lecturerCanHoldCourses);
+    }
+
+    public LecturerReportEntity mapReport(CourseDto courseDto) {
+        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
+        Course course = map(courseDto);
+
+        lecturerReportEntity.setCanHoldCourses(List.of(mapReport(course)));
+
+        return lecturerReportEntity;
+    }
+
     public LecturerReportEntity mapReport(Lecturer lecturer, List<LecturerCanHoldCourse> canHoldCourses) {
         LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
         lecturerReportEntity.setTitle(lecturer.getTitle().getValue());
@@ -127,26 +150,13 @@ public class MappingService {
         return lecturerReportEntity;
     }
 
-    public LecturerReportEntity mapReport(LecturerDto lecturerDto) {
-        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
-        Lecturer lecturer = map(lecturerDto);
-        List<Course> courses = lecturerDto.getCanHoldCourses()
-                .stream().map(lecturerCanHoldCourseDto -> courseService.getCourseDtoById(lecturerCanHoldCourseDto.getCourseId()))
-                .collect(Collectors.toList());
-        LecturerCanHoldCourse lecturerCanHoldCourse = map(lecturerDto.getCanHoldCourses())
-
-        lecturerReportEntity.setTitle(lecturer.getTitle().getValue());
-        lecturerReportEntity.setFirstName(lecturer.getFirstName());
-        lecturerReportEntity.setLastName(lecturer.getLastName());
-        lecturerReportEntity.setSecondName(lecturer.getSecondName());
-        lecturerReportEntity.setEmail(lecturer.getEmail());
-        lecturerReportEntity.setPhone(lecturer.getPhone());
-        lecturerReportEntity.setExtern(lecturer.isExtern());
-        lecturerReportEntity.setPreference(lecturer.getTeachingPreference().getDescription());
-        lecturerReportEntity.setCanHoldCourses(
-                canHoldCourses.stream().map(canHoldCourse ->
-                        mapReport(canHoldCourse.getCourse(), canHoldCourse)).toList());
-        return lecturerReportEntity;
+    public CourseReportEntity mapReport(Course course) {
+        CourseReportEntity courseReportEntity = new CourseReportEntity();
+        courseReportEntity.setName(course.getName());
+        courseReportEntity.setOpenStatus(course.isClosed() ? "geschlossen" : "offen");
+        courseReportEntity.setAcademicDegree(course.isMaster() ? "Master" : "Bachelor");
+        courseReportEntity.setSemester(course.getSemester());
+        return courseReportEntity;
     }
 
     public CourseReportEntity mapReport(Course course, LecturerCanHoldCourse lecturerCanHoldCourse) {
@@ -155,7 +165,7 @@ public class MappingService {
         courseReportEntity.setOpenStatus(course.isClosed() ? "geschlossen" : "offen");
         courseReportEntity.setAcademicDegree(course.isMaster() ? "Master" : "Bachelor");
         courseReportEntity.setSemester(course.getSemester());
-        courseReportEntity.setPriority(lecturerCanHoldCourse.getPriority());
+        courseReportEntity.setAffinity(lecturerCanHoldCourse.getAffinity().getValue());
         courseReportEntity.setAlreadyHeld(lecturerCanHoldCourse.getAlreadyHeld().getDescription());
         courseReportEntity.setQualification(lecturerCanHoldCourse.getQualification().getDescription());
         return courseReportEntity;

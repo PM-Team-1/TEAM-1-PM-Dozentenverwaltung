@@ -1,16 +1,21 @@
 package teameins.lecturerassignmentsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
+import teameins.lecturerassignmentsystem.model.enums.ReportMode;
+import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +24,7 @@ import java.util.stream.Collectors;
  * Service für die vier Report-Typen des Dozentenverwaltungssystems.
  */
 @Service
+@Transactional
 public class ReportService {
 
     private final LecturerCanHoldCourseRepository lecturerCanHoldCourseRepository;
@@ -34,6 +40,14 @@ public class ReportService {
         this.courseRepository = courseRepository;
         this.lecturerRepository = lecturerRepository;
         this.mappingService = mappingService;
+    }
+
+    public List<LecturerReportEntity> getReportByReportMode(ReportMode reportMode) {
+        if(reportMode == ReportMode.ALL_COURSES_WITH_NO_LECTURERS) {
+            return reportMode.getReportValueSupplier().apply(this).stream().map(dto -> mappingService.mapReport((CourseDto) dto)).toList();
+        } else {
+            return reportMode.getReportValueSupplier().apply(this).stream().map(dto -> mappingService.mapReport((LecturerDto) dto)).toList();
+        }
     }
 
     /**
@@ -101,14 +115,16 @@ public class ReportService {
      *
      * @return Liste der Vorlesungen, die nur von Dozenten mit OTHER_SCHOOL-Status belegt sind
      */
-    public List<CourseDto> getReportCoursesOnlyHeldElsewhere() {
+    public List<LecturerDto> getReportCoursesOnlyHeldElsewhere() {
         List<LecturerCanHoldCourse> allAssignments = lecturerCanHoldCourseRepository.findAll();
 
         // Gruppierung aller Zuordnungen nach Vorlesungs-ID
         Map<Integer, List<LecturerCanHoldCourse>> byCourse = allAssignments.stream()
                 .collect(Collectors.groupingBy(lchc -> lchc.getCourse().getId()));
 
-        List<CourseDto> result = new ArrayList<>();
+        Map<Integer, List<LecturerCanHoldCourseDto>> resultMapByLecturer = new HashMap<>();
+
+        List<LecturerDto> result = new ArrayList<>();
 
         for (Map.Entry<Integer, List<LecturerCanHoldCourse>> entry : byCourse.entrySet()) {
             List<LecturerCanHoldCourse> assignments = entry.getValue();
@@ -122,14 +138,29 @@ public class ReportService {
                     .anyMatch(lchc -> AlreadyHeld.PROVADIS.equals(lchc.getAlreadyHeld()));
 
             if (hasOtherSchool && !hasProvadis) {
-                List<LecturerCanHoldCourseDto> lchcDtos = assignments.stream()
-                        .map(mappingService::map)
-                        .collect(Collectors.toList());
-                result.add(mappingService.map(assignments.get(0).getCourse(), lchcDtos));
+                assignments.forEach(lecturerCanHoldCourse -> {
+                    LecturerCanHoldCourseDto lecturerCanHoldCourseDto = mappingService.map(lecturerCanHoldCourse);
+                    addToMap(resultMapByLecturer, lecturerCanHoldCourseDto.getLecturerId(), lecturerCanHoldCourseDto);
+                });
             }
         }
 
+        resultMapByLecturer.forEach((key, value) -> {
+            Lecturer lecturer = lecturerRepository.findById(key).orElseThrow();
+            result.add(mappingService.map(lecturer, value));
+        });
+
         return result;
+    }
+
+    private <T> void addToMap(Map<Integer, List<T>> map, Integer key, T value){
+        if(map.containsKey(key)) {
+            map.get(key).add(value);
+        } else {
+            List<T> list = new ArrayList<>();
+            list.add(value);
+            map.put(key, list);
+        }
     }
 
     /**
@@ -149,7 +180,7 @@ public class ReportService {
                     .map(mappingService::map)
                     .collect(Collectors.toList());
 
-            LecturerDto lecturerDto = mappingService.map(assignments.get(0).getLecturer(), lchcDtos);
+            LecturerDto lecturerDto = mappingService.map(assignments.getFirst().getLecturer(), lchcDtos);
             result.add(lecturerDto);
         }
 
