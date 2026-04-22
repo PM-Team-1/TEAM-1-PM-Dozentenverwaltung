@@ -20,19 +20,19 @@ public class CourseReportEntity {
     private String alreadyHeld;
     @JsonProperty("Qualifikation")
     private String qualification;
-    @JsonProperty("Priorität")
-    private Boolean priority;
+    @JsonProperty("Affinität")
+    private String affinity;
 
     public CourseReportEntity() {}
 
-    public CourseReportEntity(String name, String openStatus, String academicDegree, String semester, String alreadyHeld, String qualification, Boolean priority) {
+    public CourseReportEntity(String name, String openStatus, String academicDegree, String semester, String alreadyHeld, String qualification, String affinity) {
         this.name = name;
         this.openStatus = openStatus;
         this.academicDegree = academicDegree;
         this.semester = semester;
         this.alreadyHeld = alreadyHeld;
         this.qualification = qualification;
-        this.priority = priority;
+        this.affinity = affinity;
     }
 
     public String getName() {
@@ -83,11 +83,11 @@ public class CourseReportEntity {
         this.qualification = qualification;
     }
 
-    public Boolean getPriority() {
-        return priority;
+    public String getAffinity() {
+        return affinity;
     }
 
-    public void setPriority(Boolean priority) {
-        this.priority = priority;
+    public void setAffinity(String affinity) {
+        this.affinity = affinity;
     }
 }

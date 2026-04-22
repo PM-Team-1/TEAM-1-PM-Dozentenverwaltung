@@ -10,9 +10,18 @@ import teameins.lecturerassignmentsystem.model.export.PdfCreator;
 @AllArgsConstructor
 @Getter
 public enum FileCreationMode {
-    CSV(".csv", "text/csv; charset=UTF-8", CsvCreator.class),
-    PDF(".pdf", "application/pdf", PdfCreator.class),
-    JSON(".json", "application/json", JsonCreator.class),;
+    CSV(
+            ".csv",
+            "text/csv; charset=UTF-8",
+            CsvCreator.class),
+    PDF(
+            ".pdf",
+            "application/pdf",
+            PdfCreator.class),
+    JSON(
+            ".json",
+            "application/json",
+            JsonCreator.class),;
 
     private final String fileEnd;
     private final String contentType;
