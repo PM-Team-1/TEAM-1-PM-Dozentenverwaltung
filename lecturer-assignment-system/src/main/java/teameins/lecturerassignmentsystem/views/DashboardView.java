@@ -39,34 +39,7 @@ public class DashboardView extends VerticalLayout {
         toolbar.setWidthFull();
         toolbar.addClassName("toolbar");
 
-        Anchor pdfAnchor = new Anchor(DownloadHandler.fromInputStream(event -> {
-            FileCreationMode creationMode = FileCreationMode.PDF;
-            return getDownloadResponse(creationMode);
-        }), "PDF herunterladen");
-
-        Anchor csvAnchor = new Anchor(DownloadHandler.fromInputStream(event -> {
-            FileCreationMode creationMode = FileCreationMode.CSV;
-            return getDownloadResponse(creationMode);
-        }), "CSV herunterladen");
-
-        Anchor jsonAnchor = new Anchor(DownloadHandler.fromInputStream(event -> {
-            FileCreationMode creationMode = FileCreationMode.JSON;
-            return getDownloadResponse(creationMode);
-        }), "JSON herunterladen");
-
-        toolbar.add(pdfAnchor, csvAnchor, jsonAnchor);
-
         return toolbar;
-    }
-
-    private DownloadResponse getDownloadResponse(FileCreationMode creationMode) {
-        ReportMode reportMode = ReportMode.ALL_COURSES_IN_PROVADIS;
-        byte[] fileBytes = exportService.exportFile(creationMode, reportMode, new ArrayList<>());
-        return new DownloadResponse(
-                new ByteArrayInputStream(fileBytes),
-                reportMode.getFilename() + creationMode.getFileEnd(),
-                creationMode.getContentType(),
-                fileBytes.length);
     }
     
 }
