@@ -58,8 +58,6 @@ public class ReportService {
         List<LecturerReportEntity> result = new ArrayList<LecturerReportEntity>();
 
         for (Lecturer lecturer : lecturers) {
-            List<CourseReportEntity> coursesByLecturer = new ArrayList<CourseReportEntity>();
-
             List<LecturerCanHoldCourse> list = lecturerCanHoldCourses.stream()
                     .filter(t -> t.getLecturer().getId() == lecturer.getId())
                     .filter(t -> t.getAlreadyHeld().getValue().equals(AlreadyHeld.PROVADIS.getValue()))
@@ -83,8 +81,6 @@ public class ReportService {
         List<LecturerReportEntity> result = new ArrayList<LecturerReportEntity>();
 
         for (Lecturer lecturer : lecturers) {
-            List<CourseReportEntity> coursesByLecturer = new ArrayList<CourseReportEntity>();
-
             List<LecturerCanHoldCourse> list = lecturerCanHoldCourses.stream()
                     .filter(t -> t.getLecturer().getId() == lecturer.getId())
                     .filter(t -> !(t.getAlreadyHeld().getValue().equals(AlreadyHeld.PROVADIS.getValue())))
@@ -140,8 +136,7 @@ public class ReportService {
                     }
                 }));
 
-        List<LecturerReportEntity> result = getLreListFromLecturerToCoursesMap(lecturerToCoursesMap);
-        return result;
+        return getLreListFromLecturerToCoursesMap(lecturerToCoursesMap);
     }
 
     protected LecturerReportEntity getLreFromLchcList(List<LecturerCanHoldCourse> list, Lecturer lecturer) {
