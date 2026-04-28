@@ -28,6 +28,8 @@ public class MappingService {
 		//no args constructor
 	}
 
+    public MappingService() {}
+
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
         return new LecturerDto(
                 lecturer.getId(),
