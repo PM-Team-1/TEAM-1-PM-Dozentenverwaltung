@@ -2,6 +2,8 @@ package teameins.lecturerassignmentsystem.model.dto;
 
 import lombok.ToString;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
+import lombok.ToString;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
 import java.util.List;

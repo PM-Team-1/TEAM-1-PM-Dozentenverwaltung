@@ -16,6 +16,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
+import teameins.lecturerassignmentsystem.service.ExportService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 
@@ -24,9 +26,10 @@ import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 public class AllLecturersView extends VerticalLayout {
 
     private final transient LecturerService lecturerService;
+    private FileCreationMode creationMode;
 
     @Autowired
-    public AllLecturersView(LecturerService lecturerService) {
+    public AllLecturersView(LecturerService lecturerService, ExportService exportService) {
         this.lecturerService = lecturerService;
 
         H2 heading = new H2("Dozenten");
