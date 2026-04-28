@@ -25,7 +25,6 @@ public class MappingService {
 	
 	public MappingService(CourseRepository courseRepository) {
         this.courseRepository = courseRepository;
-		//no args constructor
 	}
 
     public MappingService() {}
