@@ -1,5 +1,6 @@
 package teameins.lecturerassignmentsystem.views;
 
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -20,11 +21,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
+import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
@@ -32,7 +37,12 @@ import teameins.lecturerassignmentsystem.views.components.AddCourseToLecturerDia
 import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
 import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
@@ -99,9 +109,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         addCourseButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Div coursesLecturerCanHold = renderCoursesLecturerCanHold(ctlr);
-        Div coursesLecturerHasHeld = renderCoursesLecturerHasHeld(ctlr);
+        coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-l)");
+
         addCourseButton.getStyle().set("margin-bottom", "var(--lumo-space-l)");
-        courses.add(coursesLecturerCanHold, addCourseButton, coursesLecturerHasHeld);
+        courses.add(coursesLecturerCanHold, addCourseButton);
 
         HorizontalLayout singleLecturer = new HorizontalLayout(lecturerInfo, courses);
         singleLecturer.setWidthFull();
@@ -300,19 +311,26 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         H3 heading = new H3("Vorlesungen, die " + lecturerName + " halten kann:");
         heading.getStyle().setMarginBottom("var(--lumo-space-m)");
 
-        canHoldgrid.addColumn(row -> row.getCourse().getName()).setHeader("Name")
+        Div filterBar = getCourseFilters(canHoldgrid, rows);
+
+        canHoldgrid.addColumn(row -> row.getCourse().getName())
+                .setHeader("Name")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad")
+        canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor")
+                .setHeader("Grad")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> row.getCourse().getSemester()).setHeader("Semester")
+        canHoldgrid.addColumn(row -> row.getCourse().getSemester())
+                .setHeader("Semester")
                 .setSortable(true).setComparator(CourseToLecturerRelation::getSemesterSortable)
                 .setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen").setHeader("Zugänglichkeit")
+        canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen")
+                .setHeader("Zugänglichkeit")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
-        canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification())).setHeader("benötigte Vorbereitungszeit")
+        canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification()))
+                .setHeader("benötigte Vorbereitungszeit")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
         canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
@@ -321,44 +339,116 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 .setComparator(row -> row.getPriorityScore(lecturer.getTeachingPreference()))
                 .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld()))
+                .setHeader("Gehalten an")
+                .setSortable(true)
+                .setAutoWidth(true).setFlexGrow(1);
 
 
         canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
 
         canHoldgrid.setItems(rows);
-        coursesDiv.add(heading, canHoldgrid);
+        coursesDiv.add(heading, filterBar, canHoldgrid);
         return coursesDiv;
     }
 
-    private Div renderCoursesLecturerHasHeld(List<CourseToLecturerRelation> rows) {
-        Div coursesDiv = new Div();
-        coursesDiv.setWidthFull();
-        H3 heading = new H3("Bereits gehaltene Vorlesungen:");
-        heading.getStyle().setMarginBottom("var(--lumo-space-m)");
+    private Div getCourseFilters(Grid<CourseToLecturerRelation> grid, List<CourseToLecturerRelation> rows) {
+        Div filterBar = new Div();
+        filterBar.setWidthFull();
+        filterBar.addClassName("toolbar");
 
-        Grid<CourseToLecturerRelation> alredyHeldGrid = new Grid<>();
-        alredyHeldGrid.addClassName("grid-custom");
-        alredyHeldGrid.setAllRowsVisible(true);
+        TextField semesterSearchField = new TextField("Semester");
+        semesterSearchField.setPlaceholder("Semester");
+        semesterSearchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        semesterSearchField.setValueChangeMode(ValueChangeMode.EAGER);
+        semesterSearchField.addValueChangeListener(e -> addSearchFunctionality(
+                grid,
+                semesterSearchField,
+                rows,
+                (dto, s) -> matchesSearchTerm(dto.getCourse().getSemester(), s))
+                .refreshAll());
+        filterBar.add(semesterSearchField);
 
-        alredyHeldGrid.addColumn(row -> row.getCourse().getName()).setHeader("Name")
-                .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
-        alredyHeldGrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor").setHeader("Grad")
-                .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
-        alredyHeldGrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld())).setHeader("Gehalten an")
-                .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
+        addComboboxFilter(
+                grid,
+                rows,
+                filterBar,
+                "benötigte Vorbereitungszeit",
+                Qualification.class,
+                Qualification::getValue,
+                Qualification::mapQualification,
+                dto -> dto.getLecturerCanHoldCourse().getQualification()
+        );
 
-        alredyHeldGrid.setItems(rows);
-        GridListDataView<CourseToLecturerRelation> dataView = alredyHeldGrid.getListDataView();
-        dataView.addFilter(row -> {
-            String alreadyHeld = row.getLecturerCanHoldCourse().getAlreadyHeld();
-            return alreadyHeld != null && !alreadyHeld.equals(AlreadyHeld.NOT_YET_HELD.getValue());
+        addComboboxFilter(
+                grid,
+                rows,
+                filterBar,
+                "Priorität",
+                Affinity.class,
+                Affinity::getValue,
+                Affinity::getValue,
+                dto -> dto.getLecturerCanHoldCourse().getAffinity()
+        );
+
+        addComboboxFilter(
+                grid,
+                rows,
+                filterBar,
+                "Gehalten an",
+                AlreadyHeld.class,
+                AlreadyHeld::getValue,
+                AlreadyHeld::mapAlreadyHeld,
+                dto -> dto.getLecturerCanHoldCourse().getAlreadyHeld()
+        );
+
+        return filterBar;
+    }
+
+    public <D, E extends Enum<E>> void addComboboxFilter(
+            Grid<D> grid,
+            List<D> rows,
+            Div filterBar,
+            String label,
+            Class<E> enumClass,
+            Function<E, String> valueSupplier,
+            Function<E, String> itemLabelSupplier,
+            Function<D, String> searchTermSupplier)
+    {
+        ComboBox<E> comboBox = new ComboBox<>(label);
+        comboBox.setItems(enumClass.getEnumConstants());
+        comboBox.setPlaceholder(label);
+        comboBox.setClearButtonVisible(true);
+        comboBox.setValue(null);
+        comboBox.setItemLabelGenerator(itemLabelSupplier::apply);
+        comboBox.addValueChangeListener(e -> addSearchFunctionality(
+                grid,
+                comboBox,
+                rows,
+                (dto, s) -> searchTermSupplier.apply(dto).equals(valueSupplier.apply(s)))
+                .refreshAll());
+
+        filterBar.add(comboBox);
+    }
+
+    public <D, S extends AbstractSinglePropertyField<?, P>, P> DataView<D> addSearchFunctionality (Grid<D> grid, S searchField, List<D> rows, BiFunction<D, P, Boolean> filter) {
+        GridListDataView<D> dataView = grid.getListDataView();
+        if(dataView == null) {
+            dataView = grid.setItems(rows);
+        }
+        dataView.addFilter(dto -> {
+            P searchTerm = searchField.getValue();
+
+            if(searchTerm == null) return true;
+
+            return filter.apply(dto, searchTerm);
         });
 
-        coursesDiv.add(heading, alredyHeldGrid);
-        return coursesDiv;
+        return dataView;
+    }
+
+    public boolean matchesSearchTerm(String value, String searchTerm) {
+        return value != null && value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
     private void renderLecturerNotFoundError(String heading, String details) {
