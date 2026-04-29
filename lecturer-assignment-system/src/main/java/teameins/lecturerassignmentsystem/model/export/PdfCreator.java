@@ -93,6 +93,10 @@ public class PdfCreator extends FileCreator {
         PDType1Font regularFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
         PDType1Font boldFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
 
+        float labelOffset = 150;
+        float valueX = MARGIN + labelOffset;
+        float valueWidth = PAGE_WIDTH - MARGIN - valueX;
+
         for (Field field : getNonTransientFields(clazz)) {
             if (field.getType().equals(List.class)) continue;
 
@@ -102,28 +106,103 @@ public class PdfCreator extends FileCreator {
                 Object value = entity != null ? field.get(entity) : null;
                 String displayValue = value != null ? value.toString() : "";
 
-                if (currentY - LINE_HEIGHT < MARGIN) {
+                List<String> valueLines = wrapTextByWidth(displayValue, regularFont, FONT_SIZE, valueWidth);
+                float requiredHeight = LINE_HEIGHT * valueLines.size();
+
+                if (currentY - requiredHeight < MARGIN) {
                     currentY = PAGE_HEIGHT - MARGIN;
                 }
 
+                // Label nur einmal in der ersten Zeile
                 contentStream.beginText();
                 contentStream.setFont(boldFont, FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN, currentY);
                 contentStream.showText(label + ":");
                 contentStream.endText();
 
-                contentStream.beginText();
-                contentStream.setFont(regularFont, FONT_SIZE);
-                contentStream.newLineAtOffset(MARGIN + 150, currentY);
-                contentStream.showText(displayValue);
-                contentStream.endText();
+                // Wert ggf. mehrzeilig rendern
+                float lineY = currentY;
+                for (String line : valueLines) {
+                    contentStream.beginText();
+                    contentStream.setFont(regularFont, FONT_SIZE);
+                    contentStream.newLineAtOffset(valueX, lineY);
+                    contentStream.showText(line);
+                    contentStream.endText();
+                    lineY -= LINE_HEIGHT;
+                }
 
-                currentY -= LINE_HEIGHT;
+                currentY -= requiredHeight;
             } catch (IllegalAccessException e) {
                 // skip
             }
         }
         return currentY;
+    }
+
+    /**
+     * Bricht einen Text anhand der tatsächlichen Glyphenbreite des angegebenen Fonts um,
+     * sodass keine Zeile breiter als {@code maxWidth} wird. Lange "Worte" (z. B. Emails ohne
+     * Leerzeichen) werden notfalls mit einem Trennstrich hart umgebrochen.
+     */
+    private List<String> wrapTextByWidth(String text, PDType1Font font, float fontSize, float maxWidth) throws IOException {
+        List<String> lines = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            lines.add("");
+            return lines;
+        }
+
+        String[] words = text.split(" ");
+        StringBuilder current = new StringBuilder();
+
+        for (String word : words) {
+            if (textWidth(word, font, fontSize) > maxWidth) {
+                // Aktuelle Zeile ggf. abschließen
+                if (current.length() > 0) {
+                    lines.add(current.toString());
+                    current.setLength(0);
+                }
+                // Wort zeichenweise mit Trennstrich aufbrechen
+                StringBuilder part = new StringBuilder();
+                for (int i = 0; i < word.length(); i++) {
+                    char c = word.charAt(i);
+                    String candidate = part.toString() + c + "-";
+                    if (textWidth(candidate, font, fontSize) > maxWidth && part.length() > 0) {
+                        lines.add(part.toString() + "-");
+                        part.setLength(0);
+                    }
+                    part.append(c);
+                }
+                if (part.length() > 0) {
+                    current.append(part);
+                }
+            } else {
+                String potential = current.length() == 0 ? word : current + " " + word;
+                if (textWidth(potential, font, fontSize) > maxWidth && current.length() > 0) {
+                    lines.add(current.toString());
+                    current = new StringBuilder(word);
+                } else {
+                    if (current.length() > 0) current.append(' ');
+                    current.append(word);
+                }
+            }
+        }
+        if (current.length() > 0) {
+            lines.add(current.toString());
+        }
+        if (lines.isEmpty()) {
+            lines.add("");
+        }
+        return lines;
+    }
+
+    private float textWidth(String text, PDType1Font font, float fontSize) throws IOException {
+        if (text == null || text.isEmpty()) return 0;
+        try {
+            return font.getStringWidth(text) / 1000f * fontSize;
+        } catch (IllegalArgumentException ex) {
+            // Falls einzelne Zeichen im Font nicht vorhanden sind, konservativ schätzen
+            return text.length() * (fontSize * 0.6f);
+        }
     }
 
     private float drawSectionLabel(PDPageContentStream contentStream, String label, float startY) throws IOException {
@@ -208,15 +287,20 @@ public class PdfCreator extends FileCreator {
 
         contentStream.setFont(font, TABLE_FONT_SIZE);
 
+        // Innen-Padding der Zelle berücksichtigen (links 2pt, rechts ~2pt Sicherheit)
+        float cellTextWidth = columnWidth - 4;
+
+        // Erst die Zeilen pro Zelle berechnen, um die Zeilenhöhe zu bestimmen
+        List<List<String>> wrappedHeaders = new ArrayList<>();
         float rowHeight = LINE_HEIGHT;
         for (String header : headers) {
-            int lineCount = getLineCount(header, (int) (columnWidth / BOLD_CHAR_WIDTH));
-            rowHeight = Math.max(rowHeight, lineCount * LINE_HEIGHT);
+            List<String> lines = wrapTextByWidth(header, font, TABLE_FONT_SIZE, cellTextWidth);
+            wrappedHeaders.add(lines);
+            rowHeight = Math.max(rowHeight, lines.size() * LINE_HEIGHT);
         }
 
         float xPosition = MARGIN;
-        for (String header : headers) {
-            List<String> lines = wrapTextToLines(header, (int) (columnWidth / BOLD_CHAR_WIDTH));
+        for (List<String> lines : wrappedHeaders) {
             float cellY = currentY - (LINE_HEIGHT * 0.8f);
 
             for (String line : lines) {
@@ -274,10 +358,16 @@ public class PdfCreator extends FileCreator {
 
         contentStream.setFont(font, TABLE_FONT_SIZE);
 
+        // Innen-Padding der Zelle berücksichtigen
+        float cellTextWidth = columnWidth - 4;
+
+        // Erst Zeilen pro Zelle berechnen
+        List<List<String>> wrappedCells = new ArrayList<>();
         float rowHeight = LINE_HEIGHT * 1.2f;
         for (String data : rowData) {
-            int lineCount = getLineCount(data, (int) (columnWidth / CHAR_WIDTH));
-            rowHeight = Math.max(rowHeight, lineCount * LINE_HEIGHT);
+            List<String> lines = wrapTextByWidth(data, font, TABLE_FONT_SIZE, cellTextWidth);
+            wrappedCells.add(lines);
+            rowHeight = Math.max(rowHeight, lines.size() * LINE_HEIGHT);
         }
 
         if (currentY - rowHeight < MARGIN) {
@@ -288,8 +378,7 @@ public class PdfCreator extends FileCreator {
         float rowBottomY = currentY - rowHeight;
 
         float xPosition = MARGIN;
-        for (String data : rowData) {
-            List<String> lines = wrapTextToLines(data, (int) (columnWidth / CHAR_WIDTH));
+        for (List<String> lines : wrappedCells) {
             float cellY = currentY - (LINE_HEIGHT * 0.8f);
 
             for (String line : lines) {
