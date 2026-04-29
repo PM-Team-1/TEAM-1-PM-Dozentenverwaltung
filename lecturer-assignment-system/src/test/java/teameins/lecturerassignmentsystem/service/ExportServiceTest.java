@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
@@ -15,13 +14,12 @@ import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExportServiceTest {
-
-    @Mock
-    private MappingService mappingService;
 
     @InjectMocks
     private ExportService exportService;
@@ -31,7 +29,15 @@ class ExportServiceTest {
 
     @BeforeEach
     void setUp() {
-        reportEntities = List.of(new LecturerReportEntity("Dr.", "John", "Doe", "", "john.doe@example.com", "123456", false, "Alles", List.of()));
+        LecturerReportEntity lecturer = new LecturerReportEntity();
+        lecturer.setTitle("Dr.");
+        lecturer.setFullName("John Doe");
+        lecturer.setEmail("john.doe@example.com");
+        lecturer.setPhone("123456");
+        lecturer.setIsExtern(false);
+        lecturer.setPreference("Alles");
+        lecturer.setCanHoldCourses(List.of());
+        reportEntities = List.of(lecturer);
         mockFileCreator = mock(FileCreator.class);
     }
 

@@ -48,6 +48,14 @@ public class Lecturer {
 		this.teachingPreference = teachingPreference;
 	}
 
+	@Transient
+	public String getFullName() {
+		if(secondName == null) {
+			return String.join(" ", firstName, lastName);
+		}
+		return String.join(" ", firstName, secondName, lastName);
+	}
+
 	public int getId() {
 		return id;
 	}

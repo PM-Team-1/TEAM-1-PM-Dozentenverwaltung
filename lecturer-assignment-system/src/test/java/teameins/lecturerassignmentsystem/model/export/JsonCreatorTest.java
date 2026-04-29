@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import teameins.lecturerassignmentsystem.model.enums.ReportMode;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
+import teameins.lecturerassignmentsystem.model.report.LecturerCanHoldCourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 
 import java.util.List;
@@ -18,8 +19,27 @@ class JsonCreatorTest {
 
     @BeforeEach
     void setUp() {
-        CourseReportEntity course = new CourseReportEntity("Informatik", "offen", "Bachelor", "WiSe 24/25", "ja", "hoch", "5");
-        LecturerReportEntity lecturer = new LecturerReportEntity("Dr.", "John", "Doe", "", "john.doe@example.com", "123456", false, "Alles", List.of(course));
+        CourseReportEntity course = new CourseReportEntity();
+        course.setName("Informatik");
+        course.setOpenStatus("offen");
+        course.setAcademicDegree("Bachelor");
+        course.setSemester("WiSe 24/25");
+
+        LecturerCanHoldCourseReportEntity lchc = new LecturerCanHoldCourseReportEntity();
+        lchc.setAlreadyHeld("ja");
+        lchc.setQualification("hoch");
+        lchc.setAffinity("5");
+        lchc.setCourse(course);
+
+        LecturerReportEntity lecturer = new LecturerReportEntity();
+        lecturer.setTitle("Dr.");
+        lecturer.setFullName("John Doe");
+        lecturer.setEmail("john.doe@example.com");
+        lecturer.setPhone("123456");
+        lecturer.setIsExtern(false);
+        lecturer.setPreference("Alles");
+        lecturer.setCanHoldCourses(List.of(lchc));
+
         reportEntities = List.of(lecturer);
         jsonCreator = new JsonCreator(reportEntities, ReportMode.ALL_COURSES_IN_PROVADIS);
     }
@@ -31,16 +51,20 @@ class JsonCreatorTest {
         assertNotNull(result);
         assertTrue(result.length > 0);
 
-        // Prüfe, ob es gültiges JSON ist
         ObjectMapper mapper = new ObjectMapper();
         assertDoesNotThrow(() -> mapper.readTree(result));
     }
 
     @Test
     void testCreateFile_CoursesWithNoLecturers() {
-        CourseReportEntity course = new CourseReportEntity("Math", "offen", "Master", "SoSe 25", "nein", "mittel", "3");
-        LecturerReportEntity lecturer = new LecturerReportEntity(null, null, null, null, null, null, null, null, List.of(course));
-        List<LecturerReportEntity> specialEntities = List.of(lecturer);
+        CourseReportEntity course = new CourseReportEntity();
+        course.setName("Math");
+        course.setOpenStatus("offen");
+        course.setAcademicDegree("Master");
+        course.setSemester("SoSe 25");
+        course.setCanBeHeldBy(List.of());
+
+        List<CourseReportEntity> specialEntities = List.of(course);
         JsonCreator specialCreator = new JsonCreator(specialEntities, ReportMode.ALL_COURSES_WITH_NO_LECTURERS);
 
         byte[] result = specialCreator.createFile();
@@ -48,7 +72,6 @@ class JsonCreatorTest {
         assertNotNull(result);
         assertTrue(result.length > 0);
 
-        // Sollte nur die Kurse serialisieren
         ObjectMapper mapper = new ObjectMapper();
         assertDoesNotThrow(() -> mapper.readTree(result));
     }

@@ -10,6 +10,7 @@ import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.enums.*;
+import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
@@ -18,6 +19,8 @@ import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +50,10 @@ class ReportServiceTest {
         lecturer = new Lecturer(1, Title.DOCTOR, "John", "Doe", "", "john.doe@example.com", "123456", false, TeachingPreference.ALLES);
         course = new Course(1, "Informatik", false, false, "WiSe 24/25");
         lchc = new LecturerCanHoldCourse(1, AlreadyHeld.PROVADIS, Qualification.IMMEDIATELY, course, lecturer, Affinity.HIGH);
+
+        // Lenient stubs - nicht alle Tests benötigen sie
+        lenient().when(mappingService.mapReport(any(Lecturer.class), anyList())).thenReturn(new LecturerReportEntity());
+        lenient().when(mappingService.mapReport(any(Course.class), anyList())).thenReturn(new CourseReportEntity());
     }
 
     @Test
@@ -80,7 +87,7 @@ class ReportServiceTest {
         when(courseRepository.findAll()).thenReturn(List.of(course, courseNoLecturer));
         when(lecturerCanHoldCourseRepository.findAll()).thenReturn(List.of(lchc)); // Nur für course
 
-        List<LecturerReportEntity> result = reportService.getCoursesWithNoLecturers();
+        List<CourseReportEntity> result = reportService.getCoursesWithNoLecturers();
 
         assertNotNull(result);
         assertEquals(1, result.size()); // Nur courseNoLecturer
@@ -92,7 +99,7 @@ class ReportServiceTest {
         when(courseRepository.findAll()).thenReturn(List.of(course));
         when(lecturerCanHoldCourseRepository.findAll()).thenReturn(List.of(lchcForeign)); // Kein PROVADIS
 
-        List<LecturerReportEntity> result = reportService.getCoursesWithOnlyForeignExperience();
+        List<CourseReportEntity> result = reportService.getCoursesWithOnlyForeignExperience();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -103,7 +110,7 @@ class ReportServiceTest {
         when(lecturerRepository.findAll()).thenReturn(List.of(lecturer));
         when(lecturerCanHoldCourseRepository.findAll()).thenReturn(List.of(lchc));
 
-        List<LecturerReportEntity> result = reportService.getReportByReportMode(ReportMode.ALL_COURSES_IN_PROVADIS);
+        List<?> result = reportService.getReportByReportMode(ReportMode.ALL_COURSES_IN_PROVADIS);
 
         assertNotNull(result);
         assertEquals(1, result.size());

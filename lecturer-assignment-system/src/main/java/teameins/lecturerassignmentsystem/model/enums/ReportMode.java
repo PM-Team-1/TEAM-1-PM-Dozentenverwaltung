@@ -2,12 +2,10 @@ package teameins.lecturerassignmentsystem.model.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import teameins.lecturerassignmentsystem.service.ReportService;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 @AllArgsConstructor
 @Getter
@@ -36,5 +34,14 @@ public enum ReportMode {
     private final String header;
     private final String filename;
     private final String description;
-    private final Function<ReportService, List<LecturerReportEntity>> reportValueSupplier;
+    private final Function<ReportService, ? extends List<?>> reportValueSupplier;
+
+    /**
+     * @return true wenn der Report eine Liste von CourseReportEntity zurückgibt,
+     *         false wenn er eine Liste von LecturerReportEntity zurückgibt.
+     */
+    public boolean isCourseBased() {
+        return this == ALL_COURSES_WITH_NO_LECTURERS
+                || this == ALL_COURSES_WITH_ONLY_LECTURERS_NOT_HELD_IN_PROVADIS;
+    }
 }

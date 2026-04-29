@@ -15,27 +15,20 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.beans.factory.annotation.Autowired;
-import teameins.lecturerassignmentsystem.model.db.Lecturer;
-import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
 import teameins.lecturerassignmentsystem.model.enums.ReportMode;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
+import teameins.lecturerassignmentsystem.model.report.LecturerCanHoldCourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import teameins.lecturerassignmentsystem.service.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.RecordComponent;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Route("reports")
 @PageTitle("Reports")
@@ -44,7 +37,7 @@ public class ReportsView extends VerticalLayout {
     private final transient ReportService reportService;
     private final transient ExportService exportService;
 
-    private List<LecturerReportEntity> selectedReportEntities;
+    private List<?> selectedReportEntities;
 
     private final Div reportContent = new Div();
 
@@ -95,7 +88,7 @@ public class ReportsView extends VerticalLayout {
                 exportButton.setEnabled(false);
                 showPlaceholder();
             } else {
-                if(fileFormatSelector.getValue() != null) exportButton.setEnabled(true);
+                if (fileFormatSelector.getValue() != null) exportButton.setEnabled(true);
                 showReport(selected);
             }
         });
@@ -105,7 +98,7 @@ public class ReportsView extends VerticalLayout {
             if (selected == null) {
                 exportButton.setEnabled(false);
             } else {
-                if(fileFormatSelector.getValue() != null) exportButton.setEnabled(true);
+                if (reportSelector.getValue() != null) exportButton.setEnabled(true);
             }
         });
 
@@ -118,7 +111,7 @@ public class ReportsView extends VerticalLayout {
             if (byteArray.length == 0) {
                 Notification.show("Keine Daten für den Export vorhanden.",
                         3000, Notification.Position.MIDDLE);
-                return; // <-- kein Download, kein Anchor
+                return;
             }
 
             Anchor tmpAnchor = new Anchor(
@@ -158,75 +151,90 @@ public class ReportsView extends VerticalLayout {
         reportContent.add(reportTitle, buildReport(reportMode));
     }
 
-    private Grid<LecturerGridRow> buildReport(ReportMode reportMode) {
-        Grid<LecturerGridRow> grid = new Grid<>(LecturerGridRow.class);
-
+    private Grid<ReportGridRow> buildReport(ReportMode reportMode) {
         selectedReportEntities = reportService.getReportByReportMode(reportMode);
-        List<LecturerGridRow> lecturerGridRows = selectedReportEntities
-                .stream()
-                .map(this::transformReportEntityToGridRow)
-                .flatMap(List::stream)
-                .toList();
+        List<ReportGridRow> rows = buildGridRows(reportMode, selectedReportEntities);
 
+        Grid<ReportGridRow> grid = new Grid<>(ReportGridRow.class, false);
         addGridColumns(grid, reportMode);
-        grid.setItems(lecturerGridRows);
+        grid.setItems(rows);
         grid.setWidthFull();
         return grid;
     }
 
-    private void addGridColumns(Grid<LecturerGridRow> grid, ReportMode reportMode) {
-        RecordComponent[] components = LecturerGridRow.class.getRecordComponents();
-        grid.removeAllColumns();
-
-        for (RecordComponent component : components) {
-            Class<?> type = component.getType();
-
-            if (reportMode == ReportMode.ALL_COURSES_WITH_NO_LECTURERS
-                    && type == LecturerReportEntity.class) {
-                continue;
-            }
-
-            Field[] itemFields = type.getDeclaredFields();
-
-            for (Field itemField : itemFields) {
-                if (itemField.getType() == List.class) continue;
-                itemField.setAccessible(true);
-
-                JsonProperty jsonProperty = itemField.getAnnotation(JsonProperty.class);
-                String headerValue = jsonProperty != null ? jsonProperty.value() : itemField.getName();
-
-                // Accessor-Methode des Records nutzen (sauberer als field.get())
-                Method accessor = component.getAccessor();
-
-                grid.addColumn(item -> {
-                    try {
-                        Object parent = accessor.invoke(item);
-                        return parent != null ? itemField.get(parent) : "";
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+    @SuppressWarnings("unchecked")
+    private List<ReportGridRow> buildGridRows(ReportMode reportMode, List<?> entities) {
+        List<ReportGridRow> rows = new ArrayList<>();
+        if (reportMode.isCourseBased()) {
+            for (CourseReportEntity course : (List<CourseReportEntity>) entities) {
+                List<LecturerCanHoldCourseReportEntity> lchcs = course.getCanBeHeldBy();
+                if (lchcs == null || lchcs.isEmpty()) {
+                    rows.add(new ReportGridRow(null, null, course));
+                } else {
+                    for (LecturerCanHoldCourseReportEntity lchc : lchcs) {
+                        rows.add(new ReportGridRow(lchc.getLecturer(), lchc, course));
                     }
-                }).setHeader(headerValue).setAutoWidth(true);
-            }
-        }
-    }
-
-    private List<LecturerGridRow> transformReportEntityToGridRow(LecturerReportEntity reportEntity) {
-        List<LecturerGridRow> lecturerGridRows = new ArrayList<>();
-        List<CourseReportEntity> courseReportEntities = reportEntity.getCanHoldCourses();
-
-        if(courseReportEntities != null) {
-            for(CourseReportEntity courseReportEntity : courseReportEntities) {
-                lecturerGridRows.add(new LecturerGridRow(reportEntity, courseReportEntity));
+                }
             }
         } else {
-            lecturerGridRows.add(new LecturerGridRow(reportEntity, null));
+            for (LecturerReportEntity lecturer : (List<LecturerReportEntity>) entities) {
+                List<LecturerCanHoldCourseReportEntity> lchcs = lecturer.getCanHoldCourses();
+                if (lchcs == null || lchcs.isEmpty()) {
+                    rows.add(new ReportGridRow(lecturer, null, null));
+                } else {
+                    for (LecturerCanHoldCourseReportEntity lchc : lchcs) {
+                        rows.add(new ReportGridRow(lecturer, lchc, lchc.getCourse()));
+                    }
+                }
+            }
         }
-
-        return lecturerGridRows;
+        return rows;
     }
 
-    public record LecturerGridRow(
-                LecturerReportEntity lecturerReportEntity,
-                CourseReportEntity courseReportEntity) {
+    private void addGridColumns(Grid<ReportGridRow> grid, ReportMode reportMode) {
+        grid.removeAllColumns();
+        if (reportMode == ReportMode.ALL_COURSES_WITH_NO_LECTURERS) {
+            // Report 3: nur Course-Felder
+            addColumnsFor(grid, CourseReportEntity.class, ReportGridRow::course);
+        } else if (reportMode.isCourseBased()) {
+            // Course-based: Course -> Lecturer -> LCHC
+            addColumnsFor(grid, CourseReportEntity.class, ReportGridRow::course);
+            addColumnsFor(grid, LecturerReportEntity.class, ReportGridRow::lecturer);
+            addColumnsFor(grid, LecturerCanHoldCourseReportEntity.class, ReportGridRow::lchc);
+        } else {
+            // Lecturer-based: Lecturer -> Course -> LCHC
+            addColumnsFor(grid, LecturerReportEntity.class, ReportGridRow::lecturer);
+            addColumnsFor(grid, CourseReportEntity.class, ReportGridRow::course);
+            addColumnsFor(grid, LecturerCanHoldCourseReportEntity.class, ReportGridRow::lchc);
+        }
+    }
+
+    private <T> void addColumnsFor(Grid<ReportGridRow> grid, Class<T> clazz, Function<ReportGridRow, ?> accessor) {
+        for (Field field : clazz.getDeclaredFields()) {
+            int mods = field.getModifiers();
+            if (Modifier.isStatic(mods) || Modifier.isTransient(mods) || field.isSynthetic()) continue;
+            if (field.getType() == List.class) continue;
+            field.setAccessible(true);
+
+            JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
+            String header = jsonProperty != null ? jsonProperty.value() : field.getName();
+
+            grid.addColumn(item -> {
+                Object parent = accessor.apply(item);
+                if (parent == null) return "";
+                try {
+                    Object val = field.get(parent);
+                    return val != null ? val.toString() : "";
+                } catch (IllegalAccessException e) {
+                    return "";
+                }
+            }).setHeader(header).setAutoWidth(true);
+        }
+    }
+
+    public record ReportGridRow(
+            LecturerReportEntity lecturer,
+            LecturerCanHoldCourseReportEntity lchc,
+            CourseReportEntity course) {
     }
 }
