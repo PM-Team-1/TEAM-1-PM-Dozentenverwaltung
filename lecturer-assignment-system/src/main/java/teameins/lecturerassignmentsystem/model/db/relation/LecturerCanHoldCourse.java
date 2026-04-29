@@ -1,6 +1,8 @@
-package teameins.lecturerassignmentsystem.model.db;
+package teameins.lecturerassignmentsystem.model.db.relation;
 
 import jakarta.persistence.*;
+import teameins.lecturerassignmentsystem.model.db.Course;
+import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;

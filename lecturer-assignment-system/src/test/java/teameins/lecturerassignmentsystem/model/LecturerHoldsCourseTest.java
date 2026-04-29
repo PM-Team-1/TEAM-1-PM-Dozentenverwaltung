@@ -3,7 +3,7 @@ package teameins.lecturerassignmentsystem.model;
 import org.junit.jupiter.api.Test;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
-import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerHoldsCourse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

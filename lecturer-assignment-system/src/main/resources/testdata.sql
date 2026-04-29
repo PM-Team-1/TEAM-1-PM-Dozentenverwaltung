@@ -10,8 +10,12 @@ BEGIN TRANSACTION;
 -- Vor dem Anlegen neuer Testdaten: alle bisherigen Daten löschen
 -- Wichtig: Child-Tabellen zuerst löschen, damit FK-Constraints nicht verletzt werden.
 DELETE FROM lecturer_can_hold_course;
+DELETE FROM lecturer_holds_course;
 DELETE FROM lecturer;
 DELETE FROM course;
+DELETE FROM user_has_role;
+DELETE FROM user;
+DELETE FROM role;
 
 -- 30 Dozenten (verschiedene Präferenzen)
 -- Preference enum values: ALLES, ONLY_MASTER, ONLY_BACHELOR, PREFER_MASTER, PREFER_BACHELOR

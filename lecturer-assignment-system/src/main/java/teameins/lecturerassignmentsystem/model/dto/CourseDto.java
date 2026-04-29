@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
+
 import java.util.List;
 import java.util.Objects;
 

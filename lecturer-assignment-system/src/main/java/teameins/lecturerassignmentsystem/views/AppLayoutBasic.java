@@ -10,8 +10,10 @@ import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import jakarta.annotation.security.PermitAll;
 
 @Layout
+@PermitAll
 public class AppLayoutBasic extends AppLayout {
 
     public AppLayoutBasic() {

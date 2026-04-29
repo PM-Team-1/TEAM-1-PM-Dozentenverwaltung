@@ -1,7 +1,7 @@
 package teameins.lecturerassignmentsystem.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerHoldsCourse;
 
 import java.util.List;
 import java.util.Optional;

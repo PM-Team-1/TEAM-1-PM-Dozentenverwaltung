@@ -22,6 +22,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
@@ -40,6 +41,7 @@ import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQua
 
 @Route("vorlesungen")
 @PageTitle("Dozent")
+@PermitAll
 public class SingleCourseView extends VerticalLayout implements HasUrlParameter<String> {
 
     private final transient LecturerService lecturerService;

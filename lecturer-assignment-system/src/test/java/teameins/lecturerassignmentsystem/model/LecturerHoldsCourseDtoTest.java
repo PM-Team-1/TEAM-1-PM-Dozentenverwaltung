@@ -1,7 +1,7 @@
 package teameins.lecturerassignmentsystem.model;
 
 import org.junit.jupiter.api.Test;
-import teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerHoldsCourseDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
