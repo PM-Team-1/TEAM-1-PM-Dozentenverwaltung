@@ -33,6 +33,7 @@ import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
+import teameins.lecturerassignmentsystem.views.components.AddCourseToLecturerDialog;
 import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
@@ -103,9 +104,15 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 : lecturer.getCanHoldCourses().stream()
                 .map(lchc -> new CourseToLecturerRelation(lchc, courseService))
                 .toList();
+
+        Button addCourseButton = new Button("Vorlesung hinzufügen", e -> new AddCourseToLecturerDialog(lecturer, courseService, lecturerService));
+        addCourseButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         Div coursesLecturerCanHold = renderCoursesLecturerCanHold(ctlr);
         coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-l)");
-        courses.add(coursesLecturerCanHold);
+
+        addCourseButton.getStyle().set("margin-bottom", "var(--lumo-space-l)");
+        courses.add(coursesLecturerCanHold, addCourseButton);
 
         HorizontalLayout singleLecturer = new HorizontalLayout(lecturerInfo, courses);
         singleLecturer.setWidthFull();
@@ -508,5 +515,4 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             return false;
         }
     }
-
 }
