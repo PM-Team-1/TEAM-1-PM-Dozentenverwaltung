@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
@@ -41,12 +42,14 @@ class LecturerServiceTest {
     LecturerHoldsCourseRepository lecturerHoldsCourseRepository;
     @Mock
     CourseRepository courseRepository;
+    @Mock
+    PasswordEncoder passwordEncoder;
 
     @InjectMocks
     LecturerService lecturerService;
 
     @Spy
-    MappingService mappingService;
+    MappingService mappingService = new MappingService(passwordEncoder);
 
     @Test
     void getLecturerByIdTest(){
