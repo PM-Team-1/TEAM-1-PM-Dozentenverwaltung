@@ -74,7 +74,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     public void setParameter(BeforeEvent event, String parameter) {
         try {
             int id = Integer.parseInt(parameter);
-            course = courseService.getCourseById(id);
+            course = courseService.getCourseDtoById(id);
             renderSingleCourse(isInEditMode);
         } catch (NumberFormatException ex) {
             renderCourseNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");

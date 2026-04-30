@@ -79,6 +79,19 @@ public class AppLayoutBasic extends AppLayout {
 
         dialog.getFooter().add(new Button("Abbrechen", buttonClickEvent -> dialog.close()));
 
+        addToDrawer(scroller);
+        addToNavbar(topBar);
+    }
+
+    private SideNav getSideNav() {
+        SideNav nav = new SideNav();
+        nav.addClassName("sidebar-custom");
+        nav.addItem(new SideNavItem("Dashboard", "/dashboard", VaadinIcon.MODAL_LIST.create()));
+        nav.addItem(new SideNavItem("Vorlesungen", "/vorlesungen", VaadinIcon.CALENDAR.create()));
+        nav.addItem(new SideNavItem("Dozenten", "/dozenten", VaadinIcon.USERS.create()));
+        nav.addItem(new SideNavItem("Reports", "/reports", VaadinIcon.BAR_CHART.create()));
+        nav.addItem(new SideNavItem("Admin", "/admin", VaadinIcon.WRENCH.create()));
+        return nav;
         Button logout = new Button("Abmelden", buttonClickEvent -> {
             authenticationContext.logout();
             dialog.close();

@@ -43,15 +43,19 @@ public class LecturerService {
 	public LecturerDto getLecturerById(int lecturerId) {
         Lecturer lecturer = lecturerRepository.findById(lecturerId)
                 .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."));
-        List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHold(lecturerId);
+        List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHoldDtos(lecturerId);
         return mappingService.map(lecturer, canHoldCourses);
     }
 
-    public List<LecturerDto> listLecturers() {
-        List<Lecturer> lecturers = lecturerRepository.findAll();
+    public List<Lecturer> listLecturers() {
+        return lecturerRepository.findAll();
+    }
+
+    public List<LecturerDto> listLecturerDtos() {
+        List<Lecturer> lecturers = listLecturers();
         List<LecturerDto> lecturerDtos = new ArrayList<>();
         for (Lecturer lecturer : lecturers) {
-            List<LecturerCanHoldCourseDto> canHold = getCoursesLecturerCanHold(lecturer.getId());
+            List<LecturerCanHoldCourseDto> canHold = getCoursesLecturerCanHoldDtos(lecturer.getId());
             lecturerDtos.add(mappingService.map(lecturer, canHold));
         }
         return lecturerDtos;
@@ -129,8 +133,12 @@ public class LecturerService {
         lecturerRepository.deleteById(lecturer.getId());
     }
 
-    private List<LecturerCanHoldCourseDto> getCoursesLecturerCanHold(int lecturerId) {
-        List<LecturerCanHoldCourse> coursesLecturerCanHold = lecturerRepository.findCoursesLecturerCanHold(lecturerId);
+    public List<LecturerCanHoldCourse> getCoursesLecturerCanHold(int lecturerId) {
+        return lecturerRepository.findCoursesLecturerCanHold(lecturerId);
+    }
+
+    private List<LecturerCanHoldCourseDto> getCoursesLecturerCanHoldDtos(int lecturerId) {
+        List<LecturerCanHoldCourse> coursesLecturerCanHold = getCoursesLecturerCanHold(lecturerId);
         List<LecturerCanHoldCourseDto> lecturerCanHoldCourseDtoList = new ArrayList<>();
         for (LecturerCanHoldCourse lchc : coursesLecturerCanHold) {
             lecturerCanHoldCourseDtoList.add(mappingService.map(lchc));

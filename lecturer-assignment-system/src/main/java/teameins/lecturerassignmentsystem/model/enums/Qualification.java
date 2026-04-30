@@ -3,14 +3,17 @@ package teameins.lecturerassignmentsystem.model.enums;
 import java.util.Arrays;
 
 public enum Qualification {
-    IMMEDIATELY("S"),
-    FOUR_WEEKS("4"),
-    OVER_FOUR_WEEKS("M");
+    IMMEDIATELY("S", "Kann sofort gehalten werden."),
+    FOUR_WEEKS("4", "Kann nach 4 Wochen Vorbereitung gehalten werden."),
+    OVER_FOUR_WEEKS("M", "Kann nach mehr als 4 Wochen Vorbereitung gehalten werden."),;
 
     private final String value;
 
-    Qualification(String value) {
+    private final String description;
+
+    Qualification(String value, String description) {
         this.value = value;
+        this.description = description;
     }
 
     public static boolean validate(String name) {
@@ -48,4 +51,8 @@ public enum Qualification {
 	public String getValue() {
 		return value;
 	}
+
+    public String getDescription() {
+        return description;
+    }
 }

@@ -17,6 +17,8 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
+import teameins.lecturerassignmentsystem.service.ExportService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 
@@ -26,9 +28,10 @@ import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 public class AllLecturersView extends VerticalLayout {
 
     private final transient LecturerService lecturerService;
+    private FileCreationMode creationMode;
 
     @Autowired
-    public AllLecturersView(LecturerService lecturerService) {
+    public AllLecturersView(LecturerService lecturerService, ExportService exportService) {
         this.lecturerService = lecturerService;
 
         H2 heading = new H2("Dozenten");
@@ -95,14 +98,14 @@ public class AllLecturersView extends VerticalLayout {
             }
         });
 
-        grid.setItems(lecturerService.listLecturers());
+        grid.setItems(lecturerService.listLecturerDtos());
         return grid;
     }
 
     private DataView<LecturerDto> addSearchFunctionality(Grid<LecturerDto> lecturerGrid, TextField searchField) {
         GridListDataView<LecturerDto> dataView = lecturerGrid.getListDataView();
         if (dataView == null) {
-            dataView = lecturerGrid.setItems(lecturerService.listLecturers());
+            dataView = lecturerGrid.setItems(lecturerService.listLecturerDtos());
         }
         dataView.addFilter(lecturer -> {
             String searchTerm = searchField.getValue().trim();

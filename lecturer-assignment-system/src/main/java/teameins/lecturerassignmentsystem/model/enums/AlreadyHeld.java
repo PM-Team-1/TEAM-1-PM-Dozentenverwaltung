@@ -3,14 +3,17 @@ package teameins.lecturerassignmentsystem.model.enums;
 import java.util.Arrays;
 
 public enum AlreadyHeld {
-    PROVADIS("P"),
-    OTHER_SCHOOL("A"),
-    NOT_YET_HELD("N");
+    PROVADIS("P", "Bereits an der Provadis gehalten."),
+    OTHER_SCHOOL("A", "Bereits an einer anderen Schule als der Provadis gehalten."),
+    NOT_YET_HELD("N", "Noch nicht gehalten.");
 
     private final String value;
 
-    AlreadyHeld(String value) {
+    private final String description;
+
+    AlreadyHeld(String value, String description) {
         this.value = value;
+        this.description = description;
     }
 
     public static boolean validate(String name) {
@@ -48,4 +51,8 @@ public enum AlreadyHeld {
 	public String getValue() {
 		return value;
 	}
+
+    public String getDescription() {
+        return description;
+    }
 }

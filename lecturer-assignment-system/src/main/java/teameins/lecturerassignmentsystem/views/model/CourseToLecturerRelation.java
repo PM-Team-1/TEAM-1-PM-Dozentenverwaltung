@@ -12,7 +12,7 @@ public class CourseToLecturerRelation {
 
     public CourseToLecturerRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, CourseService courseService) {
         this.lecturerCanHoldCourse = lecturerCanHoldCourse;
-        this.course = courseService.getCourseById(lecturerCanHoldCourse.getCourseId());
+        this.course = courseService.getCourseDtoById(lecturerCanHoldCourse.getCourseId());
     }
     public String getSemesterSortable() {
         String semester = this.getCourse().getSemester();

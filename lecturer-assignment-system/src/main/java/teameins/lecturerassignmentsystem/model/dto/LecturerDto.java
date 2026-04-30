@@ -1,12 +1,16 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
 import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
+import lombok.ToString;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
+import lombok.ToString;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 
 import java.util.List;
 import java.util.Objects;
 
+@ToString
 public class LecturerDto {
 
     private int id;
