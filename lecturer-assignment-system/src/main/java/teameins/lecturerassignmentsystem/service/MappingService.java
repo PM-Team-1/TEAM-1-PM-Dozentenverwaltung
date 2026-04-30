@@ -1,5 +1,6 @@
 package teameins.lecturerassignmentsystem.service;
 
+import com.vaadin.copilot.shaded.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
@@ -12,15 +13,23 @@ import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
+import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
+import teameins.lecturerassignmentsystem.model.report.LecturerCanHoldCourseReportEntity;
+import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
+import teameins.lecturerassignmentsystem.repository.CourseRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MappingService {
+    CourseRepository courseRepository;
 	
-	public MappingService() {
-		//no args constructor
+	public MappingService(CourseRepository courseRepository) {
+        this.courseRepository = courseRepository;
 	}
+
+    public MappingService() {}
 
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
         return new LecturerDto(
@@ -104,6 +113,72 @@ public class MappingService {
         entity.setQualification(parseQualification(dto.getQualification()));
         entity.setAffinity(parseAffinity(dto.getAffinity()));
         return entity;
+    }
+
+    public LecturerReportEntity mapReport(Lecturer lecturer, List<LecturerCanHoldCourse> canHoldCourses) {
+        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
+        lecturerReportEntity.setTitle(lecturer.getTitle().getValue());
+        lecturerReportEntity.setFullName(lecturer.getFullName());
+        lecturerReportEntity.setEmail(lecturer.getEmail());
+        lecturerReportEntity.setPhone(lecturer.getPhone());
+        lecturerReportEntity.setIsExtern(lecturer.isExtern());
+        lecturerReportEntity.setPreference(lecturer.getTeachingPreference().getDescription());
+        lecturerReportEntity.setCanHoldCourses(
+                canHoldCourses.stream().map(canHoldCourse ->
+                        mapReport(canHoldCourse, canHoldCourse.getCourse())).toList()
+        );
+        return lecturerReportEntity;
+    }
+
+    public LecturerCanHoldCourseReportEntity mapReport(LecturerCanHoldCourse canHoldCourse, Course course) {
+        LecturerCanHoldCourseReportEntity lecturerCanHoldCourseReportEntity = new LecturerCanHoldCourseReportEntity();
+        lecturerCanHoldCourseReportEntity.setAffinity(canHoldCourse.getAffinity().getValue());
+        lecturerCanHoldCourseReportEntity.setQualification(canHoldCourse.getQualification().getDescription());
+        lecturerCanHoldCourseReportEntity.setAlreadyHeld(canHoldCourse.getAlreadyHeld().getDescription());
+        lecturerCanHoldCourseReportEntity.setCourse(mapReport(course));
+        return lecturerCanHoldCourseReportEntity;
+    }
+
+    public CourseReportEntity mapReport(Course course) {
+        CourseReportEntity courseReportEntity = new CourseReportEntity();
+        courseReportEntity.setName(course.getName());
+        courseReportEntity.setOpenStatus(course.isClosed() ? "geschlossen" : "offen");
+        courseReportEntity.setAcademicDegree(course.isMaster() ? "Master" : "Bachelor");
+        courseReportEntity.setSemester(course.getSemester());
+        return courseReportEntity;
+    }
+
+    public CourseReportEntity mapReport(Course course, List<LecturerCanHoldCourse> canHoldCourses) {
+        CourseReportEntity courseReportEntity = new CourseReportEntity();
+        courseReportEntity.setName(course.getName());
+        courseReportEntity.setOpenStatus(course.isClosed() ? "geschlossen" : "offen");
+        courseReportEntity.setAcademicDegree(course.isMaster() ? "Master" : "Bachelor");
+        courseReportEntity.setSemester(course.getSemester());
+        courseReportEntity.setCanBeHeldBy(
+                canHoldCourses.stream().map(canHoldCourse ->
+                        mapReport(canHoldCourse, canHoldCourse.getLecturer())).toList()
+        );
+        return courseReportEntity;
+    }
+
+    public LecturerCanHoldCourseReportEntity mapReport(LecturerCanHoldCourse canHoldCourse, Lecturer lecturer) {
+        LecturerCanHoldCourseReportEntity lecturerCanHoldCourseReportEntity = new LecturerCanHoldCourseReportEntity();
+        lecturerCanHoldCourseReportEntity.setAffinity(canHoldCourse.getAffinity().getValue());
+        lecturerCanHoldCourseReportEntity.setQualification(canHoldCourse.getQualification().getDescription());
+        lecturerCanHoldCourseReportEntity.setAlreadyHeld(canHoldCourse.getAlreadyHeld().getDescription());
+        lecturerCanHoldCourseReportEntity.setLecturer(mapReport(lecturer));
+        return lecturerCanHoldCourseReportEntity;
+    }
+
+    public LecturerReportEntity mapReport(Lecturer lecturer) {
+        LecturerReportEntity lecturerReportEntity = new LecturerReportEntity();
+        lecturerReportEntity.setTitle(lecturer.getTitle().getValue());
+        lecturerReportEntity.setFullName(lecturer.getFullName());
+        lecturerReportEntity.setEmail(lecturer.getEmail());
+        lecturerReportEntity.setPhone(lecturer.getPhone());
+        lecturerReportEntity.setIsExtern(lecturer.isExtern());
+        lecturerReportEntity.setPreference(lecturer.getTeachingPreference().getDescription());
+        return lecturerReportEntity;
     }
 
     private Title parseTitle(String titleStr) {
