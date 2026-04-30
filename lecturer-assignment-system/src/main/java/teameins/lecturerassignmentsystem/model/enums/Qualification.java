@@ -38,6 +38,16 @@ public enum Qualification {
         };
     }
 
+    public static String mapQualification(Qualification code) {
+        if (code == null) return "-";
+        return switch (code) {
+            case Qualification.FOUR_WEEKS -> "Über vier Wochen";
+            case Qualification.IMMEDIATELY -> "Keine";
+            case Qualification.OVER_FOUR_WEEKS -> "vier Wochen";
+            default -> code.getValue();
+        };
+    }
+
 	public String getValue() {
 		return value;
 	}

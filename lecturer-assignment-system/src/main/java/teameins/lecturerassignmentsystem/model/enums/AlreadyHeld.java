@@ -38,6 +38,16 @@ public enum AlreadyHeld {
         };
     }
 
+    public static String mapAlreadyHeld(AlreadyHeld code) {
+        if (code == null) return "-";
+        return switch (code) {
+            case AlreadyHeld.PROVADIS -> "Provadis";
+            case AlreadyHeld.OTHER_SCHOOL -> "Andere Hochschule";
+            case AlreadyHeld.NOT_YET_HELD -> "Noch nicht gehalten";
+            default -> code.getValue();
+        };
+    }
+
 	public String getValue() {
 		return value;
 	}
