@@ -13,4 +13,9 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 
     @Query("select lchc from LecturerCanHoldCourse lchc where lchc.course.id = :courseId")
     List<LecturerCanHoldCourse> findLecturersWhoCanHoldCourse(@Param("courseId") int courseId);
+
+    @Query("SELECT DISTINCT c.semester FROM Course c WHERE c.semester IS NOT NULL AND c.semester <> ''")
+    List<String> findAllDistinctSemesters();
+
+    List<Course> findBySemester(String semester);
 }

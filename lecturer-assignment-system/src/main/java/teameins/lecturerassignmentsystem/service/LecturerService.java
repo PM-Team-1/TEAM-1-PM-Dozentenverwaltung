@@ -18,6 +18,10 @@ import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 
 @Service
 public class LecturerService {
@@ -59,6 +63,26 @@ public class LecturerService {
             lecturerDtos.add(mappingService.map(lecturer, canHold));
         }
         return lecturerDtos;
+    }
+
+    public Optional<LecturerDto> getAssignedLecturerForCourse(int courseId) {
+        return lecturerHoldsCourseRepository.findByCourseId(courseId)
+                .map(assignment -> {
+                    Lecturer l = assignment.getLecturer();
+                    return mappingService.map(l, getCoursesLecturerCanHoldDtos(l.getId()));
+                });
+    }
+
+    public List<LecturerDto> getUnassignedLecturersForSemester(List<CourseDto> coursesInSemester) {
+        Set<Integer> assignedLecturerIds = coursesInSemester.stream()
+                .map(c -> getAssignedLecturerForCourse(c.getId()))
+                .filter(Optional::isPresent)
+                .map(opt -> opt.get().getId())
+                .collect(Collectors.toSet());
+                
+        return listLecturerDtos().stream()
+                .filter(l -> !assignedLecturerIds.contains(l.getId()))
+                .collect(Collectors.toList());
     }
 
     public LecturerDto createLecturer(LecturerDto lecturerDto) {
