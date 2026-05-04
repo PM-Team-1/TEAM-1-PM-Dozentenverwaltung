@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import teameins.lecturerassignmentsystem.model.annotations.CsvHeaderName;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 
 import java.util.List;
 

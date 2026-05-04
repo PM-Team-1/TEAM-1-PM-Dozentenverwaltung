@@ -1,7 +1,6 @@
 package teameins.lecturerassignmentsystem.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.vaadin.copilot.shaded.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
@@ -25,21 +24,11 @@ import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerCanHoldCourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
-import teameins.lecturerassignmentsystem.repository.CourseRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MappingService {
-    CourseRepository courseRepository;
-
-	public MappingService(CourseRepository courseRepository) {
-        this.courseRepository = courseRepository;
-	}
-
-    public MappingService() {}
-
     private final PasswordEncoder passwordEncoder;
 
     public MappingService(PasswordEncoder passwordEncoder) {

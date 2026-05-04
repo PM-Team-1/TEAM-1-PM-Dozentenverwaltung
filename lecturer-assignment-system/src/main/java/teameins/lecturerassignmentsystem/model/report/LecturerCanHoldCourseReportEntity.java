@@ -2,12 +2,10 @@ package teameins.lecturerassignmentsystem.model.report;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import teameins.lecturerassignmentsystem.model.db.Lecturer;
 
 @Getter
 @Setter
@@ -23,7 +21,7 @@ public class LecturerCanHoldCourseReportEntity {
     private String affinity;
 
     @JsonIgnore
-    private transient LecturerReportEntity lecturer;
+    private LecturerReportEntity lecturer;
     @JsonIgnore
-    private transient CourseReportEntity course;
+    private CourseReportEntity course;
 }

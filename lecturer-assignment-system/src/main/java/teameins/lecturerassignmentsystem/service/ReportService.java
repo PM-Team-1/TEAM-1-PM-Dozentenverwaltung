@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
-import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.ReportMode;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
