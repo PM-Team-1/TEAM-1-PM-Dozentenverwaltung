@@ -115,7 +115,7 @@ public class AccountService {
     }
 
     public void deleteRole(RoleDto roleDto) {
-        for (UserHasRoleDto uhr : roleDto.getUsersWithRole()) {
+        for (UserHasRoleDto uhr : getUsersWithRole(roleDto.getId())) {
             userHasRoleRepository.deleteById(uhr.getId());
         }
 

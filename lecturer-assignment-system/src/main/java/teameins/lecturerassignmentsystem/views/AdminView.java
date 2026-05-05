@@ -1,15 +1,18 @@
 package teameins.lecturerassignmentsystem.views;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -17,9 +20,13 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import teameins.lecturerassignmentsystem.model.dto.RoleDto;
 import teameins.lecturerassignmentsystem.model.dto.UserDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.UserHasRoleDto;
 import teameins.lecturerassignmentsystem.service.AccountService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Route("admin")
 @PageTitle("Admin")
@@ -28,6 +35,7 @@ public class AdminView extends VerticalLayout {
     private final transient AccountService accountService;
     private Grid<UserDto> userGrid;
     private Grid<RoleDto> roleGrid;
+    private Map<Integer, String> roleNamesById = new HashMap<>();
 
     public AdminView(AccountService accountService) {
         this.accountService = accountService;
@@ -40,41 +48,45 @@ public class AdminView extends VerticalLayout {
 
         add(createUserManagementSection());
         add(createRoleManagementSection());
-        add(createRoleAssignmentSection());
     }
 
     private VerticalLayout createUserManagementSection() {
         VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
 
+        HorizontalLayout header = new HorizontalLayout();
         H3 heading = new H3("Benutzerverwaltung");
-        section.add(heading);
+        Button addUserBtn = iconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_ICON, e -> openUserDialog(null), "Benutzer anlegen");
+        header.add(heading, addUserBtn);
 
         userGrid = new Grid<>(UserDto.class, false);
-        userGrid.addColumn(UserDto::getId).setHeader("ID");
         userGrid.addColumn(UserDto::getUsername).setHeader("Benutzername");
-        userGrid.addColumn(u -> u.isEnabled() ? "Ja" : "Nein").setHeader("Aktiv");
-        userGrid.setItems(accountService.listUsers());
+        userGrid.addComponentColumn(user -> {
+            Span roles = new Span(getUserRolesText(user));
+            roles.getStyle().set("white-space", "normal");
+
+            Button assignButton = iconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_ICON, e -> openRoleAssignmentDialog(user), "Rolle zuweisen");
+
+            HorizontalLayout layout = new HorizontalLayout(roles, assignButton);
+            layout.setAlignItems(Alignment.CENTER);
+            layout.setPadding(false);
+            layout.setSpacing(true);
+            return layout;
+        }).setHeader("Rollen");
+        userGrid.addComponentColumn(user -> {
+            Button editButton = iconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_ICON, e -> openUserDialog(user), "Bearbeiten");
+            Button deleteButton = iconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR, e -> confirmDeleteUser(user), "Löschen");
+            HorizontalLayout actions = new HorizontalLayout(editButton, deleteButton);
+            actions.setPadding(false);
+            actions.setSpacing(true);
+            return actions;
+        }).setHeader("Aktionen");
         userGrid.setHeight("300px");
 
-        Button addUserBtn = new Button("Benutzer anlegen", e -> openUserDialog(null));
-        Button editUserBtn = new Button("Bearbeiten", e -> {
-            UserDto selected = userGrid.asSingleSelect().getValue();
-            if (selected != null) {
-                openUserDialog(selected);
-            }
-        });
-        Button deleteUserBtn = new Button("Löschen", e -> {
-            UserDto selected = userGrid.asSingleSelect().getValue();
-            if (selected != null) {
-                accountService.deleteUser(selected);
-                refreshUserGrid();
-            }
-        });
+        refreshRoleNames();
+        refreshUserGrid();
 
-        HorizontalLayout buttonLayout = new HorizontalLayout(addUserBtn, editUserBtn, deleteUserBtn);
-        section.add(userGrid, buttonLayout);
-
+        section.add(header, userGrid);
         return section;
     }
 
@@ -82,76 +94,114 @@ public class AdminView extends VerticalLayout {
         VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
 
+        HorizontalLayout header = new HorizontalLayout();
         H3 heading = new H3("Rollenverwaltung");
-        section.add(heading);
+        Button addRoleBtn = iconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_ICON, e -> openRoleDialog(), "Rolle anlegen");
+        header.add(heading, addRoleBtn);
 
         roleGrid = new Grid<>(RoleDto.class, false);
-        roleGrid.addColumn(RoleDto::getId).setHeader("ID");
         roleGrid.addColumn(RoleDto::getName).setHeader("Rollenname");
         roleGrid.addColumn(RoleDto::getGrantedAuthority).setHeader("Authority");
+        roleGrid.addComponentColumn(role -> {
+            Button deleteButton = iconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR, e -> confirmDeleteRole(role), "Löschen");
+            HorizontalLayout actions = new HorizontalLayout(deleteButton);
+            actions.setPadding(false);
+            actions.setSpacing(true);
+            return actions;
+        }).setHeader("Aktionen");
         roleGrid.setHeight("300px");
 
         refreshRoleGrid();
 
-        Button addRoleBtn = new Button("Rolle anlegen", e -> openRoleDialog(null));
-        Button editRoleBtn = new Button("Bearbeiten", e -> {
-            RoleDto selected = roleGrid.asSingleSelect().getValue();
-            if (selected != null) {
-                openRoleDialog(selected);
-            }
-        });
-        Button deleteRoleBtn = new Button("Löschen", e -> {
-            RoleDto selected = roleGrid.asSingleSelect().getValue();
-            if (selected != null) {
-                accountService.deleteRole(selected);
-                refreshRoleGrid();
-            }
-        });
-
-        HorizontalLayout buttonLayout = new HorizontalLayout(addRoleBtn, editRoleBtn, deleteRoleBtn);
-        section.add(roleGrid, buttonLayout);
-
+        section.add(header, roleGrid);
         return section;
     }
 
-    private VerticalLayout createRoleAssignmentSection() {
-        VerticalLayout section = new VerticalLayout();
-        section.setSpacing(true);
+    private Button iconButton(VaadinIcon icon, ButtonVariant variant, ComponentEventListener<com.vaadin.flow.component.ClickEvent<Button>> listener, String ariaLabel) {
+        Button button = new Button(new Icon(icon));
+        button.addClickListener(listener);
+        button.addThemeVariants(ButtonVariant.LUMO_ICON, variant);
+        button.setAriaLabel(ariaLabel);
+        return button;
+    }
 
-        H3 heading = new H3("Rollen zuweisen");
-        section.add(heading);
+    private String getUserRolesText(UserDto user) {
+        if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
+            return "-";
+        }
+
+        List<String> roles = new ArrayList<>();
+        for (UserHasRoleDto role : user.getRoles()) {
+            String roleName = roleNamesById.get(role.getRoleId());
+            if (roleName != null) {
+                roles.add(roleName);
+            }
+        }
+        return roles.isEmpty() ? "-" : String.join(", ", roles);
+    }
+
+    private void openRoleAssignmentDialog(UserDto user) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Rolle zuweisen");
 
         FormLayout form = new FormLayout();
-
-        Select<UserDto> userSelect = new Select<>();
-        userSelect.setLabel("Benutzer");
-        userSelect.setItems(accountService.listUsers());
-        userSelect.setItemLabelGenerator(UserDto::getUsername);
-
-        Select<RoleDto> roleSelect = new Select<>();
+        com.vaadin.flow.component.select.Select<RoleDto> roleSelect = new com.vaadin.flow.component.select.Select<>();
         roleSelect.setLabel("Rolle");
         roleSelect.setItems(accountService.listRoles());
         roleSelect.setItemLabelGenerator(RoleDto::getName);
+        form.add(roleSelect);
 
-        Button assignBtn = new Button("Rolle zuweisen", e -> {
-            UserDto user = userSelect.getValue();
+        Button assignButton = new Button("Zuweisen", e -> {
             RoleDto role = roleSelect.getValue();
-            if (user != null && role != null) {
-                try {
-                    accountService.assignRoleToUser(user.getId(), role.getId());
-                    userSelect.clear();
-                    roleSelect.clear();
-                    refreshUserGrid();
-                    refreshRoleGrid();
-                } catch (Exception ex) {
-                }
+            if (role != null) {
+                accountService.assignRoleToUser(user.getId(), role.getId());
+                refreshRoleNames();
+                refreshUserGrid();
+                dialog.close();
             }
         });
+        assignButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-        form.add(userSelect, roleSelect);
-        section.add(form, assignBtn);
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
 
-        return section;
+        dialog.add(form, new HorizontalLayout(assignButton, cancelButton));
+        dialog.open();
+    }
+
+    private void confirmDeleteUser(UserDto user) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Benutzer löschen");
+
+        Button deleteButton = new Button("Löschen", e -> {
+            accountService.deleteUser(user);
+            refreshUserGrid();
+            dialog.close();
+        });
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+
+        dialog.add(new H3("Möchten Sie den Benutzer " + safe(user.getUsername()) + " wirklich löschen?"), new HorizontalLayout(deleteButton, cancelButton));
+        dialog.open();
+    }
+
+    private void confirmDeleteRole(RoleDto role) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Rolle löschen");
+
+        Button deleteButton = new Button("Löschen", e -> {
+            accountService.deleteRole(role);
+            refreshRoleNames();
+            refreshRoleGrid();
+            refreshUserGrid();
+            dialog.close();
+        });
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+
+        dialog.add(new H3("Möchten Sie die Rolle " + safe(role.getName()) + " wirklich löschen?"), new HorizontalLayout(deleteButton, cancelButton));
+        dialog.open();
     }
 
     private void openUserDialog(UserDto user) {
@@ -161,81 +211,76 @@ public class AdminView extends VerticalLayout {
         FormLayout form = new FormLayout();
 
         TextField usernameField = new TextField("Benutzername");
-        usernameField.setValue(user != null ? user.getUsername() : "");
+        usernameField.setValue(safe(user != null ? user.getUsername() : null));
 
         PasswordField passwordField = new PasswordField("Passwort");
-        passwordField.setValue(user != null ? user.getPassword() : "");
+        passwordField.setValue(safe(user != null ? user.getPassword() : null));
 
-        Checkbox enabledCheckbox = new Checkbox("Aktiv");
-        enabledCheckbox.setValue(user != null && user.isEnabled());
 
-        form.add(usernameField, passwordField, enabledCheckbox);
+        form.add(usernameField, passwordField);
 
-        Button saveBtn = new Button("Speichern", e -> {
+        Button saveButton = new Button("Speichern", e -> {
             UserDto dto = new UserDto();
             if (user != null) {
                 dto.setId(user.getId());
             }
             dto.setUsername(usernameField.getValue());
             dto.setPassword(passwordField.getValue());
-            dto.setEnabled(enabledCheckbox.getValue());
-            dto.setRoles(user != null ? user.getRoles() : new ArrayList<>());
+            dto.setEnabled(true);
+            dto.setRoles(user != null && user.getRoles() != null ? user.getRoles() : new ArrayList<>());
 
-            try {
-                if (user == null) {
-                    accountService.createUser(dto);
-                } else {
-                    accountService.updateUser(dto);
-                }
-                refreshUserGrid();
-                dialog.close();
-            } catch (Exception ex) {
+            if (user == null) {
+                accountService.createUser(dto);
+            } else {
+                accountService.updateUser(dto);
             }
+            refreshUserGrid();
+            dialog.close();
         });
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-        Button cancelBtn = new Button("Abbrechen", e -> dialog.close());
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
 
-        HorizontalLayout buttons = new HorizontalLayout(saveBtn, cancelBtn);
-        dialog.add(form, buttons);
+        dialog.add(form, new HorizontalLayout(saveButton, cancelButton));
         dialog.open();
     }
 
-    private void openRoleDialog(RoleDto role) {
+    private void openRoleDialog() {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle(role == null ? "Rolle anlegen" : "Rolle bearbeiten");
+        dialog.setHeaderTitle("Rolle anlegen");
 
         FormLayout form = new FormLayout();
 
         TextField nameField = new TextField("Rollenname");
-        nameField.setValue(role != null ? role.getName() : "");
-
         TextField authorityField = new TextField("Authority");
-        authorityField.setValue(role != null && role.getGrantedAuthority() != null ? role.getGrantedAuthority() : "");
 
         form.add(nameField, authorityField);
 
-        Button saveBtn = new Button("Speichern", e -> {
+        Button saveButton = new Button("Speichern", e -> {
             RoleDto dto = new RoleDto();
-            if (role != null) {
-                dto.setId(role.getId());
-            }
             dto.setName(nameField.getValue());
             dto.setGrantedAuthority(authorityField.getValue());
-            dto.setUsersWithRole(role != null ? role.getUsersWithRole() : new ArrayList<>());
+            dto.setUsersWithRole(new ArrayList<>());
 
-            try {
-                accountService.createRole(dto);
-                refreshRoleGrid();
-                dialog.close();
-            } catch (Exception ex) {
-            }
+            accountService.createRole(dto);
+            refreshRoleNames();
+            refreshRoleGrid();
+            refreshUserGrid();
+            dialog.close();
         });
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-        Button cancelBtn = new Button("Abbrechen", e -> dialog.close());
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
 
-        HorizontalLayout buttons = new HorizontalLayout(saveBtn, cancelBtn);
-        dialog.add(form, buttons);
+        dialog.add(form, new HorizontalLayout(saveButton, cancelButton));
         dialog.open();
+    }
+
+    private void refreshRoleNames() {
+        roleNamesById = new HashMap<>();
+        for (RoleDto role : accountService.listRoles()) {
+            roleNamesById.put(role.getId(), role.getName());
+        }
     }
 
     private void refreshUserGrid() {
@@ -244,5 +289,9 @@ public class AdminView extends VerticalLayout {
 
     private void refreshRoleGrid() {
         roleGrid.setItems(accountService.listRoles());
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 }
