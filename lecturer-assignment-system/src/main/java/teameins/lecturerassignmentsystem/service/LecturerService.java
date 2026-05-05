@@ -119,6 +119,24 @@ public class LecturerService {
         LecturerCanHoldCourse saved = lecturerCanHoldCourseRepository.save(entity);
         return mappingService.map(saved);
     }
+
+    public void assignCourseToLecturer(LecturerHoldsCourseDto dto) {
+        Lecturer lecturer = lecturerRepository.findById(dto.getLecturerId())
+                .orElseThrow(() -> new LecturerNotFoundException(
+                        "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."
+                ));
+
+        Course course = courseRepository.findById(dto.getCourseId())
+                .orElseThrow(() -> new CourseNotFoundException(
+                        "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."
+                ));
+
+        //TODO evtl überprüfen ob existiert
+
+        LecturerHoldsCourse entity = mappingService.map(dto);
+        LecturerHoldsCourse saved = lecturerHoldsCourseRepository.save(entity);
+    }
+
     public void deleteLecturer(LecturerDto lecturer) {
         List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
         for (LecturerCanHoldCourseDto lchc : canHoldCourses) {
