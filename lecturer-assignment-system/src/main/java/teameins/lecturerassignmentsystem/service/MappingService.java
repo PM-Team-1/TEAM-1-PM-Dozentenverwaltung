@@ -76,6 +76,12 @@ public class MappingService {
         );
     }
 
+    public teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse map(teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto assignmentDto) {
+        Lecturer lecturer = lecturerRepository.findById(assignmentDto.getLecturerId());
+        Course course = courseRepository.findById(assignmentDto.getCourseId());
+        return new teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse(assignmentDto.getId());
+    }
+
     public Lecturer map(LecturerDto dto) {
         Lecturer entity = new Lecturer();
         entity.setId(dto.getId());
