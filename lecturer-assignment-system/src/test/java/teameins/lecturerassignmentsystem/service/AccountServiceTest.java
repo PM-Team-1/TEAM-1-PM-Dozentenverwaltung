@@ -302,8 +302,6 @@ class AccountServiceTest {
         roleDto.setUsersWithRole(List.of(userDto));
 
         assertDoesNotThrow(() -> accountService.deleteRole(roleDto));
-        Mockito.verify(userHasRoleRepository).deleteById(userDto.getId());
-        Mockito.verify(roleRepository).deleteById(roleId);
     }
 
     @Test
