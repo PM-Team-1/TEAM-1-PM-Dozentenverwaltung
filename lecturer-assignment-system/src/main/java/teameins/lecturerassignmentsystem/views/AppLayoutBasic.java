@@ -38,7 +38,6 @@ public class AppLayoutBasic extends AppLayout {
         DrawerToggle toggle = new DrawerToggle();
         HorizontalLayout topBar = getTopbar();
 
-        addToDrawer(scroller);
         addToNavbar(toggle, topBar);
     }
 

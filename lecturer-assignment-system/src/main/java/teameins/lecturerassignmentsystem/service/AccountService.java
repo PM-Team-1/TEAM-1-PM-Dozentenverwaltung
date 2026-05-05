@@ -42,6 +42,16 @@ public class AccountService {
         return userDtos;
     }
 
+    public List<RoleDto> listRoles(){
+        List<Role> roles = roleRepository.findAll();
+        List<RoleDto> roleDtos = new ArrayList<>();
+        for (Role r : roles) {
+            List<UserHasRoleDto> usersWithRole = getUsersWithRole(r.getId());
+            roleDtos.add(mappingService.map(r, usersWithRole));
+        }
+        return roleDtos;
+    }
+
     public UserDto getUserById(int userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Es konnte kein Benutzer mit der ID " + userId + " gefunden werden."));
