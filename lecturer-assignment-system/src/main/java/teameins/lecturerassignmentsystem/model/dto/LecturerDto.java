@@ -1,7 +1,6 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
-import lombok.ToString;
-import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 import lombok.ToString;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
@@ -60,7 +59,7 @@ public class LecturerDto {
     }
 
     public static String validateTitle(String title) {
-        if (title == null || title.isBlank()) {
+        if (title == null) {
             return "Der Titel darf nicht leer sein.";
         }
         if (!Title.validate(title)) {

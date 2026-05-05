@@ -14,6 +14,7 @@ import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.service.CourseService;
@@ -21,6 +22,7 @@ import teameins.lecturerassignmentsystem.views.components.CreateCourseDialog;
 
 @Route("vorlesungen")
 @PageTitle("Vorlesungen")
+@PermitAll
 public class AllCoursesView extends VerticalLayout {
 
     private final transient CourseService courseService;

@@ -15,6 +15,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
 import teameins.lecturerassignmentsystem.model.enums.ReportMode;
@@ -32,6 +33,7 @@ import java.util.function.Function;
 
 @Route("reports")
 @PageTitle("Reports")
+@PermitAll
 public class ReportsView extends VerticalLayout {
 
     private final transient ReportService reportService;

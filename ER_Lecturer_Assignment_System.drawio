@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="1426" dy="841" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1414" dy="841" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -91,6 +91,49 @@
         </mxCell>
         <mxCell id="5-5aX35E1O2mqMftU_VO-5" parent="WIyWlLk6GJQsqaUBKTNV-1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Zu Preference: Es gibt 5 verschieden Konfigurationen für die Preference eines Dozenten:&lt;div&gt;&lt;ul&gt;&lt;li&gt;A: Alles - Der Dozent hält allgemein Bachelor- sowie Master-Vorlesungen, kann aber für einzelne Vorlesungen trotzdem eine Präferenz haben&lt;/li&gt;&lt;li&gt;XM(XB): Dozent hält ausschließlich (exclusive -&amp;gt;X) Master(Bachelor)-Vorlesungen&lt;/li&gt;&lt;li&gt;M(B): Dozent hält prinzipiell alle Vorlesungen, aber bevorzugt Master(Bachelor)&lt;/li&gt;&lt;li&gt;Wenn ein Dozent eine bestimmte Vorlesung also laut Preference prinzipiell nicht halten will, dann besteht keine canHold-Beziehung zu der Vorlesung&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;Zu Priority:&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;Wenn der der Dozent mit M(B) konfiguriert ist, dann wird bei canHold Beziehungen zu Master(Bachelor)-Vorlesungen priority auf true gesetzt, entsprechend dann bei Bachelor(Master)-Vorlesung wird das field auf false gesetzt.&lt;/li&gt;&lt;li&gt;Wenn der Dozent mit A konfiguriert ist, dann kann möglicherweise auch eine Priorität bestehen. Wenn er beispielsweise Mathe-Vorlesungen lieber im Bachelor hält, dann wird die priority bei der canHold Beziehung zu Mathe-Vorlesungen im Bachelor ebenfalls auf true gesetzt und bei Mathe-Vorlesungen im Master auf false.&lt;/li&gt;&lt;li&gt;Besteht keine Priorität bezüglich der Vorliebe eines Dozenten, dann bleibt entsprechend das feld priority bei den den Vorlesungen im bachelor, sowie im Master einfach null.&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Zu qualification: Es gibt 3 Qualifikationstufen eines Dozenten für eine Vorlesung:&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;S: kann sofort halten&lt;/li&gt;&lt;li&gt;4: kann in 4 wochen halten&lt;/li&gt;&lt;li&gt;M: braucht mehr als 4 wochen&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;Zu alreadyHeld: Es gibt 3 Optionen:&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;ul&gt;&lt;li&gt;P: Dozent hat die Vorlesung an der Provadis gehalten&lt;/li&gt;&lt;li&gt;A: Dozent hat die Vorlesung an einer anderen Hochschule gehalten&lt;/li&gt;&lt;li&gt;N: Dozent hat die Vorlesung noch nicht gehalten&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="415" width="770" x="30" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-0" parent="WIyWlLk6GJQsqaUBKTNV-1" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" value="User" vertex="1">
+          <mxGeometry height="130" width="160" x="54" y="830" as="geometry">
+            <mxRectangle height="26" width="160" x="550" y="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-1" parent="1488GC9dRt9GOYhAizEt-0" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" value="id" vertex="1">
+          <mxGeometry height="26" width="160" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-2" parent="1488GC9dRt9GOYhAizEt-0" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" value="username" vertex="1">
+          <mxGeometry height="26" width="160" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-3" parent="1488GC9dRt9GOYhAizEt-0" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" value="passwordHash" vertex="1">
+          <mxGeometry height="26" width="160" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-4" parent="1488GC9dRt9GOYhAizEt-0" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" value="enabled" vertex="1">
+          <mxGeometry height="26" width="160" y="104" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-12" parent="WIyWlLk6GJQsqaUBKTNV-1" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" value="Role" vertex="1">
+          <mxGeometry height="80" width="160" x="614" y="855" as="geometry">
+            <mxRectangle height="26" width="160" x="550" y="140" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-13" parent="1488GC9dRt9GOYhAizEt-12" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" value="id" vertex="1">
+          <mxGeometry height="26" width="160" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-14" parent="1488GC9dRt9GOYhAizEt-12" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" value="name" vertex="1">
+          <mxGeometry height="26" width="160" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-22" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1488GC9dRt9GOYhAizEt-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="1488GC9dRt9GOYhAizEt-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-17" parent="WIyWlLk6GJQsqaUBKTNV-1" style="rhombus;whiteSpace=wrap;html=1;" value="UserHasRole" vertex="1">
+          <mxGeometry height="80" width="130" x="354" y="855" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-19" parent="WIyWlLk6GJQsqaUBKTNV-1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;autosize=1;resizable=0;" value="n" vertex="1">
+          <mxGeometry height="30" width="30" x="274" y="873" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-20" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1488GC9dRt9GOYhAizEt-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="1488GC9dRt9GOYhAizEt-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="1488GC9dRt9GOYhAizEt-23" parent="WIyWlLk6GJQsqaUBKTNV-1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;autosize=1;resizable=0;" value="m" vertex="1">
+          <mxGeometry height="30" width="30" x="524" y="873" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

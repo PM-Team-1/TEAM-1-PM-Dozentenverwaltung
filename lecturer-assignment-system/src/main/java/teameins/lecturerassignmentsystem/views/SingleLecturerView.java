@@ -25,6 +25,7 @@ import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
@@ -50,6 +51,7 @@ import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQua
 
 @Route("dozenten")
 @PageTitle("Dozent")
+@PermitAll
 public class SingleLecturerView extends VerticalLayout implements HasUrlParameter<String> {
 
     private final transient LecturerService lecturerService;

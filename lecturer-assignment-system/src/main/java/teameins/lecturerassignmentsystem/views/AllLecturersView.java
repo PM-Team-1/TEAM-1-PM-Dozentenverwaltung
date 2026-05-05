@@ -14,6 +14,7 @@ import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.FileCreationMode;
@@ -23,6 +24,7 @@ import teameins.lecturerassignmentsystem.views.components.CreateLecturerDialog;
 
 @Route("dozenten")
 @PageTitle("Dozenten")
+@PermitAll
 public class AllLecturersView extends VerticalLayout {
 
     private final transient LecturerService lecturerService;

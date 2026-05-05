@@ -1,5 +1,7 @@
 package teameins.lecturerassignmentsystem.model.dto;
 
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
+
 import lombok.ToString;
 
 import java.util.List;
