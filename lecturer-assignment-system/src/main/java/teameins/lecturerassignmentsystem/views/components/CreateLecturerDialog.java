@@ -17,6 +17,7 @@ import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
 import java.util.List;
+import java.util.Arrays;
 
 public class CreateLecturerDialog extends Dialog {
 
@@ -66,6 +67,17 @@ public class CreateLecturerDialog extends Dialog {
         status.setValue("Intern");
         status.setWidthFull();
 
+    ComboBox<String> preference = new ComboBox<>("Präferenz");
+    // use TeachingPreference values (their short code) as items
+    preference.setItems(TeachingPreference.getValidValues());
+    preference.setItemLabelGenerator(code -> Arrays.stream(TeachingPreference.values())
+        .filter(tp -> tp.getValue().equals(code))
+        .findFirst()
+        .map(TeachingPreference::getDescription)
+        .orElse(code));
+    preference.setValue(TeachingPreference.ALLES.getValue());
+    preference.setWidthFull();
+
         TextField email = new TextField("E-Mail");
         email.setWidthFull();
 
@@ -79,9 +91,20 @@ public class CreateLecturerDialog extends Dialog {
         bindStatus(status);
         bindEmail(email);
         bindPhone(phone);
+    bindPreference(preference);
 
-        layout.add(title, lastName, firstName, secondName, status, email, phone);
+        layout.add(title, lastName, firstName, secondName, status, email, phone, preference);
         return layout;
+    }
+
+    private void bindPreference(ComboBox<String> preference) {
+        binder.forField(preference)
+                .asRequired("Präferenz auswählen")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateTeachingPreference(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
+                .bind(LecturerDto::getTeachingPreference, LecturerDto::setTeachingPreference);
     }
 
     private void bindTitle(ComboBox<String> title) {
