@@ -131,10 +131,28 @@ public class LecturerService {
                         "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."
                 ));
 
-        //TODO evtl überprüfen ob existiert
+        if (lecturerHoldsCourseRepository.existsByCourseId(dto.getCourseId())) {
+            throw new IllegalArgumentException(
+                    "Der Kurs (ID " + dto.getCourseId() + ") ist bereits einem Dozenten zugewiesen."
+            );
+        }
 
         LecturerHoldsCourse entity = mappingService.map(dto);
         LecturerHoldsCourse saved = lecturerHoldsCourseRepository.save(entity);
+    }
+
+    public void unassignCourse(CourseDto dto) {
+        Course course = courseRepository.findById(dto.getId())
+                .orElseThrow(() -> new CourseNotFoundException(
+                        "Es konnte keine Vorlesung mit der ID " + dto.getId() + " gefunden werden."
+                ));
+
+        LecturerHoldsCourse holdsCourse = lecturerHoldsCourseRepository.findByCourseId(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Es konnte keine Zuweisung mit der Kurs-ID " + dto.getId() + " gefunden werden."
+                ));
+
+        lecturerHoldsCourseRepository.deleteById(holdsCourse.getId());
     }
 
     public void deleteLecturer(LecturerDto lecturer) {
