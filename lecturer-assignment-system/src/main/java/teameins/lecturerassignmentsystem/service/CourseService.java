@@ -42,7 +42,8 @@ public class CourseService {
 
 	public CourseDto getCourseDtoById(int courseId) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
+                .orElseThrow(() -> new CourseNotFoundException(
+                        "Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(courseId);
         LecturerHoldsCourseDto heldBy = lecturerHoldsCourseRepository.findByCourseId(courseId)
                 .map(mappingService::map)
@@ -60,6 +61,29 @@ public class CourseService {
                     .orElse(null);
             courseDtos.add(mappingService.map(course, canBeHeldBy, heldBy));
         }
+        return courseDtos;
+    }
+
+    public List<String> getAllSemesters() {
+        List<String> semesters = courseRepository.findAllDistinctSemesters();
+        semesters.sort((s1, s2) -> {
+            CourseDto c1 = new CourseDto();
+            c1.setSemester(s1);
+            CourseDto c2 = new CourseDto();
+            c2.setSemester(s2);
+            return c1.getSemesterSortable().compareTo(c2.getSemesterSortable());
+        });
+        return semesters;
+    }
+
+    public List<CourseDto> getCoursesBySemester(String semester) {
+        List<Course> courses = courseRepository.findBySemester(semester);
+        List<CourseDto> courseDtos = new ArrayList<>();
+        for (Course course : courses) {
+            List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(course.getId());
+            courseDtos.add(mappingService.map(course, canBeHeldBy));
+        }
+        courseDtos.sort((c1, c2) -> Boolean.compare(c1.isMaster(), c2.isMaster()));
         return courseDtos;
     }
 
@@ -85,15 +109,17 @@ public class CourseService {
         for (LecturerCanHoldCourseDto lchc : courseDto.getCanBeHeldBy()) {
             lecturerCanHoldCourseRepository.deleteById(lchc.getId());
         }
-        
-        Optional<LecturerHoldsCourse> existingAssignment = lecturerHoldsCourseRepository.findByCourseId(courseDto.getId());
+
+        Optional<LecturerHoldsCourse> existingAssignment = lecturerHoldsCourseRepository
+                .findByCourseId(courseDto.getId());
         existingAssignment.ifPresent(assignment -> lecturerHoldsCourseRepository.deleteById(assignment.getId()));
 
         courseRepository.deleteById(courseDto.getId());
     }
 
     private List<LecturerCanHoldCourseDto> getLecturersWhoCanHoldCourse(int courseId) {
-        List<LecturerCanHoldCourse> lecturersWhoCanHoldCourse = courseRepository.findLecturersWhoCanHoldCourse(courseId);
+        List<LecturerCanHoldCourse> lecturersWhoCanHoldCourse = courseRepository
+                .findLecturersWhoCanHoldCourse(courseId);
         List<LecturerCanHoldCourseDto> courseCanBeHeldyByLecturerDtoList = new ArrayList<>();
         for (LecturerCanHoldCourse lchc : lecturersWhoCanHoldCourse) {
             courseCanBeHeldyByLecturerDtoList.add(mappingService.map(lchc));
@@ -132,7 +158,7 @@ public class CourseService {
     public CourseDto removeLecturerFromCourse(int courseId) {
         LecturerHoldsCourse assignment = lecturerHoldsCourseRepository.findByCourseId(courseId)
                 .orElseThrow(() -> new InvalidCourseException("Dieser Vorlesung ist noch kein Dozent zugeordnet."));
-
+        
         lecturerHoldsCourseRepository.deleteById(assignment.getId());
         return getCourseDtoById(courseId);
     }
