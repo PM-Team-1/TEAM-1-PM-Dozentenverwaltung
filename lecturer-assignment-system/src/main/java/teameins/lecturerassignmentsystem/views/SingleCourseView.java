@@ -12,7 +12,6 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -99,7 +98,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
 
     private void renderSingleCourse() {
         VerticalLayout singleCourse = new VerticalLayout(courseInfo, assignedLecturerInfo, lecturersWhoCanHoldInfo);
-        singleCourse.setSpacing(true);
+        singleCourse.setSpacing(false);
         singleCourse.setWidthFull();
 
         removeAll();
@@ -142,11 +141,13 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     }
     
     private void renderAssignedLecturerInfo(){
-        assignedLecturerInfo.add(new H5("Zugewiesener Dozent"));
+        assignedLecturerInfo.setSpacing(false);
+        assignedLecturerInfo.add(new Paragraph("Zugewiesener Dozent:"));
+
+        HorizontalLayout layout = new HorizontalLayout();
         TextField assignedLecturer = new TextField();
         assignedLecturer.setReadOnly(true);
 
-        HorizontalLayout layout = new HorizontalLayout();
         if (course.getHeldBy() == null){
             String value = "Kein Dozent zugewiesen";
             assignedLecturer.setValue(value);
@@ -168,7 +169,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     }
 
     private void renderLecturersWhoCanHoldCourseInfo(){
-        H5 lecturersWhoCanHoldCourseHeading = new H5("Mögliche Dozenten für diese Vorlesung:");
+        H3 lecturersWhoCanHoldCourseHeading = new H3("Mögliche Dozenten für diese Vorlesung:");
         lecturersWhoCanHoldCourseHeading.getStyle().setMarginBottom("var(--lumo-space-s)");
         lecturersWhoCanHoldInfo.add(lecturersWhoCanHoldCourseHeading);
 
