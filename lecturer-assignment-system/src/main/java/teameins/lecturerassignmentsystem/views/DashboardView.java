@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.UI;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
@@ -71,6 +72,9 @@ public class DashboardView extends VerticalLayout {
             Optional<LecturerDto> lecturer = lecturerService.getAssignedLecturerForCourse(c.getId());
             return lecturer.map(LecturerDto::getFullName).orElse("Nicht zugewiesen");
         }).setHeader("Zugewiesener Dozent");
+        courseGrid.addItemClickListener(event -> 
+            UI.getCurrent().navigate(SingleCourseView.class, String.valueOf(event.getItem().getId()))
+        );
         courseGrid.setVisible(false);
 
         unassignedLecturersTitle = new H3("Unverplante Dozenten");
@@ -81,6 +85,9 @@ public class DashboardView extends VerticalLayout {
         unassignedLecturersGrid.addColumn(LecturerDto::getFirstName).setHeader("Vorname");
         unassignedLecturersGrid.addColumn(LecturerDto::getLastName).setHeader("Nachname").setSortable(true);
         unassignedLecturersGrid.addColumn(LecturerDto::getTeachingPreference).setHeader("Lehrpräferenz");
+        unassignedLecturersGrid.addItemClickListener(event -> 
+            UI.getCurrent().navigate(SingleLecturerView.class, String.valueOf(event.getItem().getId()))
+        );
         unassignedLecturersGrid.setVisible(false);
     }
 
