@@ -39,12 +39,10 @@ import teameins.lecturerassignmentsystem.views.components.AddCourseToLecturerDia
 import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
 import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
@@ -74,7 +72,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     public void setParameter(BeforeEvent event, String parameter) {
         try {
             int id = Integer.parseInt(parameter);
-            lecturer = lecturerService.getLecturerById(id);
+            lecturer = lecturerService.getLecturerDtoById(id);
             isInEditMode = false;
             removeAll();
             renderSingleLecturer(false);

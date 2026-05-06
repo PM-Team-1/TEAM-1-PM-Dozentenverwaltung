@@ -40,16 +40,14 @@ public class CourseService {
         this.lecturerRepository = lecturerRepository;
 	}
 
-    public Course getCourseById(int courseId) {
-        return courseRepository.findById(courseId)
-                .orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
-    }
-
 	public CourseDto getCourseDtoById(int courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + courseId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(courseId);
-        return mappingService.map(course, canBeHeldBy);
+        LecturerHoldsCourseDto heldBy = lecturerHoldsCourseRepository.findByCourseId(courseId)
+                .map(mappingService::map)
+                .orElse(null);
+        return mappingService.map(course, canBeHeldBy, heldBy);
     }
 
     public List<CourseDto> listCourses() {
@@ -57,7 +55,10 @@ public class CourseService {
         List<CourseDto> courseDtos = new ArrayList<>();
         for (Course course : courses) {
             List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(course.getId());
-            courseDtos.add(mappingService.map(course, canBeHeldBy));
+            LecturerHoldsCourseDto heldBy = lecturerHoldsCourseRepository.findByCourseId(course.getId())
+                    .map(mappingService::map)
+                    .orElse(null);
+            courseDtos.add(mappingService.map(course, canBeHeldBy, heldBy));
         }
         return courseDtos;
     }
@@ -100,7 +101,7 @@ public class CourseService {
         return courseCanBeHeldyByLecturerDtoList;
     }
 
-    public LecturerHoldsCourseDto assignLecturerToCourse(int courseId, int lecturerId) {
+    public CourseDto assignLecturerToCourse(int courseId, int lecturerId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException("Vorlesung nicht gefunden."));
         Lecturer lecturer = lecturerRepository.findById(lecturerId)
@@ -112,7 +113,8 @@ public class CourseService {
 
         LecturerHoldsCourse assignment = new LecturerHoldsCourse(0, course, lecturer);
         assignment = lecturerHoldsCourseRepository.save(assignment);
-        return mappingService.map(assignment);
+        mappingService.map(assignment);
+        return getCourseDtoById(courseId);
     }
 
     public LecturerHoldsCourseDto updateLecturerForCourse(int courseId, int newLecturerId) {
@@ -127,10 +129,11 @@ public class CourseService {
         return mappingService.map(assignment);
     }
 
-    public void removeLecturerFromCourse(int courseId) {
+    public CourseDto removeLecturerFromCourse(int courseId) {
         LecturerHoldsCourse assignment = lecturerHoldsCourseRepository.findByCourseId(courseId)
                 .orElseThrow(() -> new InvalidCourseException("Dieser Vorlesung ist noch kein Dozent zugeordnet."));
-        
+
         lecturerHoldsCourseRepository.deleteById(assignment.getId());
+        return getCourseDtoById(courseId);
     }
 }

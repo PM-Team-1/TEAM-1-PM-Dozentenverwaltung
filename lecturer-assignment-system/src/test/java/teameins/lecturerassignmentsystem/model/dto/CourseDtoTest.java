@@ -75,6 +75,7 @@ class CourseDtoTest {
                 name,
                 false,
                 false, semester,
-                new ArrayList<>());
+                new ArrayList<>(),
+         null);
     }
 }

@@ -116,7 +116,7 @@ class CourseServiceTest {
 
         courseService.getCourseDtoById(1);
 
-        verify(mappingService).map(eq(course), anyList());
+        verify(mappingService).map(eq(course), anyList(), any());
     }
 
     // -------------------------------------------------------------------------
@@ -147,7 +147,7 @@ class CourseServiceTest {
         assertEquals(1, result.get(0).getId());
         assertEquals(2, result.get(1).getId());
         verify(courseRepository).findAll();
-        verify(mappingService, times(2)).map(any(Course.class), anyList());
+        verify(mappingService, times(2)).map(any(Course.class), anyList(), any());
     }
 
     @Test
@@ -382,11 +382,13 @@ class CourseServiceTest {
         when(lecturerHoldsCourseRepository.save(any(LecturerHoldsCourse.class))).thenReturn(assignment);
         LecturerHoldsCourseDto dto = new LecturerHoldsCourseDto(10, 2, 1);
         when(mappingService.map(assignment)).thenReturn(dto);
+        when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.of(assignment));
 
-        LecturerHoldsCourseDto result = courseService.assignLecturerToCourse(1, 2);
+        CourseDto result = courseService.assignLecturerToCourse(1, 2);
 
         assertNotNull(result);
-        assertEquals(10, result.getId());
+        assertEquals(10, result.getHeldBy().getId());
         verify(lecturerHoldsCourseRepository).save(any());
     }
 
@@ -448,10 +450,13 @@ class CourseServiceTest {
     @Test
     void removeLecturerFromCourse_success() {
         LecturerHoldsCourse assignment = new LecturerHoldsCourse(10, course, new Lecturer());
-        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.of(assignment));
-        
-        courseService.removeLecturerFromCourse(1);
+        doReturn(Optional.of(assignment), Optional.empty()).when(lecturerHoldsCourseRepository).findByCourseId(1);
+        doReturn(Optional.of(course)).when(courseRepository).findById(1);
+        doReturn(new ArrayList<>()).when(courseRepository).findLecturersWhoCanHoldCourse(1);
 
+        CourseDto result = courseService.removeLecturerFromCourse(1);
+
+        assertNotNull(result);
         verify(lecturerHoldsCourseRepository).deleteById(10);
     }
 
