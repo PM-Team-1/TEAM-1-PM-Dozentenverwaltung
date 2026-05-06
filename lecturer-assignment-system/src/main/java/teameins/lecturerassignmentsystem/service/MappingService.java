@@ -17,6 +17,7 @@ import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerCanHoldCourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
 import teameins.lecturerassignmentsystem.repository.CourseRepository;
+import teameins.lecturerassignmentsystem.repository.LecturerRepository;
 import teameins.lecturerassignmentsystem.model.exception.*;
 
 import java.util.List;
@@ -25,9 +26,11 @@ import java.util.stream.Collectors;
 @Service
 public class MappingService {
     CourseRepository courseRepository;
+    LecturerRepository lecturerRepository;
 	
-	public MappingService(CourseRepository courseRepository) {
+	public MappingService(CourseRepository courseRepository, LecturerRepository lecturerRepository) {
         this.courseRepository = courseRepository;
+        this.lecturerRepository = lecturerRepository;
 	}
 
     public MappingService() {}
@@ -79,8 +82,8 @@ public class MappingService {
 
     public teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse map(teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto assignmentDto) {
         Lecturer lecturer = lecturerRepository.findById(assignmentDto.getLecturerId()).orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + assignmentDto.getLecturerId() + " gefunden werden."));
-        Course course = courseRepository.findById(assignmentDto.getCourseId())orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + assignmentDto.getCourseId() + " gefunden werden."));
-        return new teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse(assignmentDto.getId());
+        Course course = courseRepository.findById(assignmentDto.getCourseId()).orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + assignmentDto.getCourseId() + " gefunden werden."));
+        return new teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse(assignmentDto.getId(), course, lecturer);
     }
 
     public Lecturer map(LecturerDto dto) {
