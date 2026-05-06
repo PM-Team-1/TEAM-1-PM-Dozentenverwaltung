@@ -8,6 +8,9 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
+import jakarta.annotation.security.PermitAll;
+
 import com.vaadin.flow.component.UI;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
@@ -20,6 +23,7 @@ import java.util.Optional;
 
 @Route("dashboard")
 @PageTitle("Dashboard")
+@PermitAll
 public class DashboardView extends VerticalLayout {
 
     private final transient CourseService courseService;
