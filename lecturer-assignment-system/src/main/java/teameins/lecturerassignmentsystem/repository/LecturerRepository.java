@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
-import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
 
 import java.util.List;
 

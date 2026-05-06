@@ -41,10 +41,10 @@ public class DashboardView extends VerticalLayout {
 
         add(heading);
         add(getToolbar());
-        
+
         setupSemesterSelector();
         setupGrids();
-        
+
         add(semesterComboBox, courseGridTitle, courseGrid, unassignedLecturersTitle, unassignedLecturersGrid);
     }
 
@@ -64,7 +64,7 @@ public class DashboardView extends VerticalLayout {
     private void setupGrids() {
         courseGridTitle = new H3("Vorlesungen");
         courseGridTitle.setVisible(false);
-        
+
         courseGrid = new Grid<>(CourseDto.class, false);
         courseGrid.addColumn(CourseDto::getName).setHeader("Vorlesung").setSortable(true);
         courseGrid.addColumn(c -> c.isMaster() ? "Master" : "Bachelor").setHeader("Typ").setSortable(true);
@@ -72,9 +72,8 @@ public class DashboardView extends VerticalLayout {
             Optional<LecturerDto> lecturer = lecturerService.getAssignedLecturerForCourse(c.getId());
             return lecturer.map(LecturerDto::getFullName).orElse("Nicht zugewiesen");
         }).setHeader("Zugewiesener Dozent");
-        courseGrid.addItemClickListener(event -> 
-            UI.getCurrent().navigate(SingleCourseView.class, String.valueOf(event.getItem().getId()))
-        );
+        courseGrid.addItemClickListener(
+                event -> UI.getCurrent().navigate(SingleCourseView.class, String.valueOf(event.getItem().getId())));
         courseGrid.setVisible(false);
 
         unassignedLecturersTitle = new H3("Unverplante Dozenten");
@@ -85,9 +84,8 @@ public class DashboardView extends VerticalLayout {
         unassignedLecturersGrid.addColumn(LecturerDto::getFirstName).setHeader("Vorname");
         unassignedLecturersGrid.addColumn(LecturerDto::getLastName).setHeader("Nachname").setSortable(true);
         unassignedLecturersGrid.addColumn(LecturerDto::getTeachingPreference).setHeader("Lehrpräferenz");
-        unassignedLecturersGrid.addItemClickListener(event -> 
-            UI.getCurrent().navigate(SingleLecturerView.class, String.valueOf(event.getItem().getId()))
-        );
+        unassignedLecturersGrid.addItemClickListener(
+                event -> UI.getCurrent().navigate(SingleLecturerView.class, String.valueOf(event.getItem().getId())));
         unassignedLecturersGrid.setVisible(false);
     }
 
@@ -99,7 +97,7 @@ public class DashboardView extends VerticalLayout {
             unassignedLecturersGrid.setVisible(false);
             return;
         }
-        
+
         List<CourseDto> courses = courseService.getCoursesBySemester(semester);
         courseGrid.setItems(courses);
         courseGridTitle.setText("Vorlesungen im " + semester);

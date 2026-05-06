@@ -1,7 +1,6 @@
-package teameins.lecturerassignmentsystem.model;
+package teameins.lecturerassignmentsystem.model.dto.relation;
 
 import org.junit.jupiter.api.Test;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
 
 import static org.junit.jupiter.api.Assertions.*;
 

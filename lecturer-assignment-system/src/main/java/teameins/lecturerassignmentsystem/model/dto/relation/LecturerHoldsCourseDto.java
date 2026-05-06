@@ -1,4 +1,4 @@
-package teameins.lecturerassignmentsystem.model.dto;
+package teameins.lecturerassignmentsystem.model.dto.relation;
 
 import java.util.Objects;
 

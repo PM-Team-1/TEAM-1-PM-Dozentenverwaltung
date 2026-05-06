@@ -25,11 +25,13 @@ import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
@@ -49,6 +51,7 @@ import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQua
 
 @Route("dozenten")
 @PageTitle("Dozent")
+@PermitAll
 public class SingleLecturerView extends VerticalLayout implements HasUrlParameter<String> {
 
     private final transient LecturerService lecturerService;
@@ -200,6 +203,17 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         status.setReadOnly(!edit);
         status.setWidthFull();
 
+    ComboBox<String> preference = new ComboBox<>("Präferenz");
+    preference.setItems(TeachingPreference.getValidValues());
+    preference.setItemLabelGenerator(code -> Arrays.stream(TeachingPreference.values())
+        .filter(tp -> tp.getValue().equals(code))
+        .findFirst()
+        .map(TeachingPreference::getDescription)
+        .orElse(code));
+    preference.setValue(lecturer.getTeachingPreference() == null ? TeachingPreference.ALLES.getValue() : lecturer.getTeachingPreference());
+    preference.setReadOnly(!edit);
+    preference.setWidthFull();
+
         TextField email = new TextField(
                 "E-Mail",
                 lecturer.getEmail() != null ? lecturer.getEmail() : "",
@@ -222,14 +236,25 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         bindFirstName(firstName);
         bindSecondName(secondName);
         bindStatus(status);
+    bindPreference(preference);
         bindEmail(email);
         bindPhone(phone);
 
         binder.readBean(lecturer);
 
-        info.add(title, lastName, firstName, secondName, status, email, phone);
+        info.add(title, lastName, firstName, secondName, status, preference, email, phone);
 
         return info;
+    }
+
+    private void bindPreference(ComboBox<String> preference) {
+        binder.forField(preference)
+                .asRequired("Präferenz auswählen")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateTeachingPreference(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
+                .bind(LecturerDto::getTeachingPreference, LecturerDto::setTeachingPreference);
     }
 
     private void bindTitle(ComboBox<String> title) {
