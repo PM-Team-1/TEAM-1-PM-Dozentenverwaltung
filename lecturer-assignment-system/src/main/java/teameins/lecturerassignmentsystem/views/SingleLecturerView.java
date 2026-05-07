@@ -343,6 +343,15 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 .setHeader("Gehalten an")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(1);
+        canHoldgrid.addComponentColumn(row -> {
+                Button detailsButton = new Button("Kurs zuweisen");
+
+                detailsButton.addClickListener(event -> {
+                    //TODO überprüfen ob es Beziehung gibt sonst erstellen
+                });
+
+                return detailsButton;
+        }).setHeader("");
 
 
         canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
