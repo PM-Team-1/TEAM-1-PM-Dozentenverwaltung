@@ -118,7 +118,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         Div toolbar = new Div();
         toolbar.addClassName(TOOLBAR_CLASS_NAME);
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_COURSES_VIEW_ROUTE));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().getPage().getHistory().back());
         toolbar.add(back);
         Button delete = new Button("Löschen", e -> deleteCourse());
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
@@ -291,7 +291,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         Button confirmButton = new Button("Löschen", e -> {
             courseService.deleteCourse(course);
             confirmDelete.close();
-            UI.getCurrent().navigate(ALL_COURSES_VIEW_ROUTE);
+            UI.getCurrent().getPage().getHistory().back();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 

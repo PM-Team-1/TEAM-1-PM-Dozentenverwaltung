@@ -65,7 +65,7 @@ public class CourseService {
     }
 
     public List<String> getAllSemesters() {
-        List<String> semesters = courseRepository.findAllDistinctSemesters();
+        List<String> semesters = new ArrayList<>(courseRepository.findAllDistinctSemesters());
         semesters.sort((s1, s2) -> {
             CourseDto c1 = new CourseDto();
             c1.setSemester(s1);
@@ -81,7 +81,10 @@ public class CourseService {
         List<CourseDto> courseDtos = new ArrayList<>();
         for (Course course : courses) {
             List<LecturerCanHoldCourseDto> canBeHeldBy = getLecturersWhoCanHoldCourse(course.getId());
-            courseDtos.add(mappingService.map(course, canBeHeldBy));
+            LecturerHoldsCourseDto heldBy = lecturerHoldsCourseRepository.findByCourseId(course.getId())
+                    .map(mappingService::map)
+                    .orElse(null);
+            courseDtos.add(mappingService.map(course, canBeHeldBy, heldBy));
         }
         courseDtos.sort((c1, c2) -> Boolean.compare(c1.isMaster(), c2.isMaster()));
         return courseDtos;

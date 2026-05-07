@@ -75,14 +75,16 @@ public class LecturerService {
 
     public List<LecturerDto> getUnassignedLecturersForSemester(List<CourseDto> coursesInSemester) {
         Set<Integer> assignedLecturerIds = coursesInSemester.stream()
-                .map(c -> getAssignedLecturerForCourse(c.getId()))
+                .map(c -> lecturerHoldsCourseRepository.findByCourseId(c.getId())
+                        .map(LecturerHoldsCourse::getLecturer)
+                        .map(Lecturer::getId))
                 .filter(Optional::isPresent)
-                .map(opt -> opt.get().getId())
+                .map(Optional::get)
                 .collect(Collectors.toSet());
                 
         return listLecturerDtos().stream()
                 .filter(l -> !assignedLecturerIds.contains(l.getId()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public LecturerDto createLecturer(LecturerDto lecturerDto) {

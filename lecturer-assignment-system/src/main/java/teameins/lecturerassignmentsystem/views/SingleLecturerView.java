@@ -56,8 +56,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private final transient CourseService courseService;
     private transient LecturerDto lecturer;
 
-    private static final String ALL_LECTURERS_VIEW_ROUTE = "dozenten";
-
     private boolean isInEditMode = false;
 
     private final Binder<LecturerDto> binder = new Binder<>(LecturerDto.class);
@@ -128,7 +126,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Div toolbar = new Div();
         toolbar.addClassName("toolbar");
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().getPage().getHistory().back());
         toolbar.add(back);
 
         if (!isInEditMode) {
@@ -484,7 +482,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
         Paragraph desc = new Paragraph(details);
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().getPage().getHistory().back());
 
         add(header, desc, back);
     }
@@ -507,7 +505,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Button confirmButton = new Button("Löschen", e -> {
             lecturerService.deleteLecturer(lecturer);
             confirmDelete.close();
-            UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE);
+            UI.getCurrent().getPage().getHistory().back();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 

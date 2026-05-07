@@ -465,4 +465,38 @@ class CourseServiceTest {
         when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.empty());
         assertThrows(InvalidCourseException.class, () -> courseService.removeLecturerFromCourse(1));
     }
+
+    @Test
+    void getAllSemesters_returnsSortedList() {
+        when(courseRepository.findAllDistinctSemesters()).thenReturn(List.of("B", "A"));
+
+        List<String> result = courseService.getAllSemesters();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("A", result.get(0));
+        assertEquals("B", result.get(1));
+    }
+
+    @Test
+    void getCoursesBySemester_returnsCoursesAndSortedByMasterFlag() {
+        Course bachelorCourse = new Course(1, "BachCourse", false, false, "WiSe 24/25");
+        Course masterCourse = new Course(2, "MasterCourse", false, true, "WiSe 24/25");
+
+        when(courseRepository.findBySemester("WiSe 24/25")).thenReturn(List.of(masterCourse, bachelorCourse));
+        when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
+        when(courseRepository.findLecturersWhoCanHoldCourse(2)).thenReturn(new ArrayList<>());
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.empty());
+        when(lecturerHoldsCourseRepository.findByCourseId(2)).thenReturn(Optional.empty());
+
+        List<CourseDto> result = courseService.getCoursesBySemester("WiSe 24/25");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        // method sorts so that non-master (bachelor) comes first
+        assertFalse(result.get(0).isMaster());
+        assertTrue(result.get(1).isMaster());
+        assertEquals(1, result.get(0).getId());
+        assertEquals(2, result.get(1).getId());
+    }
 }
