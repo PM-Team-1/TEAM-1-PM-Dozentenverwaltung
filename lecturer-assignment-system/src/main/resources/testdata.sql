@@ -258,6 +258,18 @@ INSERT INTO lecturer_can_hold_course (id, already_held, qualification, course_id
   (143, 'NOT_YET_HELD', 'IMMEDIATELY', 20, 30, 'LOW'),
   (144, 'OTHER_SCHOOL', 'FOUR_WEEKS', 10, 30, 'MEDIUM');
 
+INSERT INTO lecturer_holds_course (id, lecturer_id, course_id) VALUES
+  (1, 25, 1),
+  (2, 26, 3),
+  (3, 10, 5),
+  (4, 20, 8),
+  (5, 27, 10),
+  (6, 2, 11),
+  (7, 3, 12),
+  (8, 4, 14),
+  (9, 5, 15),
+  (10, 16, 20);
+
 COMMIT;
 PRAGMA foreign_keys=ON;
 

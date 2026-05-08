@@ -2,12 +2,14 @@ package teameins.lecturerassignmentsystem.views;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.QueryParameters;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -19,12 +21,13 @@ import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Route("dashboard")
 @PageTitle("Dashboard")
 @PermitAll
-public class DashboardView extends VerticalLayout {
+public class DashboardView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient CourseService courseService;
     private final transient LecturerService lecturerService;
@@ -44,7 +47,6 @@ public class DashboardView extends VerticalLayout {
         heading.addClassName("h2-custom");
 
         add(heading);
-        add(getToolbar());
 
         setupSemesterSelector();
         setupGrids();
@@ -52,17 +54,24 @@ public class DashboardView extends VerticalLayout {
         add(semesterComboBox, courseGridTitle, courseGrid, unassignedLecturersTitle, unassignedLecturersGrid);
     }
 
-    private Div getToolbar() {
-        Div toolbar = new Div();
-        toolbar.setWidthFull();
-        toolbar.addClassName("toolbar");
-        return toolbar;
-    }
-
     private void setupSemesterSelector() {
         semesterComboBox = new ComboBox<>("Semester auswählen");
         semesterComboBox.setItems(courseService.getAllSemesters());
-        semesterComboBox.addValueChangeListener(event -> updateGrids(event.getValue()));
+        semesterComboBox.addValueChangeListener(event -> {
+            updateGrids(event.getValue());
+            if (event.isFromClient() && event.getValue() != null && !event.getValue().isEmpty()) {
+                UI.getCurrent().navigate(DashboardView.class, QueryParameters.simple(Map.of("semester", event.getValue())));
+            }
+        });
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        String semester = event.getLocation().getQueryParameters().getSingleParameter("semester").orElse(null);
+        if (semester != null && courseService.getAllSemesters().contains(semester)) {
+            semesterComboBox.setValue(semester);
+            updateGrids(semester);
+        }
     }
 
     private void setupGrids() {
@@ -76,9 +85,10 @@ public class DashboardView extends VerticalLayout {
             Optional<LecturerDto> lecturer = lecturerService.getAssignedLecturerForCourse(c.getId());
             return lecturer.map(LecturerDto::getFullName).orElse("Nicht zugewiesen");
         }).setHeader("Zugewiesener Dozent");
-        courseGrid.addItemClickListener(
+        courseGrid.addItemDoubleClickListener(
                 event -> UI.getCurrent().navigate(SingleCourseView.class, String.valueOf(event.getItem().getId())));
         courseGrid.setVisible(false);
+        courseGrid.setAllRowsVisible(true);
 
         unassignedLecturersTitle = new H3("Unverplante Dozenten");
         unassignedLecturersTitle.setVisible(false);
@@ -88,8 +98,9 @@ public class DashboardView extends VerticalLayout {
         unassignedLecturersGrid.addColumn(LecturerDto::getFirstName).setHeader("Vorname");
         unassignedLecturersGrid.addColumn(LecturerDto::getLastName).setHeader("Nachname").setSortable(true);
         unassignedLecturersGrid.addColumn(LecturerDto::getTeachingPreference).setHeader("Lehrpräferenz");
-        unassignedLecturersGrid.addItemClickListener(
+        unassignedLecturersGrid.addItemDoubleClickListener(
                 event -> UI.getCurrent().navigate(SingleLecturerView.class, String.valueOf(event.getItem().getId())));
+        unassignedLecturersGrid.setAllRowsVisible(true);
         unassignedLecturersGrid.setVisible(false);
     }
 

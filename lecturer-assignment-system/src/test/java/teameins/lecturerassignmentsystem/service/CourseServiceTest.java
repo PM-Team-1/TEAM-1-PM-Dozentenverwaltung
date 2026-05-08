@@ -116,7 +116,7 @@ class CourseServiceTest {
 
         courseService.getCourseDtoById(1);
 
-        verify(mappingService).map(eq(course), anyList());
+        verify(mappingService).map(eq(course), anyList(), any());
     }
 
     // -------------------------------------------------------------------------
@@ -147,7 +147,7 @@ class CourseServiceTest {
         assertEquals(1, result.get(0).getId());
         assertEquals(2, result.get(1).getId());
         verify(courseRepository).findAll();
-        verify(mappingService, times(2)).map(any(Course.class), anyList());
+        verify(mappingService, times(2)).map(any(Course.class), anyList(), any());
     }
 
     @Test
@@ -382,11 +382,13 @@ class CourseServiceTest {
         when(lecturerHoldsCourseRepository.save(any(LecturerHoldsCourse.class))).thenReturn(assignment);
         LecturerHoldsCourseDto dto = new LecturerHoldsCourseDto(10, 2, 1);
         when(mappingService.map(assignment)).thenReturn(dto);
+        when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.of(assignment));
 
-        LecturerHoldsCourseDto result = courseService.assignLecturerToCourse(1, 2);
+        CourseDto result = courseService.assignLecturerToCourse(1, 2);
 
         assertNotNull(result);
-        assertEquals(10, result.getId());
+        assertEquals(10, result.getHeldBy().getId());
         verify(lecturerHoldsCourseRepository).save(any());
     }
 
@@ -448,10 +450,13 @@ class CourseServiceTest {
     @Test
     void removeLecturerFromCourse_success() {
         LecturerHoldsCourse assignment = new LecturerHoldsCourse(10, course, new Lecturer());
-        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.of(assignment));
-        
-        courseService.removeLecturerFromCourse(1);
+        doReturn(Optional.of(assignment), Optional.empty()).when(lecturerHoldsCourseRepository).findByCourseId(1);
+        doReturn(Optional.of(course)).when(courseRepository).findById(1);
+        doReturn(new ArrayList<>()).when(courseRepository).findLecturersWhoCanHoldCourse(1);
 
+        CourseDto result = courseService.removeLecturerFromCourse(1);
+
+        assertNotNull(result);
         verify(lecturerHoldsCourseRepository).deleteById(10);
     }
 
@@ -459,5 +464,39 @@ class CourseServiceTest {
     void removeLecturerFromCourse_notAssigned() {
         when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.empty());
         assertThrows(InvalidCourseException.class, () -> courseService.removeLecturerFromCourse(1));
+    }
+
+    @Test
+    void getAllSemesters_returnsSortedList() {
+        when(courseRepository.findAllDistinctSemesters()).thenReturn(List.of("B", "A"));
+
+        List<String> result = courseService.getAllSemesters();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("A", result.get(0));
+        assertEquals("B", result.get(1));
+    }
+
+    @Test
+    void getCoursesBySemester_returnsCoursesAndSortedByMasterFlag() {
+        Course bachelorCourse = new Course(1, "BachCourse", false, false, "WiSe 24/25");
+        Course masterCourse = new Course(2, "MasterCourse", false, true, "WiSe 24/25");
+
+        when(courseRepository.findBySemester("WiSe 24/25")).thenReturn(List.of(masterCourse, bachelorCourse));
+        when(courseRepository.findLecturersWhoCanHoldCourse(1)).thenReturn(new ArrayList<>());
+        when(courseRepository.findLecturersWhoCanHoldCourse(2)).thenReturn(new ArrayList<>());
+        when(lecturerHoldsCourseRepository.findByCourseId(1)).thenReturn(Optional.empty());
+        when(lecturerHoldsCourseRepository.findByCourseId(2)).thenReturn(Optional.empty());
+
+        List<CourseDto> result = courseService.getCoursesBySemester("WiSe 24/25");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        // method sorts so that non-master (bachelor) comes first
+        assertFalse(result.get(0).isMaster());
+        assertTrue(result.get(1).isMaster());
+        assertEquals(1, result.get(0).getId());
+        assertEquals(2, result.get(1).getId());
     }
 }

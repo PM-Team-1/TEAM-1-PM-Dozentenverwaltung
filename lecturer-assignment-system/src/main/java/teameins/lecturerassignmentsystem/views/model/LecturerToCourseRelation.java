@@ -12,7 +12,7 @@ public class LecturerToCourseRelation {
 
     public LecturerToCourseRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, LecturerService lecturerService) {
         this.lecturerCanHoldCourse = lecturerCanHoldCourse;
-        this.lecturer = lecturerService.getLecturerById(lecturerCanHoldCourse.getLecturerId());
+        this.lecturer = lecturerService.getLecturerDtoById(lecturerCanHoldCourse.getLecturerId());
     }
 
 	public LecturerCanHoldCourseDto getLecturerCanHoldCourse() {

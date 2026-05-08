@@ -25,7 +25,9 @@ import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
+import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
+import teameins.lecturerassignmentsystem.model.exception.LecturerAssignmentException;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 
@@ -47,6 +49,9 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     private final transient LecturerService lecturerService;
     private final transient CourseService courseService;
     private transient CourseDto course;
+    private final transient VerticalLayout courseInfo;
+    private final transient VerticalLayout assignedLecturerInfo;
+    private final transient VerticalLayout lecturersWhoCanHoldInfo;
     private final transient Binder<CourseDto> binder;
 
     private static final String ALL_COURSES_VIEW_ROUTE = "vorlesungen";
@@ -68,6 +73,9 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         this.lecturerService = lecturerService;
         this.courseService = courseService;
         this.binder = new Binder<>(CourseDto.class);
+        this.courseInfo = new VerticalLayout();
+        this.assignedLecturerInfo = new VerticalLayout();
+        this.lecturersWhoCanHoldInfo = new VerticalLayout();
     }
 
     @Override
@@ -75,63 +83,42 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         try {
             int id = Integer.parseInt(parameter);
             course = courseService.getCourseDtoById(id);
-            renderSingleCourse(isInEditMode);
+            renderCourseInfo(false);
+            renderAssignedLecturerInfo();
+            renderLecturersWhoCanHoldCourseInfo();
+            renderSingleCourse();
         } catch (NumberFormatException ex) {
             renderCourseNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
         } catch (CourseNotFoundException ex) {
             renderCourseNotFoundError("Vorlesung nicht gefunden", ex.getMessage());
         } catch (Exception ex) {
-            renderCourseNotFoundError("Fehler", "Es ist ein unerwarteter Fehler aufgetreten: " + ex.getMessage());
+            renderCourseNotFoundError("Fehler", "Ein unerwarteter Fehler ist aufgetreten." + ex.getMessage());
         }
     }
 
-    private void renderSingleCourse(boolean isInEditMode) {
-        H2 heading = new H2(course.getName());
+    private void renderSingleCourse() {
+        VerticalLayout singleCourse = new VerticalLayout(courseInfo, assignedLecturerInfo, lecturersWhoCanHoldInfo);
+        singleCourse.setSpacing(false);
+        singleCourse.setWidthFull();
 
-        VerticalLayout courseInfo = new VerticalLayout();
+        removeAll();
+        add(singleCourse);
+    }
+
+    private void renderCourseInfo(boolean isInEditMode){
         courseInfo.getStyle().set("flex", "0 0 auto");
-        courseInfo.getStyle().set("width", "auto");
+        courseInfo.setWidthFull();
 
         Div toolbar = getToolbar();
-        VerticalLayout info = getCourseInfo(isInEditMode);
+        Div info = getCourseInfo(isInEditMode);
         courseInfo.add(toolbar, info);
-
-        VerticalLayout lecturers = new VerticalLayout();
-        lecturers.getStyle().set("flex", "1 1 auto");
-        lecturers.setWidthFull();
-
-        H3 lecturersWhoCanHoldCourseHeading = new H3("Mögliche Dozenten für diese Vorlesung:");
-        lecturersWhoCanHoldCourseHeading.getStyle().setMarginBottom("var(--lumo-space-m)");
-
-        List<LecturerToCourseRelation> ltcr = course.getCanBeHeldBy().stream()
-                .map(lchc -> new LecturerToCourseRelation(lchc, lecturerService))
-                .toList();
-
-        Div noLecturersMessage = getNoLecturersMessage();
-
-        if (ltcr.isEmpty()) {
-            noLecturersMessage.setVisible(true);
-            lecturers.add(lecturersWhoCanHoldCourseHeading, noLecturersMessage);
-        } else {
-            Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse = renderLecturersWhoCanHoldCourse(ltcr);
-            Div filterBar = getFilterBar(lecturersWhoCanHoldCourse, noLecturersMessage);
-            lecturers.add(lecturersWhoCanHoldCourseHeading, filterBar, lecturersWhoCanHoldCourse, noLecturersMessage);
-        }
-
-        HorizontalLayout singleCourse = new HorizontalLayout(courseInfo, lecturers);
-        singleCourse.setSpacing(true);
-        singleCourse.setWidthFull();
-        singleCourse.setFlexGrow(0, courseInfo);
-        singleCourse.setFlexGrow(1, lecturers);
-
-        add(heading, singleCourse);
     }
 
     private Div getToolbar() {
         Div toolbar = new Div();
         toolbar.addClassName(TOOLBAR_CLASS_NAME);
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_COURSES_VIEW_ROUTE));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().getPage().getHistory().back());
         toolbar.add(back);
         Button delete = new Button("Löschen", e -> deleteCourse());
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
@@ -152,10 +139,59 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
 
         return toolbar;
     }
+    
+    private void renderAssignedLecturerInfo(){
+        assignedLecturerInfo.setSpacing(false);
+        assignedLecturerInfo.add(new Paragraph("Zugewiesener Dozent:"));
 
-    private VerticalLayout getCourseInfo(boolean edit) {
-        VerticalLayout info = new VerticalLayout();
-        info.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        HorizontalLayout layout = new HorizontalLayout();
+        TextField assignedLecturer = new TextField();
+        assignedLecturer.setReadOnly(true);
+
+        if (course.getHeldBy() == null){
+            String value = "Kein Dozent zugewiesen";
+            assignedLecturer.setValue(value);
+            assignedLecturer.setWidth((value.length() + 2) + "ch");
+            layout.add(assignedLecturer);
+        } else {
+            LecturerDto lecturer = lecturerService.getLecturerDtoById(course.getHeldBy().getLecturerId());
+            String value = lecturer.getFullName();
+            assignedLecturer.setValue(value);
+            assignedLecturer.setWidth((value.length() + 2) + "ch");
+            Button removeAssignment = new Button("Zuweisung entfernen", e -> {
+                course = courseService.removeLecturerFromCourse(course.getId());
+                assignedLecturerInfo.removeAll();
+                renderAssignedLecturerInfo();
+            });
+            layout.add(assignedLecturer, removeAssignment);
+        }
+        assignedLecturerInfo.add(layout);
+    }
+
+    private void renderLecturersWhoCanHoldCourseInfo(){
+        H3 lecturersWhoCanHoldCourseHeading = new H3("Mögliche Dozenten für diese Vorlesung:");
+        lecturersWhoCanHoldCourseHeading.getStyle().setMarginBottom("var(--lumo-space-s)");
+        lecturersWhoCanHoldInfo.add(lecturersWhoCanHoldCourseHeading);
+
+        List<LecturerToCourseRelation> ltcr = course.getCanBeHeldBy().stream()
+                .map(lchc -> new LecturerToCourseRelation(lchc, lecturerService))
+                .toList();
+
+        Div noLecturersMessage = getNoLecturersMessage();
+
+        if (ltcr.isEmpty()) {
+            noLecturersMessage.setVisible(true);
+            lecturersWhoCanHoldInfo.add(noLecturersMessage);
+        } else {
+            Grid<LecturerToCourseRelation> lecturersWhoCanHoldCourse = getLecturersWhoCanHoldCourseGrid(ltcr);
+            Div filterBar = getFilterBar(lecturersWhoCanHoldCourse, noLecturersMessage);
+            lecturersWhoCanHoldInfo.add(filterBar, lecturersWhoCanHoldCourse, noLecturersMessage);
+        }
+    }
+
+    private Div getCourseInfo(boolean edit) {
+        Div info = new Div();
+        info.setWidthFull();
 
         TextField name = new TextField("Name", "Name");
         name.setReadOnly(!edit);
@@ -195,12 +231,14 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
 
         binder.readBean(course);
 
-        info.add(name, grad, accessibility, semester);
+        HorizontalLayout layout = new HorizontalLayout(name, grad, accessibility, semester);
+        layout.setWidthFull();
+        info.add(layout);
 
         return info;
     }
 
-    private Grid<LecturerToCourseRelation> renderLecturersWhoCanHoldCourse(List<LecturerToCourseRelation> rows) {
+    private Grid<LecturerToCourseRelation> getLecturersWhoCanHoldCourseGrid(List<LecturerToCourseRelation> rows) {
         Grid<LecturerToCourseRelation> lecturersWhoCanHoldGrid = new Grid<>();
         lecturersWhoCanHoldGrid.addClassName("grid-custom");
         lecturersWhoCanHoldGrid.setAllRowsVisible(true);
@@ -220,6 +258,8 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
                 .setComparator(row -> row.getPriorityScore(course.isMaster()))
                 .setSortable(false)
                 .setAutoWidth(true).setFlexGrow(1);
+        lecturersWhoCanHoldGrid.addComponentColumn(row -> new Button("Dieser Vorlesung zuweisen", e -> assignLecturerToCourse(row)))
+                .setAutoWidth(true).setFlexGrow(0);
 
         lecturersWhoCanHoldGrid.setItems(rows);
 
@@ -230,8 +270,9 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
 
     private void toggleEditMode() {
         isInEditMode = !isInEditMode;
-        removeAll();
-        renderSingleCourse(isInEditMode);
+        courseInfo.removeAll();
+        renderCourseInfo(isInEditMode);
+        renderSingleCourse();
     }
 
     private void deleteCourse() {
@@ -250,7 +291,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         Button confirmButton = new Button("Löschen", e -> {
             courseService.deleteCourse(course);
             confirmDelete.close();
-            UI.getCurrent().navigate(ALL_COURSES_VIEW_ROUTE);
+            UI.getCurrent().getPage().getHistory().back();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
@@ -338,7 +379,7 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
         Paragraph headline = new Paragraph("Keine Dozenten für die Vorlesung gefunden");
         headline.addClassName("empty-state__headline");
 
-        Paragraph subtitle = new Paragraph("Weisen Sie Dozenten diese Vorlesung zu, damit sie hier angezeigt werden.");
+        Paragraph subtitle = new Paragraph("Passen Sie Ihre Filtereinstellungen an, um die Suche zu erweitern.");
         subtitle.addClassName("empty-state__subtitle");
 
         Div textWrapper = new Div();
@@ -352,31 +393,65 @@ public class SingleCourseView extends VerticalLayout implements HasUrlParameter<
     private GridListDataView<LecturerToCourseRelation> addFilterFunctionality(Grid<LecturerToCourseRelation> ltcrGrid, ComboBox<String> qualification, ComboBox<String> alreadyHeld) {
         GridListDataView<LecturerToCourseRelation> dataView = ltcrGrid.getListDataView();
         dataView.addFilter(ltcr -> {
-            boolean matchesQualification = false;
-            if (qualification.getValue() == null || qualification.getValue().isEmpty()){
-                matchesQualification = true;
-            } else if (qualification.getValue().equals(FILTER_EGAL)){
-                matchesQualification = true;
-            } else if (qualification.getValue().equals(FILTER_IN_VIER_WOCHEN)){
-                matchesQualification = !ltcr.getLecturerCanHoldCourse().getQualification().equals("M");
-            } else if (qualification.getValue().equals(FILTER_SOFORT)){
-                matchesQualification = ltcr.getLecturerCanHoldCourse().getQualification().equals("S");
-            }
-
-            boolean matchesAlreadyHeld = false;
-            if (alreadyHeld.getValue() == null || alreadyHeld.getValue().isEmpty()){
-                matchesAlreadyHeld = true;
-            } else if (alreadyHeld.getValue().equals(FILTER_EGAL)){
-                matchesAlreadyHeld = true;
-            } else if (alreadyHeld.getValue().equals(FILTER_ANDERE_HOCHSCHULE)){
-                matchesAlreadyHeld = !ltcr.getLecturerCanHoldCourse().getAlreadyHeld().equals("N");
-            } else if (alreadyHeld.getValue().equals(FILTER_PROVADIS)){
-                matchesAlreadyHeld = ltcr.getLecturerCanHoldCourse().getAlreadyHeld().equals("P");
-            }
-
+            boolean matchesQualification = isMatchesQualification(qualification, ltcr);
+            boolean matchesAlreadyHeld = isMatchesAlreadyHeld(alreadyHeld, ltcr);
             return matchesQualification && matchesAlreadyHeld;
         });
         return dataView;
+    }
+
+    private static boolean isMatchesQualification(ComboBox<String> qualification, LecturerToCourseRelation ltcr) {
+        boolean matchesQualification = false;
+        if (qualification.getValue() == null || qualification.getValue().isEmpty()){
+            matchesQualification = true;
+        } else if (qualification.getValue().equals(FILTER_EGAL)){
+            matchesQualification = true;
+        } else if (qualification.getValue().equals(FILTER_IN_VIER_WOCHEN)){
+            matchesQualification = !ltcr.getLecturerCanHoldCourse().getQualification().equals("M");
+        } else if (qualification.getValue().equals(FILTER_SOFORT)){
+            matchesQualification = ltcr.getLecturerCanHoldCourse().getQualification().equals("S");
+        }
+        return matchesQualification;
+    }
+
+    private static boolean isMatchesAlreadyHeld(ComboBox<String> alreadyHeld, LecturerToCourseRelation ltcr) {
+        boolean matchesAlreadyHeld = false;
+        if (alreadyHeld.getValue() == null || alreadyHeld.getValue().isEmpty()){
+            matchesAlreadyHeld = true;
+        } else if (alreadyHeld.getValue().equals(FILTER_EGAL)){
+            matchesAlreadyHeld = true;
+        } else if (alreadyHeld.getValue().equals(FILTER_ANDERE_HOCHSCHULE)){
+            matchesAlreadyHeld = !ltcr.getLecturerCanHoldCourse().getAlreadyHeld().equals("N");
+        } else if (alreadyHeld.getValue().equals(FILTER_PROVADIS)){
+            matchesAlreadyHeld = ltcr.getLecturerCanHoldCourse().getAlreadyHeld().equals("P");
+        }
+        return matchesAlreadyHeld;
+    }
+
+    private void assignLecturerToCourse(LecturerToCourseRelation ltcr){
+        try{
+            course = courseService.assignLecturerToCourse(course.getId(), ltcr.getLecturer().getId());
+            assignedLecturerInfo.removeAll();
+            renderAssignedLecturerInfo();
+            renderSingleCourse();
+        } catch (LecturerAssignmentException e) {
+            openErrorDialog(e.getMessage());
+        } catch (Exception e){
+            openErrorDialog("Ein unerwarteter Fehler ist aufgetreten.");
+        }
+    }
+
+    private void openErrorDialog(String errorMessage){
+        Dialog error = new Dialog();
+        error.add(new H3("Ein Fehler ist aufgetreten"));
+        Div errorMessagesDiv = new Div();
+        errorMessagesDiv.getStyle().setMarginTop("var(--lumo-space-l)");
+        errorMessagesDiv.add(new Paragraph(errorMessage));
+        error.add(errorMessagesDiv);
+        Button closeButton = new Button("Schließen", e -> error.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        error.add(closeButton);
+        error.open();
     }
 
 }

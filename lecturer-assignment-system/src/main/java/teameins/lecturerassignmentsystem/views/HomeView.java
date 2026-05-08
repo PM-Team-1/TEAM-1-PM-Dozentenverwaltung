@@ -1,6 +1,5 @@
 package teameins.lecturerassignmentsystem.views;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -9,9 +8,10 @@ import jakarta.annotation.security.PermitAll;
 
 @Route("")
 @PermitAll
-public class HomeView extends VerticalLayout {
+public class HomeView extends VerticalLayout implements BeforeEnterObserver {
 
-    public HomeView() {
-        UI.getCurrent().navigate("dashboard");
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        event.forwardTo("dashboard");
     }
 }

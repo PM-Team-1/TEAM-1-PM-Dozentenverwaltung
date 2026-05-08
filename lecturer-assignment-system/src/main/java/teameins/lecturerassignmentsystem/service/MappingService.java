@@ -60,14 +60,15 @@ public class MappingService {
         );
     }
 
-    public CourseDto map(Course course, List<LecturerCanHoldCourseDto> canBeHeldBy) {
+    public CourseDto map(Course course, List<LecturerCanHoldCourseDto> canBeHeldBy, LecturerHoldsCourseDto heldBy) {
         return new CourseDto(
                 course.getId(),
                 course.getName(),
                 course.isClosed(),
                 course.isMaster(),
                 course.getSemester(),
-                canBeHeldBy
+                canBeHeldBy,
+                heldBy
         );
     }
 

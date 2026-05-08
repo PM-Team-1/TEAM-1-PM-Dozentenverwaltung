@@ -44,7 +44,7 @@ public class LecturerService {
 		this.mappingService = mappingService;
 	}
 
-	public LecturerDto getLecturerById(int lecturerId) {
+	public LecturerDto getLecturerDtoById(int lecturerId) {
         Lecturer lecturer = lecturerRepository.findById(lecturerId)
                 .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHoldDtos(lecturerId);
@@ -75,14 +75,16 @@ public class LecturerService {
 
     public List<LecturerDto> getUnassignedLecturersForSemester(List<CourseDto> coursesInSemester) {
         Set<Integer> assignedLecturerIds = coursesInSemester.stream()
-                .map(c -> getAssignedLecturerForCourse(c.getId()))
+                .map(c -> lecturerHoldsCourseRepository.findByCourseId(c.getId())
+                        .map(LecturerHoldsCourse::getLecturer)
+                        .map(Lecturer::getId))
                 .filter(Optional::isPresent)
-                .map(opt -> opt.get().getId())
+                .map(Optional::get)
                 .collect(Collectors.toSet());
                 
         return listLecturerDtos().stream()
                 .filter(l -> !assignedLecturerIds.contains(l.getId()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public LecturerDto createLecturer(LecturerDto lecturerDto) {
@@ -90,7 +92,7 @@ public class LecturerService {
                 throw new InvalidLecturerException("Der Dozent ist ungültig.");
             }
         int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
-        return getLecturerById(id);
+        return getLecturerDtoById(id);
     }
     public LecturerDto updateLecturer(LecturerDto lecturerDto) {
             if (!lecturerDto.validate()) {
@@ -102,7 +104,7 @@ public class LecturerService {
                 ));
 
         lecturerRepository.save(mappingService.map(lecturerDto));
-        return getLecturerById(lecturerDto.getId());
+        return getLecturerDtoById(lecturerDto.getId());
     }
 
     public LecturerCanHoldCourseDto addCourseToLecturer(LecturerCanHoldCourseDto dto) {

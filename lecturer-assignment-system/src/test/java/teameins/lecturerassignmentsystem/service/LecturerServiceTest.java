@@ -64,7 +64,7 @@ class LecturerServiceTest {
                 lecturerCanHoldCourses.stream().map(mappingService::map).toList()
         );
 
-        assertEquals(lecturerDto, lecturerService.getLecturerById(lecturerId));
+        assertEquals(lecturerDto, lecturerService.getLecturerDtoById(lecturerId));
     }
 
     @Test
@@ -72,7 +72,7 @@ class LecturerServiceTest {
         int lecturerId = 100;
         Mockito.doReturn(Optional.empty()).when(lecturerRepository).findById(lecturerId);
 
-        assertThrows(LecturerNotFoundException.class, () -> lecturerService.getLecturerById(lecturerId));
+        assertThrows(LecturerNotFoundException.class, () -> lecturerService.getLecturerDtoById(lecturerId));
     }
 
     @Test

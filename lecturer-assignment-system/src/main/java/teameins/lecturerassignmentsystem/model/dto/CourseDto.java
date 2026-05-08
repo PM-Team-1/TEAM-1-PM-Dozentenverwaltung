@@ -3,6 +3,7 @@ package teameins.lecturerassignmentsystem.model.dto;
 import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 
 import lombok.ToString;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerHoldsCourseDto;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,18 +17,20 @@ public class CourseDto {
     private boolean isMaster;
     private String semester;
     private List<LecturerCanHoldCourseDto> canBeHeldBy;
+    private LecturerHoldsCourseDto heldBy;
     
     public CourseDto() {
     	
     }
 
-    public CourseDto(int id, String name, boolean isClosed, boolean isMaster, String semester, List<LecturerCanHoldCourseDto> canBeHeldBy) throws IllegalArgumentException {
+    public CourseDto(int id, String name, boolean isClosed, boolean isMaster, String semester, List<LecturerCanHoldCourseDto> canBeHeldBy, LecturerHoldsCourseDto heldBy) throws IllegalArgumentException {
         setId(id);
         setName(name);
         setClosed(isClosed);
         setMaster(isMaster);
         setSemester(semester);
         setCanBeHeldBy(canBeHeldBy);
+        setHeldBy(heldBy);
     }
 
     public static boolean validate(CourseDto course) {
@@ -109,7 +112,15 @@ public class CourseDto {
 		this.canBeHeldBy = canBeHeldBy;
 	}
 
-	public String getName() {
+    public LecturerHoldsCourseDto getHeldBy() {
+        return heldBy;
+    }
+
+    public void setHeldBy(LecturerHoldsCourseDto heldBy) {
+        this.heldBy = heldBy;
+    }
+
+    public String getName() {
 		return name;
 	}
 
