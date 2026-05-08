@@ -361,6 +361,28 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         return coursesDiv;
     }
 
+    private void updateButtonState(Button button, CourseToLecturerRelation row) {
+
+        boolean allowed = isAllowed(row);
+
+        button.setEnabled(allowed);
+
+        if (allowed) {
+            button.removeThemeVariants(ButtonVariant.LUMO_DISABLED);
+        } else {
+            button.addThemeVariants(ButtonVariant.LUMO_DISABLED);
+        }
+    }
+
+    private boolean isAllowed(CourseToLecturerRelation row) {
+        try{
+            row.getCourse().getId()
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private Div getCourseFilters(Grid<CourseToLecturerRelation> grid, List<CourseToLecturerRelation> rows) {
         Div filterBar = new Div();
         filterBar.setWidthFull();

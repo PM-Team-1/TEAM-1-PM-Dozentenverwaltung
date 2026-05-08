@@ -83,7 +83,10 @@ public class MappingService {
     public teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse map(teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto assignmentDto) {
         Lecturer lecturer = lecturerRepository.findById(assignmentDto.getLecturerId()).orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + assignmentDto.getLecturerId() + " gefunden werden."));
         Course course = courseRepository.findById(assignmentDto.getCourseId()).orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + assignmentDto.getCourseId() + " gefunden werden."));
-        return new teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse(assignmentDto.getId(), course, lecturer);
+        teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse holdsCourse = new teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse();
+        holdsCourse.setCourse(course);
+        holdsCourse.setLecturer(lecturer);
+        return holdsCourse;
     }
 
     public Lecturer map(LecturerDto dto) {
