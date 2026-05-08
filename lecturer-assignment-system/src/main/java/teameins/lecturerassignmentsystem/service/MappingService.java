@@ -33,8 +33,6 @@ public class MappingService {
         this.lecturerRepository = lecturerRepository;
 	}
 
-    public MappingService() {}
-
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
         return new LecturerDto(
                 lecturer.getId(),
