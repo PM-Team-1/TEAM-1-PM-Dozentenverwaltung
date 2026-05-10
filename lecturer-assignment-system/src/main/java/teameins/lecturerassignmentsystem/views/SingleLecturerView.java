@@ -27,10 +27,12 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
+import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.service.CourseService;
 import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.components.AddCourseToLecturerDialog;
@@ -54,6 +56,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private final transient LecturerService lecturerService;
     private final transient CourseService courseService;
     private transient LecturerDto lecturer;
+    private final LecturerHoldsCourseRepository lhcRepository;
 
     private static final String ALL_LECTURERS_VIEW_ROUTE = "dozenten";
 
@@ -62,9 +65,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private final Binder<LecturerDto> binder = new Binder<>(LecturerDto.class);
 
     @Autowired
-    public SingleLecturerView(LecturerService lecturerService, CourseService courseService) {
+    public SingleLecturerView(LecturerService lecturerService, CourseService courseService, LecturerHoldsCourseRepository lhcRepository) {
         this.lecturerService = lecturerService;
         this.courseService = courseService;
+        this.lhcRepository = lhcRepository;
     }
 
     @Override
@@ -346,9 +350,21 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addComponentColumn(row -> {
                 Button detailsButton = new Button("Kurs zuweisen");
 
+                updateButtonState(detailsButton, row);
+
                 detailsButton.addClickListener(event -> {
-                    //TODO überprüfen ob es Beziehung gibt sonst erstellen
+                	Button button = event.getSource();
+                    if (isAllowed(row)) {
+                    	lecturerService.assignCourseToLecturer(new LecturerHoldsCourseDto(0, lecturer.getId(), row.getCourse().getId()));
+                        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                    } else {
+                    	lecturerService.unassignCourse(row.getCourse());
+                    	System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+                    }
+                    canHoldgrid.getDataProvider().refreshAll();
                 });
+                
+                updateButtonState(detailsButton, row);
 
                 return detailsButton;
         }).setHeader("");
@@ -364,19 +380,18 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     private void updateButtonState(Button button, CourseToLecturerRelation row) {
 
         boolean allowed = isAllowed(row);
-
-        button.setEnabled(allowed);
-
         if (allowed) {
-            button.removeThemeVariants(ButtonVariant.LUMO_DISABLED);
+        	button.setText("Kurs zuordnen");
         } else {
-            button.addThemeVariants(ButtonVariant.LUMO_DISABLED);
+        	button.setText("Zuweisung entfernen");
         }
+
+        //button.setEnabled(allowed);
     }
 
     private boolean isAllowed(CourseToLecturerRelation row) {
         try{
-            row.getCourse().getId()
+            return !lhcRepository.existsByCourseId(row.getCourse().getId());
         } catch (Exception e) {
             e.printStackTrace();
             return false;
