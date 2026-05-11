@@ -38,6 +38,7 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.components.AddCourseToLecturerDialog;
 import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
+import com.vaadin.flow.component.formlayout.FormLayout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,10 +94,10 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
         VerticalLayout lecturerInfo = new VerticalLayout();
         lecturerInfo.getStyle().set("flex", "0 0 auto");
-        lecturerInfo.getStyle().set("width", "auto");
-
+        lecturerInfo.setWidthFull();
+        
         Div toolbar = getToolbar();
-        VerticalLayout info = getLecturerInfo(isInEditMode);
+        FormLayout info = getLecturerInfo(isInEditMode);
         lecturerInfo.add(toolbar, info);
 
         VerticalLayout courses = new VerticalLayout();
@@ -106,7 +107,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         List<CourseToLecturerRelation> ctlr = lecturer.getCanHoldCourses() == null
                 ? List.of()
                 : lecturer.getCanHoldCourses().stream()
-                .map(lchc -> new CourseToLecturerRelation(lchc, courseService))
+                .map(lchc -> new CourseToLecturerRelation(lchc, courseService, lhcRepository))
                 .toList();
 
         Button addCourseButton = new Button("Vorlesung hinzufügen", e -> new AddCourseToLecturerDialog(lecturer, courseService, lecturerService));
@@ -118,11 +119,9 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         addCourseButton.getStyle().set("margin-bottom", "var(--lumo-space-l)");
         courses.add(coursesLecturerCanHold, addCourseButton);
 
-        HorizontalLayout singleLecturer = new HorizontalLayout(lecturerInfo, courses);
+        VerticalLayout singleLecturer = new VerticalLayout(lecturerInfo, courses);
         singleLecturer.setWidthFull();
         singleLecturer.setSpacing(true);
-        singleLecturer.setFlexGrow(0, lecturerInfo);
-        singleLecturer.setFlexGrow(1, courses);
 
         add(heading, singleLecturer);
     }
@@ -160,9 +159,14 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         return toolbar;
     }
 
-    private VerticalLayout getLecturerInfo(boolean edit) {
-        VerticalLayout info = new VerticalLayout();
-        info.setJustifyContentMode(JustifyContentMode.BETWEEN);
+    private FormLayout getLecturerInfo(boolean edit) {
+    	FormLayout info = new FormLayout();
+
+    	info.setResponsiveSteps(
+    	    new FormLayout.ResponsiveStep("0", 1),
+    	    new FormLayout.ResponsiveStep("700px", 2),
+    	    new FormLayout.ResponsiveStep("1100px", 3)
+    	);
 
         ComboBox<String> title = new ComboBox<>("Titel");
         title.setItems("Dr.", "Prof.", "Kein Titel");
@@ -172,7 +176,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                         : lecturer.getTitle()
         );
         title.setReadOnly(!edit);
-        title.setWidthFull();
 
         TextField lastName = new TextField(
                 "Nachname",
@@ -180,7 +183,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "Nachname"
         );
         lastName.setReadOnly(!edit);
-        lastName.setWidthFull();
 
         TextField firstName = new TextField(
                 "Vorname",
@@ -188,7 +190,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "Vorname"
         );
         firstName.setReadOnly(!edit);
-        firstName.setWidthFull();
 
         TextField secondName = new TextField(
                 "2. Vorname",
@@ -196,13 +197,11 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "2. Vorname"
         );
         secondName.setReadOnly(!edit);
-        secondName.setWidthFull();
 
         ComboBox<String> status = new ComboBox<>("Status");
         status.setItems("Intern", "Extern");
         status.setValue(lecturer.isExtern() ? "Extern" : "Intern");
         status.setReadOnly(!edit);
-        status.setWidthFull();
 
         TextField email = new TextField(
                 "E-Mail",
@@ -210,7 +209,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "E-Mail"
         );
         email.setReadOnly(!edit);
-        email.setWidthFull();
 
         TextField phone = new TextField(
                 "Telefonnummer",
@@ -218,7 +216,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "Telefonnummer"
         );
         phone.setReadOnly(!edit);
-        phone.setWidthFull();
 
         binder.removeBean();
         bindTitle(title);
@@ -320,33 +317,37 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.addColumn(row -> row.getCourse().getName())
                 .setHeader("Name")
                 .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addColumn(row -> row.getCourse().isMaster() ? "Master" : "Bachelor")
                 .setHeader("Grad")
                 .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addColumn(row -> row.getCourse().getSemester())
                 .setHeader("Semester")
                 .setSortable(true).setComparator(CourseToLecturerRelation::getSemesterSortable)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addColumn(row -> row.getCourse().isClosed() ? "Geschlossen" : "Offen")
                 .setHeader("Zugänglichkeit")
                 .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addColumn(row -> mapQualification(row.getLecturerCanHoldCourse().getQualification()))
                 .setHeader("benötigte Vorbereitungszeit")
                 .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addColumn(row -> row.getLecturerCanHoldCourse().getAffinity())
                 .setKey("priority")
                 .setHeader("Priorität")
                 .setComparator(row -> row.getPriorityScore(lecturer.getTeachingPreference()))
                 .setSortable(false)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addColumn(row -> mapAlreadyHeld(row.getLecturerCanHoldCourse().getAlreadyHeld()))
                 .setHeader("Gehalten an")
                 .setSortable(true)
-                .setAutoWidth(true).setFlexGrow(1);
+                .setAutoWidth(true).setFlexGrow(0);
+        canHoldgrid.addColumn(row -> row.getLecturerName())
+        		.setHeader("Zugewiesener Dozent")
+        		.setSortable(true)
+        		.setAutoWidth(true).setFlexGrow(0);
         canHoldgrid.addComponentColumn(row -> {
                 Button detailsButton = new Button("Kurs zuweisen");
 
@@ -354,6 +355,8 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
                 detailsButton.addClickListener(event -> {
                 	Button button = event.getSource();
+
+                    updateButtonState(detailsButton, row);
                     if (isAllowed(row)) {
                     	lecturerService.assignCourseToLecturer(new LecturerHoldsCourseDto(0, lecturer.getId(), row.getCourse().getId()));
                         System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
@@ -361,10 +364,12 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                     	lecturerService.unassignCourse(row.getCourse());
                     	System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
                     }
+
+                    updateButtonState(detailsButton, row);
                     canHoldgrid.getDataProvider().refreshAll();
+                    //removeAll();
+                    //renderSingleLecturer(isInEditMode);
                 });
-                
-                updateButtonState(detailsButton, row);
 
                 return detailsButton;
         }).setHeader("");
@@ -447,6 +452,8 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 AlreadyHeld::mapAlreadyHeld,
                 dto -> dto.getLecturerCanHoldCourse().getAlreadyHeld()
         );
+        
+        
 
         return filterBar;
     }
