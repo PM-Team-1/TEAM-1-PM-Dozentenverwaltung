@@ -69,4 +69,9 @@ public class CourseToLecturerRelation {
         }
 		return lecturerName;
 	}
+	public int getLecturerId() {
+		int lecturerId = lhcRepository.findLecturerIdByCourseId(course.getId())
+				.orElse(-1);
+		return lecturerId;
+	}
 }

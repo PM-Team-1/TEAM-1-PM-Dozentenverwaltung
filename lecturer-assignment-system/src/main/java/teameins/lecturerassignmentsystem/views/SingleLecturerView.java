@@ -453,7 +453,30 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 dto -> dto.getLecturerCanHoldCourse().getAlreadyHeld()
         );
         
-        
+        ComboBox<String> comboBox = new ComboBox<String>("Gehalten von");
+        comboBox.setItems("alle Dozenten", "dieser Dozent", "andere Dozenten");
+        comboBox.setPlaceholder("Gehalten von");
+        comboBox.setClearButtonVisible(true);
+        comboBox.setValue(null);
+        comboBox.addValueChangeListener(event -> {
+        	switch (event.getValue()) {
+        		case "dieser Dozent" ->
+        			grid.setItems(rows.stream()
+        					.filter(row -> {
+        						return row.getLecturerId() == lecturer.getId();
+        					})
+        					.toList());
+        		case "andere Dozenten" ->
+        			grid.setItems(rows.stream()
+        					.filter(row -> {
+        						return row.getLecturerId() != lecturer.getId();
+        					})
+        					.toList());
+        		case "alle Dozenten" ->
+        			grid.setItems(rows);
+        	}
+        });
+        filterBar.add(comboBox);
 
         return filterBar;
     }
