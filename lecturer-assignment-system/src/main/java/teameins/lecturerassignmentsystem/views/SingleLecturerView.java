@@ -454,7 +454,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         );
         
         ComboBox<String> comboBox = new ComboBox<String>("Gehalten von");
-        comboBox.setItems("alle Dozenten", "dieser Dozent", "andere Dozenten");
+        comboBox.setItems("alle Dozenten", "dieser Dozent", "andere Dozenten", "niemand");
         comboBox.setPlaceholder("Gehalten von");
         comboBox.setClearButtonVisible(true);
         comboBox.setValue(null);
@@ -469,11 +469,17 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         		case "andere Dozenten" ->
         			grid.setItems(rows.stream()
         					.filter(row -> {
-        						return row.getLecturerId() != lecturer.getId();
+        						return row.getLecturerId() != lecturer.getId() && row.getLecturerId() != -1;
         					})
         					.toList());
         		case "alle Dozenten" ->
         			grid.setItems(rows);
+        		case "niemand" -> 
+        			grid.setItems(rows.stream()
+        					.filter(row -> {
+        						return row.getLecturerId() == -1;
+        					})
+        					.toList());
         	}
         });
         filterBar.add(comboBox);
