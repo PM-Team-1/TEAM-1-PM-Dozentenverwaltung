@@ -24,12 +24,8 @@ import teameins.lecturerassignmentsystem.model.enums.Qualification;
 import teameins.lecturerassignmentsystem.model.report.CourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerCanHoldCourseReportEntity;
 import teameins.lecturerassignmentsystem.model.report.LecturerReportEntity;
-import teameins.lecturerassignmentsystem.repository.CourseRepository;
-import teameins.lecturerassignmentsystem.repository.LecturerRepository;
-import teameins.lecturerassignmentsystem.model.exception.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MappingService {
@@ -102,15 +98,6 @@ public class MappingService {
                 assignment.getLecturer().getId(),
                 assignment.getCourse().getId()
         );
-    }
-
-    public teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse map(teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto assignmentDto) {
-        Lecturer lecturer = lecturerRepository.findById(assignmentDto.getLecturerId()).orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + assignmentDto.getLecturerId() + " gefunden werden."));
-        Course course = courseRepository.findById(assignmentDto.getCourseId()).orElseThrow(() -> new CourseNotFoundException("Es konnte keine Vorlesung mit der ID " + assignmentDto.getCourseId() + " gefunden werden."));
-        teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse holdsCourse = new teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse();
-        holdsCourse.setCourse(course);
-        holdsCourse.setLecturer(lecturer);
-        return holdsCourse;
     }
 
     public UserHasRoleDto map(UserHasRole uhr) {

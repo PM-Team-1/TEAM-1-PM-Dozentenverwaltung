@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -28,7 +29,6 @@ import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
@@ -40,7 +40,7 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 import teameins.lecturerassignmentsystem.views.components.AddCourseToLecturerDialog;
 import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
-import com.vaadin.flow.component.formlayout.FormLayout;
+
 
 import java.util.Arrays;
 import java.util.List;
@@ -64,11 +64,17 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private final Binder<LecturerDto> binder = new Binder<>(LecturerDto.class);
 
+    private final VerticalLayout lecturerInfo;
+    private final VerticalLayout coursesLayout;
+    private Div info;
+
     @Autowired
     public SingleLecturerView(LecturerService lecturerService, CourseService courseService, LecturerHoldsCourseRepository lhcRepository) {
         this.lecturerService = lecturerService;
         this.courseService = courseService;
         this.lhcRepository = lhcRepository;
+        this.lecturerInfo = new VerticalLayout();
+        this.coursesLayout = new VerticalLayout();
     }
 
     @Override
@@ -78,7 +84,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
             lecturer = lecturerService.getLecturerDtoById(id);
             isInEditMode = false;
             removeAll();
-            renderSingleLecturer(false);
+            renderSingleLecturer();
         } catch (NumberFormatException ex) {
             renderLecturerNotFoundError("Ungültige ID", "Die ID " + parameter + " ist ungültig.");
         } catch (LecturerNotFoundException ex) {
@@ -88,20 +94,17 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         }
     }
 
-    private void renderSingleLecturer(boolean isInEditMode) {
-        H2 heading = new H2(lecturer.getFullName());
-
-        VerticalLayout lecturerInfo = new VerticalLayout();
+    private void renderSingleLecturer() {
         lecturerInfo.getStyle().set("flex", "0 0 auto");
         lecturerInfo.setWidthFull();
-        
+
         Div toolbar = getToolbar();
-        FormLayout info = getLecturerInfo(isInEditMode);
+        info = getLecturerInfo(isInEditMode);
+        lecturerInfo.removeAll();
         lecturerInfo.add(toolbar, info);
 
-        VerticalLayout courses = new VerticalLayout();
-        courses.getStyle().set("flex", "1 1 auto");
-        courses.setWidthFull();
+        coursesLayout.getStyle().set("flex", "1 1 auto");
+        coursesLayout.setWidthFull();
 
         List<CourseToLecturerRelation> ctlr = lecturer.getCanHoldCourses() == null
                 ? List.of()
@@ -113,16 +116,18 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         addCourseButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Div coursesLecturerCanHold = renderCoursesLecturerCanHold(ctlr);
-        coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-l)");
+        coursesLecturerCanHold.getStyle().set("margin-bottom", "var(--lumo-space-s)");
 
         addCourseButton.getStyle().set("margin-bottom", "var(--lumo-space-l)");
-        courses.add(coursesLecturerCanHold, addCourseButton);
+        coursesLayout.removeAll();
+        coursesLayout.add(coursesLecturerCanHold, addCourseButton);
 
-        VerticalLayout singleLecturer = new VerticalLayout(lecturerInfo, courses);
+        VerticalLayout singleLecturer = new VerticalLayout(lecturerInfo, coursesLayout);
         singleLecturer.setWidthFull();
         singleLecturer.setSpacing(true);
 
-        add(heading, singleLecturer);
+        removeAll();
+        add(singleLecturer);
     }
 
     private Div getToolbar() {
@@ -158,14 +163,9 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         return toolbar;
     }
 
-    private FormLayout getLecturerInfo(boolean edit) {
-    	FormLayout info = new FormLayout();
-
-    	info.setResponsiveSteps(
-    	    new FormLayout.ResponsiveStep("0", 1),
-    	    new FormLayout.ResponsiveStep("700px", 2),
-    	    new FormLayout.ResponsiveStep("1100px", 3)
-    	);
+    private Div getLecturerInfo(boolean edit) {
+        Div info = new Div();
+        info.setWidthFull();
 
         ComboBox<String> title = new ComboBox<>("Titel");
         title.setItems("Dr.", "Prof.", "Kein Titel");
@@ -175,6 +175,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                         : lecturer.getTitle()
         );
         title.setReadOnly(!edit);
+        title.setWidthFull();
 
         TextField lastName = new TextField(
                 "Nachname",
@@ -182,6 +183,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "Nachname"
         );
         lastName.setReadOnly(!edit);
+        lastName.setWidthFull();
 
         TextField firstName = new TextField(
                 "Vorname",
@@ -189,6 +191,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "Vorname"
         );
         firstName.setReadOnly(!edit);
+        firstName.setWidthFull();
 
         TextField secondName = new TextField(
                 "2. Vorname",
@@ -196,22 +199,24 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "2. Vorname"
         );
         secondName.setReadOnly(!edit);
+        secondName.setWidthFull();
 
         ComboBox<String> status = new ComboBox<>("Status");
         status.setItems("Intern", "Extern");
         status.setValue(lecturer.isExtern() ? "Extern" : "Intern");
         status.setReadOnly(!edit);
+        status.setWidthFull();
 
-    ComboBox<String> preference = new ComboBox<>("Präferenz");
-    preference.setItems(TeachingPreference.getValidValues());
-    preference.setItemLabelGenerator(code -> Arrays.stream(TeachingPreference.values())
-        .filter(tp -> tp.getValue().equals(code))
-        .findFirst()
-        .map(TeachingPreference::getDescription)
-        .orElse(code));
-    preference.setValue(lecturer.getTeachingPreference() == null ? TeachingPreference.ALLES.getValue() : lecturer.getTeachingPreference());
-    preference.setReadOnly(!edit);
-    preference.setWidthFull();
+        ComboBox<String> preference = new ComboBox<>("Präferenz");
+        preference.setItems(TeachingPreference.getValidValues());
+        preference.setItemLabelGenerator(code -> Arrays.stream(TeachingPreference.values())
+                .filter(tp -> tp.getValue().equals(code))
+                .findFirst()
+                .map(TeachingPreference::getDescription)
+                .orElse(code));
+        preference.setValue(lecturer.getTeachingPreference() == null ? TeachingPreference.ALLES.getValue() : lecturer.getTeachingPreference());
+        preference.setReadOnly(!edit);
+        preference.setWidthFull();
 
         TextField email = new TextField(
                 "E-Mail",
@@ -219,6 +224,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "E-Mail"
         );
         email.setReadOnly(!edit);
+        email.setWidthFull();
 
         TextField phone = new TextField(
                 "Telefonnummer",
@@ -226,6 +232,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 "Telefonnummer"
         );
         phone.setReadOnly(!edit);
+        phone.setWidthFull();
 
         binder.removeBean();
         bindTitle(title);
@@ -233,13 +240,21 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         bindFirstName(firstName);
         bindSecondName(secondName);
         bindStatus(status);
-    bindPreference(preference);
+        bindPreference(preference);
         bindEmail(email);
         bindPhone(phone);
 
         binder.readBean(lecturer);
 
-        info.add(title, lastName, firstName, secondName, status, preference, email, phone);
+        HorizontalLayout nameLayout = new HorizontalLayout(title, lastName, firstName, secondName);
+        nameLayout.setWidthFull();
+        nameLayout.setFlexGrow(1, title, lastName, firstName, secondName);
+        HorizontalLayout otherFieldsLayout = new HorizontalLayout(email, phone, status, preference);
+        otherFieldsLayout.setWidthFull();
+        otherFieldsLayout.setFlexGrow(1, email, phone, status, preference);
+        info.add(nameLayout, otherFieldsLayout);
+
+        this.info = info;
 
         return info;
     }
@@ -365,35 +380,72 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 .setHeader("Gehalten an")
                 .setSortable(true)
                 .setAutoWidth(true).setFlexGrow(0);
-        canHoldgrid.addColumn(row -> row.getLecturerName())
-        		.setHeader("Zugewiesener Dozent")
-        		.setSortable(true)
-        		.setAutoWidth(true).setFlexGrow(0);
+        // combined column: if no lecturer assigned => show muted "Kein Dozent" + subdued assign button
+        // otherwise show assigned lecturer name and a small X-button to remove assignment (with confirmation)
         canHoldgrid.addComponentColumn(row -> {
-                Button detailsButton = new Button("Kurs zuweisen");
+            HorizontalLayout cell = new HorizontalLayout();
+            cell.setPadding(false);
+            cell.setSpacing(false);
+            cell.setAlignItems(Alignment.CENTER);
 
-                updateButtonState(detailsButton, row);
+            if (row.getLecturerId() == -1) {
+                Span none = new Span("Kein Dozent");
+                none.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                none.getStyle().set("margin-right", "var(--lumo-space-xs)");
 
-                detailsButton.addClickListener(event -> {
-                	Button button = event.getSource();
-
-                    updateButtonState(detailsButton, row);
-                    if (isAllowed(row)) {
-                    	lecturerService.assignCourseToLecturer(new LecturerHoldsCourseDto(0, lecturer.getId(), row.getCourse().getId()));
-                        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                    } else {
-                    	lecturerService.unassignCourse(row.getCourse());
-                    	System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-                    }
-
-                    updateButtonState(detailsButton, row);
-                    canHoldgrid.getDataProvider().refreshAll();
-                    //removeAll();
-                    //renderSingleLecturer(isInEditMode);
+                Button assignBtn = new Button(new Icon(VaadinIcon.PLUS), e -> {
+                    Dialog confirm = new Dialog();
+                    confirm.add(new H3("Diesen Dozenten zuweisen"));
+                    confirm.add(new Paragraph("Möchten Sie " + lecturerName + " dieser Vorlesung zuweisen?"));
+                    HorizontalLayout actions = new HorizontalLayout();
+                    Button yes = new Button("Ja", ev2 -> {
+                        try {
+                            courseService.assignLecturerToCourse(row.getCourse().getId(), lecturer.getId());
+                        } catch (Exception ex) {
+                            openErrorDialog("Fehler bei der Zuweisung: " + ex.getMessage());
+                        }
+                        confirm.close();
+                        canHoldgrid.getDataProvider().refreshAll();
+                    });
+                    yes.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+                    Button no = new Button("Nein", ev2 -> confirm.close());
+                    actions.add(yes, no);
+                    confirm.add(actions);
+                    confirm.open();
                 });
 
-                return detailsButton;
-        }).setHeader("");
+                cell.add(none, assignBtn);
+            } else {
+                Span name = new Span(row.getLecturerName());
+                name.getStyle().set("margin-right", "var(--lumo-space-xs)");
+                Button remove = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+                remove.addThemeVariants(ButtonVariant.LUMO_ERROR);
+                remove.getElement().setAttribute("aria-label", "Zuweisung entfernen");
+                remove.addClickListener(ev -> {
+                    Dialog confirm = new Dialog();
+                    confirm.add(new H3("Zuweisung entfernen"));
+                    confirm.add(new Paragraph("Möchten Sie die Zuweisung dieser Vorlesung entfernen?"));
+                    HorizontalLayout actions = new HorizontalLayout();
+                    Button yes = new Button("Ja", ev2 -> {
+                        try {
+                            lecturerService.unassignCourse(row.getCourse());
+                        } catch (Exception ex) {
+                            openErrorDialog("Konnte die Zuweisung nicht entfernen: " + ex.getMessage());
+                        }
+                        confirm.close();
+                        canHoldgrid.getDataProvider().refreshAll();
+                    });
+                    yes.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+                    Button no = new Button("Nein", ev2 -> confirm.close());
+                    actions.add(yes, no);
+                    confirm.add(actions);
+                    confirm.open();
+                });
+                cell.add(name, remove);
+            }
+
+            return cell;
+        }).setHeader("Zugewiesener Dozent");
 
 
         canHoldgrid.sort(List.of(new GridSortOrder<>(canHoldgrid.getColumnByKey("priority"), SortDirection.DESCENDING)));
@@ -401,27 +453,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         canHoldgrid.setItems(rows);
         coursesDiv.add(heading, filterBar, canHoldgrid);
         return coursesDiv;
-    }
-
-    private void updateButtonState(Button button, CourseToLecturerRelation row) {
-
-        boolean allowed = isAllowed(row);
-        if (allowed) {
-        	button.setText("Kurs zuordnen");
-        } else {
-        	button.setText("Zuweisung entfernen");
-        }
-
-        //button.setEnabled(allowed);
-    }
-
-    private boolean isAllowed(CourseToLecturerRelation row) {
-        try{
-            return !lhcRepository.existsByCourseId(row.getCourse().getId());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     private Div getCourseFilters(Grid<CourseToLecturerRelation> grid, List<CourseToLecturerRelation> rows) {
@@ -474,36 +505,30 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
                 dto -> dto.getLecturerCanHoldCourse().getAlreadyHeld()
         );
         
-        ComboBox<String> comboBox = new ComboBox<String>("Gehalten von");
-        comboBox.setItems("alle Dozenten", "dieser Dozent", "andere Dozenten", "niemand");
+        ComboBox<String> comboBox = new ComboBox<>("Gehalten von");
+        comboBox.setItems("diesem Dozenten", "anderem Dozenten", "Niemandem");
         comboBox.setPlaceholder("Gehalten von");
         comboBox.setClearButtonVisible(true);
         comboBox.setValue(null);
         comboBox.addValueChangeListener(event -> {
         	switch (event.getValue()) {
-        		case "dieser Dozent" ->
+        		case "diesem Dozenten" ->
         			grid.setItems(rows.stream()
-        					.filter(row -> {
-        						return row.getLecturerId() == lecturer.getId();
-        					})
+        					.filter(row -> row.getLecturerId() == lecturer.getId())
         					.toList());
-        		case "andere Dozenten" ->
+        		case "anderem Dozenten" ->
         			grid.setItems(rows.stream()
-        					.filter(row -> {
-        						return row.getLecturerId() != lecturer.getId() && row.getLecturerId() != -1;
-        					})
+        					.filter(row -> row.getLecturerId() != lecturer.getId() && row.getLecturerId() != -1)
         					.toList());
-        		case "alle Dozenten" ->
-        			grid.setItems(rows);
-        		case "niemand" -> 
+        		case "Niemandem" ->
         			grid.setItems(rows.stream()
-        					.filter(row -> {
-        						return row.getLecturerId() == -1;
-        					})
+        					.filter(row -> row.getLecturerId() == -1)
         					.toList());
         	}
         });
         filterBar.add(comboBox);
+
+        filterBar.getStyle().set("margin-bottom", "var(--lumo-space-m)");
 
         return filterBar;
     }
@@ -554,6 +579,19 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         return value != null && value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
+    private void openErrorDialog(String errorMessage){
+        Dialog error = new Dialog();
+        error.add(new H3("Ein Fehler ist aufgetreten"));
+        Div errorMessagesDiv = new Div();
+        errorMessagesDiv.getStyle().setMarginTop("var(--lumo-space-l)");
+        errorMessagesDiv.add(new Paragraph(errorMessage));
+        error.add(errorMessagesDiv);
+        Button closeButton = new Button("Schließen", e -> error.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        error.add(closeButton);
+        error.open();
+    }
+
     private void renderLecturerNotFoundError(String heading, String details) {
         HorizontalLayout header = new HorizontalLayout();
         header.setAlignItems(Alignment.CENTER);
@@ -571,8 +609,8 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void toggleEditLecturerMode() {
         isInEditMode = !isInEditMode;
-        removeAll();
-        renderSingleLecturer(isInEditMode);
+        lecturerInfo.removeAll();
+        lecturerInfo.add(getToolbar(), getLecturerInfo(isInEditMode));
     }
 
     private void deleteLecturer() {

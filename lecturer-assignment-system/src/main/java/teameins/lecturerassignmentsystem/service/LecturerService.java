@@ -5,11 +5,9 @@ import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
-import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import org.springframework.transaction.annotation.Transactional;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
 import teameins.lecturerassignmentsystem.model.exception.InvalidLecturerException;
@@ -25,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 
 @Service
 public class LecturerService {
@@ -69,6 +66,7 @@ public class LecturerService {
         return lecturerDtos;
     }
 
+    @Transactional(readOnly = true)
     public Optional<LecturerDto> getAssignedLecturerForCourse(int courseId) {
         return lecturerHoldsCourseRepository.findByCourseId(courseId)
                 .map(assignment -> {
@@ -148,27 +146,6 @@ public class LecturerService {
         LecturerCanHoldCourse entity = mappingService.map(dto, lecturer, course);
         LecturerCanHoldCourse saved = lecturerCanHoldCourseRepository.save(entity);
         return mappingService.map(saved);
-    }
-
-    public void assignCourseToLecturer(LecturerHoldsCourseDto dto) {
-        Lecturer lecturer = lecturerRepository.findById(dto.getLecturerId())
-                .orElseThrow(() -> new LecturerNotFoundException(
-                        "Es konnte kein Dozent mit der ID " + dto.getLecturerId() + " gefunden werden."
-                ));
-
-        Course course = courseRepository.findById(dto.getCourseId())
-                .orElseThrow(() -> new CourseNotFoundException(
-                        "Es konnte keine Vorlesung mit der ID " + dto.getCourseId() + " gefunden werden."
-                ));
-
-        if (lecturerHoldsCourseRepository.existsByCourseId(dto.getCourseId())) {
-            throw new IllegalArgumentException(
-                    "Der Kurs (ID " + dto.getCourseId() + ") ist bereits einem Dozenten zugewiesen."
-            );
-        }
-
-        LecturerHoldsCourse entity = mappingService.map(dto);
-        LecturerHoldsCourse saved = lecturerHoldsCourseRepository.save(entity);
     }
 
     public void unassignCourse(CourseDto dto) {

@@ -39,3 +39,6 @@ src/main/frontend/generated/
 ### DrawIo ###
 *.bkp
 /src/main/bundles/prod.bundle
+
+
+*.tar

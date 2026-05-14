@@ -64,14 +64,10 @@ public class CourseToLecturerRelation {
                 .findLastNameByCourseId(course.getId())
                 .orElse("");
         lecturerName = lecturerName.strip();
-        if (lecturerName.isBlank()) {
-        	lecturerName = "nicht zugewiesen";
-        }
 		return lecturerName;
 	}
 	public int getLecturerId() {
-		int lecturerId = lhcRepository.findLecturerIdByCourseId(course.getId())
-				.orElse(-1);
-		return lecturerId;
+        return lhcRepository.findLecturerIdByCourseId(course.getId())
+                .orElse(-1);
 	}
 }
