@@ -5,6 +5,8 @@ import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
 import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.CourseDto;
+import org.springframework.transaction.annotation.Transactional;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.CourseNotFoundException;
@@ -21,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 
 @Service
 public class LecturerService {
@@ -65,6 +66,7 @@ public class LecturerService {
         return lecturerDtos;
     }
 
+    @Transactional(readOnly = true)
     public Optional<LecturerDto> getAssignedLecturerForCourse(int courseId) {
         return lecturerHoldsCourseRepository.findByCourseId(courseId)
                 .map(assignment -> {
@@ -81,7 +83,7 @@ public class LecturerService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
-                
+
         return listLecturerDtos().stream()
                 .filter(l -> !assignedLecturerIds.contains(l.getId()))
                 .toList();
@@ -145,6 +147,21 @@ public class LecturerService {
         LecturerCanHoldCourse saved = lecturerCanHoldCourseRepository.save(entity);
         return mappingService.map(saved);
     }
+
+    public void unassignCourse(CourseDto dto) {
+        Course course = courseRepository.findById(dto.getId())
+                .orElseThrow(() -> new CourseNotFoundException(
+                        "Es konnte keine Vorlesung mit der ID " + dto.getId() + " gefunden werden."
+                ));
+
+        LecturerHoldsCourse holdsCourse = lecturerHoldsCourseRepository.findByCourseId(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Es konnte keine Zuweisung mit der Kurs-ID " + dto.getId() + " gefunden werden."
+                ));
+
+        lecturerHoldsCourseRepository.deleteById(holdsCourse.getId());
+    }
+
     public void deleteLecturer(LecturerDto lecturer) {
         List<LecturerCanHoldCourseDto> canHoldCourses = lecturer.getCanHoldCourses();
         for (LecturerCanHoldCourseDto lchc : canHoldCourses) {

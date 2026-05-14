@@ -39,3 +39,10 @@ src/main/frontend/generated/
 ### DrawIo ###
 *.bkp
 /src/main/bundles/prod.bundle
+
+
+*.tar
+package-lock.json
+package.json
+tsconfig.json
+types.d.ts
