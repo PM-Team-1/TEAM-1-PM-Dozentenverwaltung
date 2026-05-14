@@ -5,18 +5,29 @@
 
 ## Anwendung starten
 
-1. Docker-Image laden:
+1. Maven build durchführen:
 
 ```bash
-docker load -i lecturer-assignment-system.tar
+mvn clean package -DskipTests
 ```
 
-2. Container starten:
+2. Docker-Image bauen:
+
+```bash
+docker build -t lecturer-assignment-system .
+```
+
+3. Container starten:
 
 ```bash
 docker run -p 8080:8080 lecturer-assignment-system
 ```
 
-3. Anwendung im Browser öffnen:
+4. Anwendung im Browser öffnen:
 
 http://localhost:8080
+
+5. Anmelden:
+
+Nutzername: `admin`
+Passwort: `admin`
