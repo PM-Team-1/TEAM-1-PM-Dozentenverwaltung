@@ -1,6 +1,6 @@
 package teameins.lecturerassignmentsystem.views.model;
 
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.service.LecturerService;
@@ -12,7 +12,7 @@ public class LecturerToCourseRelation {
 
     public LecturerToCourseRelation(LecturerCanHoldCourseDto lecturerCanHoldCourse, LecturerService lecturerService) {
         this.lecturerCanHoldCourse = lecturerCanHoldCourse;
-        this.lecturer = lecturerService.getLecturerById(lecturerCanHoldCourse.getLecturerId());
+        this.lecturer = lecturerService.getLecturerDtoById(lecturerCanHoldCourse.getLecturerId());
     }
 
 	public LecturerCanHoldCourseDto getLecturerCanHoldCourse() {

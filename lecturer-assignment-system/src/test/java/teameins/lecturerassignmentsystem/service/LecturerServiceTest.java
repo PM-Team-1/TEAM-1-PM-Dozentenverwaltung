@@ -7,10 +7,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
-import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
@@ -24,7 +25,6 @@ import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
-import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,12 +42,14 @@ class LecturerServiceTest {
     LecturerHoldsCourseRepository lecturerHoldsCourseRepository;
     @Mock
     CourseRepository courseRepository;
+    @Mock
+    PasswordEncoder passwordEncoder;
 
     @InjectMocks
     LecturerService lecturerService;
 
     @Spy
-    MappingService mappingService;
+    MappingService mappingService = new MappingService(passwordEncoder);
 
     @Test
     void getLecturerByIdTest(){
@@ -62,7 +64,7 @@ class LecturerServiceTest {
                 lecturerCanHoldCourses.stream().map(mappingService::map).toList()
         );
 
-        assertEquals(lecturerDto, lecturerService.getLecturerById(lecturerId));
+        assertEquals(lecturerDto, lecturerService.getLecturerDtoById(lecturerId));
     }
 
     @Test
@@ -70,7 +72,7 @@ class LecturerServiceTest {
         int lecturerId = 100;
         Mockito.doReturn(Optional.empty()).when(lecturerRepository).findById(lecturerId);
 
-        assertThrows(LecturerNotFoundException.class, () -> lecturerService.getLecturerById(lecturerId));
+        assertThrows(LecturerNotFoundException.class, () -> lecturerService.getLecturerDtoById(lecturerId));
     }
 
     @Test

@@ -25,12 +25,14 @@ import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.AlreadyHeld;
 import teameins.lecturerassignmentsystem.model.enums.Qualification;
+import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.exception.LecturerNotFoundException;
 import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.service.CourseService;
@@ -40,26 +42,23 @@ import teameins.lecturerassignmentsystem.views.components.ValidationErrorDialog;
 import teameins.lecturerassignmentsystem.views.model.CourseToLecturerRelation;
 import com.vaadin.flow.component.formlayout.FormLayout;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static teameins.lecturerassignmentsystem.model.enums.AlreadyHeld.mapAlreadyHeld;
 import static teameins.lecturerassignmentsystem.model.enums.Qualification.mapQualification;
 
 @Route("dozenten")
 @PageTitle("Dozent")
+@PermitAll
 public class SingleLecturerView extends VerticalLayout implements HasUrlParameter<String> {
 
     private final transient LecturerService lecturerService;
     private final transient CourseService courseService;
     private transient LecturerDto lecturer;
     private final LecturerHoldsCourseRepository lhcRepository;
-
-    private static final String ALL_LECTURERS_VIEW_ROUTE = "dozenten";
 
     private boolean isInEditMode = false;
 
@@ -76,7 +75,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
     public void setParameter(BeforeEvent event, String parameter) {
         try {
             int id = Integer.parseInt(parameter);
-            lecturer = lecturerService.getLecturerById(id);
+            lecturer = lecturerService.getLecturerDtoById(id);
             isInEditMode = false;
             removeAll();
             renderSingleLecturer(false);
@@ -130,7 +129,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Div toolbar = new Div();
         toolbar.addClassName("toolbar");
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().getPage().getHistory().back());
         toolbar.add(back);
 
         if (!isInEditMode) {
@@ -203,6 +202,17 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         status.setValue(lecturer.isExtern() ? "Extern" : "Intern");
         status.setReadOnly(!edit);
 
+    ComboBox<String> preference = new ComboBox<>("Präferenz");
+    preference.setItems(TeachingPreference.getValidValues());
+    preference.setItemLabelGenerator(code -> Arrays.stream(TeachingPreference.values())
+        .filter(tp -> tp.getValue().equals(code))
+        .findFirst()
+        .map(TeachingPreference::getDescription)
+        .orElse(code));
+    preference.setValue(lecturer.getTeachingPreference() == null ? TeachingPreference.ALLES.getValue() : lecturer.getTeachingPreference());
+    preference.setReadOnly(!edit);
+    preference.setWidthFull();
+
         TextField email = new TextField(
                 "E-Mail",
                 lecturer.getEmail() != null ? lecturer.getEmail() : "",
@@ -223,14 +233,25 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         bindFirstName(firstName);
         bindSecondName(secondName);
         bindStatus(status);
+    bindPreference(preference);
         bindEmail(email);
         bindPhone(phone);
 
         binder.readBean(lecturer);
 
-        info.add(title, lastName, firstName, secondName, status, email, phone);
+        info.add(title, lastName, firstName, secondName, status, preference, email, phone);
 
         return info;
+    }
+
+    private void bindPreference(ComboBox<String> preference) {
+        binder.forField(preference)
+                .asRequired("Präferenz auswählen")
+                .withValidator((value, context) -> {
+                    String validationResult = LecturerDto.validateTeachingPreference(value);
+                    return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
+                })
+                .bind(LecturerDto::getTeachingPreference, LecturerDto::setTeachingPreference);
     }
 
     private void bindTitle(ComboBox<String> title) {
@@ -543,7 +564,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
         Paragraph desc = new Paragraph(details);
 
-        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE));
+        Button back = new Button("Zurück zur Übersicht", e -> UI.getCurrent().getPage().getHistory().back());
 
         add(header, desc, back);
     }
@@ -566,7 +587,7 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
         Button confirmButton = new Button("Löschen", e -> {
             lecturerService.deleteLecturer(lecturer);
             confirmDelete.close();
-            UI.getCurrent().navigate(ALL_LECTURERS_VIEW_ROUTE);
+            UI.getCurrent().getPage().getHistory().back();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 

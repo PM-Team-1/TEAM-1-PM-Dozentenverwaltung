@@ -1,7 +1,6 @@
-package teameins.lecturerassignmentsystem.model;
+package teameins.lecturerassignmentsystem.model.dto;
 
 import org.junit.jupiter.api.Test;
-import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 
 import java.util.ArrayList;
 
@@ -76,6 +75,7 @@ class CourseDtoTest {
                 name,
                 false,
                 false, semester,
-                new ArrayList<>());
+                new ArrayList<>(),
+         null);
     }
 }

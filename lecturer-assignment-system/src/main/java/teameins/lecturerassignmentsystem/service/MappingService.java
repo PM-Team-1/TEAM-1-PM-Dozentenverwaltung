@@ -1,13 +1,21 @@
 package teameins.lecturerassignmentsystem.service;
 
-import com.vaadin.copilot.shaded.checkerframework.checker.units.qual.C;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
-import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.db.Role;
+import teameins.lecturerassignmentsystem.model.db.User;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerHoldsCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.UserHasRole;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.RoleDto;
+import teameins.lecturerassignmentsystem.model.dto.UserDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerHoldsCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.UserHasRoleDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.model.enums.TeachingPreference;
 import teameins.lecturerassignmentsystem.model.enums.Title;
@@ -25,13 +33,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class MappingService {
-    CourseRepository courseRepository;
-    LecturerRepository lecturerRepository;
-	
-	public MappingService(CourseRepository courseRepository, LecturerRepository lecturerRepository) {
-        this.courseRepository = courseRepository;
-        this.lecturerRepository = lecturerRepository;
-	}
+    private final PasswordEncoder passwordEncoder;
+
+    public MappingService(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public LecturerDto map(Lecturer lecturer, List<LecturerCanHoldCourseDto> canHoldCourses) {
         return new LecturerDto(
@@ -48,14 +54,34 @@ public class MappingService {
         );
     }
 
-    public CourseDto map(Course course, List<LecturerCanHoldCourseDto> canBeHeldBy) {
+    public UserDto map(User user, List<UserHasRoleDto> hasRoles) {
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
+                null,
+                user.isEnabled(),
+                hasRoles
+        );
+    }
+
+    public CourseDto map(Course course, List<LecturerCanHoldCourseDto> canBeHeldBy, LecturerHoldsCourseDto heldBy) {
         return new CourseDto(
                 course.getId(),
                 course.getName(),
                 course.isClosed(),
                 course.isMaster(),
                 course.getSemester(),
-                canBeHeldBy
+                canBeHeldBy,
+                heldBy
+        );
+    }
+
+    public RoleDto map(Role role, List<UserHasRoleDto> usersWithRole) {
+        return new RoleDto(
+                role.getId(),
+                role.getName(),
+                role.getGrantedAuthority(),
+                usersWithRole
         );
     }
 
@@ -70,8 +96,8 @@ public class MappingService {
         );
     }
 
-    public teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto map(teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse assignment) {
-        return new teameins.lecturerassignmentsystem.model.dto.LecturerHoldsCourseDto(
+    public LecturerHoldsCourseDto map(LecturerHoldsCourse assignment) {
+        return new LecturerHoldsCourseDto(
                 assignment.getId(),
                 assignment.getLecturer().getId(),
                 assignment.getCourse().getId()
@@ -85,6 +111,14 @@ public class MappingService {
         holdsCourse.setCourse(course);
         holdsCourse.setLecturer(lecturer);
         return holdsCourse;
+    }
+
+    public UserHasRoleDto map(UserHasRole uhr) {
+        return new UserHasRoleDto(
+                uhr.getId(),
+                uhr.getUser().getId(),
+                uhr.getRole().getId()
+        );
     }
 
     public Lecturer map(LecturerDto dto) {
@@ -113,6 +147,27 @@ public class MappingService {
         entity.setClosed(dto.isClosed());
         entity.setMaster(dto.isMaster());
         entity.setSemester(dto.getSemester());
+        return entity;
+    }
+
+    public Role map(RoleDto roleDto) {
+        Role entity = new Role();
+        if (roleDto.getId() > 0) {
+            entity.setId(roleDto.getId());
+        }
+        entity.setName(roleDto.getName());
+        entity.setGrantedAuthority(roleDto.getGrantedAuthority());
+        return entity;
+    }
+
+    public User map(UserDto dto) {
+        User entity = new User();
+        if (dto.getId() > 0) {
+            entity.setId(dto.getId());
+        }
+        entity.setUsername(dto.getUsername());
+        entity.setPasswordHash(hashPassword(dto.getPassword()));
+        entity.setEnabled(dto.isEnabled());
         return entity;
     }
 
@@ -250,5 +305,9 @@ public class MappingService {
             }
         }
         throw new IllegalArgumentException("Ungültige Affinität: '" + value + "'");
+    }
+
+    private String hashPassword(String password) {
+        return passwordEncoder.encode(password);
     }
 }

@@ -1,6 +1,8 @@
-package teameins.lecturerassignmentsystem.model.db;
+package teameins.lecturerassignmentsystem.model.db.relation;
 
 import jakarta.persistence.*;
+import teameins.lecturerassignmentsystem.model.db.Course;
+import teameins.lecturerassignmentsystem.model.db.Lecturer;
 
 @Entity
 public class LecturerHoldsCourse {

@@ -10,8 +10,12 @@ BEGIN TRANSACTION;
 -- Vor dem Anlegen neuer Testdaten: alle bisherigen Daten löschen
 -- Wichtig: Child-Tabellen zuerst löschen, damit FK-Constraints nicht verletzt werden.
 DELETE FROM lecturer_can_hold_course;
+DELETE FROM lecturer_holds_course;
 DELETE FROM lecturer;
 DELETE FROM course;
+DELETE FROM user_has_role;
+DELETE FROM user;
+DELETE FROM role;
 
 -- 30 Dozenten (verschiedene Präferenzen)
 -- Preference enum values: ALLES, ONLY_MASTER, ONLY_BACHELOR, PREFER_MASTER, PREFER_BACHELOR
@@ -253,6 +257,18 @@ INSERT INTO lecturer_can_hold_course (id, already_held, qualification, course_id
   (142, 'NOT_YET_HELD', 'IMMEDIATELY', 14, 30, 'HIGH'),
   (143, 'NOT_YET_HELD', 'IMMEDIATELY', 20, 30, 'LOW'),
   (144, 'OTHER_SCHOOL', 'FOUR_WEEKS', 10, 30, 'MEDIUM');
+
+INSERT INTO lecturer_holds_course (id, lecturer_id, course_id) VALUES
+  (1, 25, 1),
+  (2, 26, 3),
+  (3, 10, 5),
+  (4, 20, 8),
+  (5, 27, 10),
+  (6, 2, 11),
+  (7, 3, 12),
+  (8, 4, 14),
+  (9, 5, 15),
+  (10, 16, 20);
 
 COMMIT;
 PRAGMA foreign_keys=ON;

@@ -3,6 +3,8 @@ package teameins.lecturerassignmentsystem.service;
 import org.springframework.stereotype.Service;
 import teameins.lecturerassignmentsystem.model.db.Course;
 import teameins.lecturerassignmentsystem.model.db.Lecturer;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerCanHoldCourse;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.db.LecturerCanHoldCourse;
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
@@ -16,10 +18,14 @@ import teameins.lecturerassignmentsystem.repository.CourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerCanHoldCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.repository.LecturerRepository;
-import teameins.lecturerassignmentsystem.model.db.LecturerHoldsCourse;
+import teameins.lecturerassignmentsystem.model.db.relation.LecturerHoldsCourse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import teameins.lecturerassignmentsystem.model.dto.CourseDto;
 
 @Service
 public class LecturerService {
@@ -42,7 +48,7 @@ public class LecturerService {
 		this.mappingService = mappingService;
 	}
 
-	public LecturerDto getLecturerById(int lecturerId) {
+	public LecturerDto getLecturerDtoById(int lecturerId) {
         Lecturer lecturer = lecturerRepository.findById(lecturerId)
                 .orElseThrow(() -> new LecturerNotFoundException("Es konnte kein Dozent mit der ID " + lecturerId + " gefunden werden."));
         List<LecturerCanHoldCourseDto> canHoldCourses = getCoursesLecturerCanHoldDtos(lecturerId);
@@ -63,12 +69,34 @@ public class LecturerService {
         return lecturerDtos;
     }
 
+    public Optional<LecturerDto> getAssignedLecturerForCourse(int courseId) {
+        return lecturerHoldsCourseRepository.findByCourseId(courseId)
+                .map(assignment -> {
+                    Lecturer l = assignment.getLecturer();
+                    return mappingService.map(l, getCoursesLecturerCanHoldDtos(l.getId()));
+                });
+    }
+
+    public List<LecturerDto> getUnassignedLecturersForSemester(List<CourseDto> coursesInSemester) {
+        Set<Integer> assignedLecturerIds = coursesInSemester.stream()
+                .map(c -> lecturerHoldsCourseRepository.findByCourseId(c.getId())
+                        .map(LecturerHoldsCourse::getLecturer)
+                        .map(Lecturer::getId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+
+        return listLecturerDtos().stream()
+                .filter(l -> !assignedLecturerIds.contains(l.getId()))
+                .toList();
+    }
+
     public LecturerDto createLecturer(LecturerDto lecturerDto) {
             if (!lecturerDto.validate()) {
                 throw new InvalidLecturerException("Der Dozent ist ungültig.");
             }
         int id = lecturerRepository.save(mappingService.map(lecturerDto)).getId();
-        return getLecturerById(id);
+        return getLecturerDtoById(id);
     }
     public LecturerDto updateLecturer(LecturerDto lecturerDto) {
             if (!lecturerDto.validate()) {
@@ -80,7 +108,7 @@ public class LecturerService {
                 ));
 
         lecturerRepository.save(mappingService.map(lecturerDto));
-        return getLecturerById(lecturerDto.getId());
+        return getLecturerDtoById(lecturerDto.getId());
     }
 
     public LecturerCanHoldCourseDto addCourseToLecturer(LecturerCanHoldCourseDto dto) {

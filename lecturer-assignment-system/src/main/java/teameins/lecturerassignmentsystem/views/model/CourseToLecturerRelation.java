@@ -1,7 +1,7 @@
 package teameins.lecturerassignmentsystem.views.model;
 
 import teameins.lecturerassignmentsystem.model.dto.CourseDto;
-import teameins.lecturerassignmentsystem.model.dto.LecturerCanHoldCourseDto;
+import teameins.lecturerassignmentsystem.model.dto.relation.LecturerCanHoldCourseDto;
 import teameins.lecturerassignmentsystem.model.enums.Affinity;
 import teameins.lecturerassignmentsystem.repository.LecturerHoldsCourseRepository;
 import teameins.lecturerassignmentsystem.service.CourseService;
