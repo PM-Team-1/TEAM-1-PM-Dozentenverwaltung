@@ -4,6 +4,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -22,7 +23,6 @@ import teameins.lecturerassignmentsystem.service.LecturerService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Route("dashboard")
 @PageTitle("Dashboard")
@@ -81,9 +81,15 @@ public class DashboardView extends VerticalLayout implements BeforeEnterObserver
         courseGrid = new Grid<>(CourseDto.class, false);
         courseGrid.addColumn(CourseDto::getName).setHeader("Vorlesung").setSortable(true);
         courseGrid.addColumn(c -> c.isMaster() ? "Master" : "Bachelor").setHeader("Typ").setSortable(true);
-        courseGrid.addColumn(c -> {
-            Optional<LecturerDto> lecturer = lecturerService.getAssignedLecturerForCourse(c.getId());
-            return lecturer.map(LecturerDto::getFullName).orElse("Nicht zugewiesen");
+        courseGrid.addComponentColumn(c -> {
+            java.util.Optional<LecturerDto> lecturer = lecturerService.getAssignedLecturerForCourse(c.getId());
+            if (lecturer.isPresent()) {
+                return new Span(lecturer.get().getFullName());
+            } else {
+                Span unassigned = new Span("Nicht zugewiesen");
+                unassigned.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                return unassigned;
+            }
         }).setHeader("Zugewiesener Dozent");
         courseGrid.addItemDoubleClickListener(
                 event -> UI.getCurrent().navigate(SingleCourseView.class, String.valueOf(event.getItem().getId())));

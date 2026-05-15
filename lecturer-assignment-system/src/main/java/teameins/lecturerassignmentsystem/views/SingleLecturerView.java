@@ -261,7 +261,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void bindPreference(ComboBox<String> preference) {
         binder.forField(preference)
-                .asRequired("Präferenz auswählen")
                 .withValidator((value, context) -> {
                     String validationResult = LecturerDto.validateTeachingPreference(value);
                     return validationResult.isEmpty() ? ValidationResult.ok() : ValidationResult.error(validationResult);
@@ -309,7 +308,6 @@ public class SingleLecturerView extends VerticalLayout implements HasUrlParamete
 
     private void bindStatus(ComboBox<String> status) {
         binder.forField(status)
-                .asRequired("Status auswählen")
                 .bind(
                         dto -> dto.isExtern() ? "Extern" : "Intern",
                         (dto, value) -> dto.setExtern("Extern".equals(value))
